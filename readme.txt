@@ -1,7 +1,7 @@
 === jonradio Multiple Themes ===
 Contributors: jonradio
 Donate link: http://jonradio.com/plugins
-Tags: themes, themes
+Tags: themes, theme
 Requires at least: 3.4.1
 Tested up to: 3.4.1
 Stable tag: 1.0
