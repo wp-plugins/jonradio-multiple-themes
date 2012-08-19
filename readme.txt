@@ -53,9 +53,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
-= 0.9 =
+= 1.0 =
 * Make plugin conform to WordPress plugin repository standards.
-* Beta testing.
+* Beta testing completed.
 
 == Upgrade Notice ==
 
