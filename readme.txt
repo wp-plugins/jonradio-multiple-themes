@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme
 Requires at least: 3.4.1
 Tested up to: 3.4.1
-Stable tag: 1.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,11 +53,17 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 1.1 =
+* Fix foreach failing on some systems, based on PHP warning level
+
 = 1.0 =
 * Make plugin conform to WordPress plugin repository standards.
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 1.1 =
+Eliminate possibility of foreach error message if PHP warning level is set at a high level
 
 = 1.0 =
 Beta version 0.9 had not been tested when installed from the WordPress Plugin Repository

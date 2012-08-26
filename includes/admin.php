@@ -170,8 +170,10 @@ function jr_mt_validate_settings( $input ) {
 	
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
-	foreach ( $input['del_entry'] as $del_entry ) {
-		unset( $ids[$del_entry] );
+	if ( isset ( $input['del_entry'] ) ) {
+		foreach ( $input['del_entry'] as $del_entry ) {
+			unset( $ids[$del_entry] );
+		}
 	}
 	
 	//	This section needs error-checking for a bad URL pasted by Admin
