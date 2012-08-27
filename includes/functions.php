@@ -15,7 +15,7 @@ function jr_mt_url_to_id( $url ) {
 	$trim = '\ /';	// remove leading and trailing backslashes, blanks and forward slashes
 
 	//	get_home_url() returns "https://subdomain.domain.com/wp" - the full URL of the home page of the site
-	$home = trim( wp_make_link_relative( get_home_url() ), $trim );	// "wp"
+	$home = trim( parse_url( get_home_url(), PHP_URL_PATH ), $trim );	// "wp"
 	
 	$admin_home = trim( wp_make_link_relative( admin_url() ), $trim );
 	$page_url = trim( wp_make_link_relative( $url ), $trim );	// "wp/fruit/apples"

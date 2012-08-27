@@ -4,13 +4,15 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme
 Requires at least: 3.4.1
 Tested up to: 3.4.1
-Stable tag: 1.1
+Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Select different Themes for one or more, or all WordPress Pages, Posts or Admin Panels.  Or Site Home.
 
 == Description ==
+
+**Major bug solved in Version 2.0**
 
 Allows the Administrator to specify which Theme will be used on specific Pages, Posts, Admin Panels or Site Home.  Also allows a Theme to be specified for All Pages, All Posts or All Admin Panel Pages. In turn, even when a Theme is specified for All Pages, a different Theme can still be specified for specific Pages.
 
@@ -53,6 +55,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 2.0 =
+* Address pecularities of wp_make_link_relative() related to root-based WordPress sites using Permalinks
+
 = 1.1 =
 * Fix foreach failing on some systems, based on PHP warning level
 
@@ -61,6 +66,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 2.0 =
+Selecting Individual Pages and Posts on a WordPress site installed in the root and using Permalinks now works correctly.
 
 = 1.1 =
 Eliminate possibility of foreach error message if PHP warning level is set at a high level

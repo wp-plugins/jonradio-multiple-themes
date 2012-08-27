@@ -33,7 +33,7 @@ function jr_mt_theme( $option ) {
 }
 
 function jr_mt_chosen() {	
-	extract( jr_mt_url_to_id( $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) );
+	extract( jr_mt_url_to_id( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) );
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
 	if ( $id === FALSE ) {
