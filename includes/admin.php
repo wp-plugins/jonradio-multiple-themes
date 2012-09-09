@@ -24,29 +24,45 @@ function jr_mt_admin_hook() {
 function jr_mt_settings_page() {
 	echo '<div class="wrap">';
 	screen_icon( 'plugins' );
-	?><h2>jonradio Multiple Themes</h2>
-	<p>This plugin allows you to selectively change the Theme you have selected as your <b>Current Theme</b> in <b>Appearance-Themes</b> on the Admin panels.
-	You can choose from any of the <b>Available Themes</b> listed on the Appearance-Themes Admin panel for:
-	<ul>
-	<li> &raquo; All Pages</li>
-	<li> &raquo; All Posts</li>
-	<li> &raquo; All Admin Pages</li>
-	<li> &raquo; The Site Home</li>
-	<li> &raquo; A Specific Page</li>
-	<li> &raquo; A Specific Post</li>
-	<li> &raquo; A Specific Admin Page</li>
-	</ul>
-	<?php
-	if ( function_exists('is_multisite') && is_multisite() ) {
-		echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
-	}
-	echo '</p>';
-	echo '<form action="options.php" method="POST">';
+	echo '<h2>jonradio Multiple Themes</h2>';
 	
-	//	Plugin Settings are displayed and entered here:
-	settings_fields( 'jr_mt_settings' );
-	do_settings_sections( 'jr_mt_settings_page' );
-	echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
+	//	Required because it is only called automatically for Admin Pages in the Settings section
+	settings_errors( 'jr_mt_settings' );
+	
+	$theme = wp_get_theme()->Name;
+	global $jr_mt_options_cache;
+	if ( $jr_mt_options_cache['template'] == $jr_mt_options_cache['stylesheet'] ) {
+		?>
+		<p>This plugin allows you to selectively change the Theme you have selected as your <b>Current Theme</b> in <b>Appearance-Themes</b> on the Admin panels.
+		You can choose from any of the <b>Available Themes</b> listed on the Appearance-Themes Admin panel for:
+		<ul>
+		<li> &raquo; All Pages</li>
+		<li> &raquo; All Posts</li>
+		<li> &raquo; The Site Home</li>
+		<li> &raquo; A Specific Page</li>
+		<li> &raquo; A Specific Post</li>
+		<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
+		</ul>
+		<?php
+		if ( function_exists('is_multisite') && is_multisite() ) {
+			echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
+		}
+		echo '</p>';
+		echo '<p>';
+		echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
+		echo '</p>';
+		echo '<form action="options.php" method="POST">';
+		
+		//	Plugin Settings are displayed and entered here:
+		settings_fields( 'jr_mt_settings' );
+		do_settings_sections( 'jr_mt_settings_page' );
+		echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
+	} else {
+		echo '<p>Please report this problem to the Plugin Author:<br />';
+		echo "Stylesheet and Template names do not match for Theme $theme: " . $jr_mt_options_cache['stylesheet'] . ' v.s. ' . $jr_mt_options_cache['template'];
+		global $jr_mt_plugin_data;
+		echo '</p><p><a href="' . $jr_mt_plugin_data['AuthorURI'] . '"' . ">Click here</a> to get to The Plugin Author's page where you can click Contact Us in the menu bar.</p>";
+	}
 }
 
 add_action( 'admin_init', 'jr_mt_admin_init' );
@@ -60,31 +76,41 @@ add_action( 'admin_init', 'jr_mt_admin_init' );
 function jr_mt_admin_init() {
 	register_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
 	add_settings_section( 'jr_mt_all_settings_section', 
-		'For All Pages, Posts and/or Admin Panel Pages', 
+		'For All Pages, All Posts and/or Site Home', 
 		'jr_mt_all_settings_expl', 
 		'jr_mt_settings_page' 
 	);
-	foreach ( array( 'Pages', 'Posts', 'Admin' ) as $thing ) {
-		add_settings_field( 'all_' . strtolower( $thing ), "Select Theme for All $thing", 'jr_mt_echo_all_things', 'jr_mt_settings_page', 'jr_mt_all_settings_section', 
+	$suffix = array(
+		'Pages' => '<br />(Pages created with Add Page)',
+		'Posts' => ''
+	);
+	foreach ( array( 'Pages', 'Posts' ) as $thing ) {
+		add_settings_field( 'all_' . strtolower( $thing ), "Select Theme for All $thing" . $suffix[$thing], 'jr_mt_echo_all_things', 'jr_mt_settings_page', 'jr_mt_all_settings_section', 
 			array( 'thing' => $thing ) );
 	}
+	add_settings_field( 'site_home', 
+		'Select Theme for Site Home<br />(' . get_home_url() . ')', 
+		'jr_mt_echo_site_home', 
+		'jr_mt_settings_page', 
+		'jr_mt_all_settings_section' 
+	);
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
 	if ( !empty( $ids) ) {
 		add_settings_section( 'jr_mt_delete_settings_section', 
-			'To Display or Delete Theme Selections for Individual Pages, Posts and/or Admin Panel Pages', 
+			'To Display or Delete Theme Selections for Individual Pages or Posts', 
 			'jr_mt_delete_settings_expl', 
 			'jr_mt_settings_page' 
 		);
 		add_settings_field( 'del_entry', 'Entries:', 'jr_mt_echo_delete_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
 	}
 	add_settings_section( 'jr_mt_single_settings_section', 
-		'For An Individual Page, Post, Admin Panel Page or Site Home', 
+		'For An Individual Page, Post or other non-Admin page', 
 		'jr_mt_single_settings_expl', 
 		'jr_mt_settings_page' 
 	);
 	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_field( 'add_path_id', 'URL of Page, Post or Admin Panel', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
+	add_settings_field( 'add_path_id', 'URL of Page or Post', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 }
 
 /**
@@ -94,14 +120,27 @@ function jr_mt_admin_init() {
  *
  */
 function jr_mt_all_settings_expl() {
-	echo '<p>In this section, you can select a different Theme for All Pages, Posts and/or Admin Panel Pages.';
-	echo ' After this, you will be able to select a Theme, including the Current Theme, to override any choice you make here, for individual Pages, Posts or Admin Panel Pages.</p>';
+	?>
+	<p>
+	In this section, you can select a different Theme for All Pages, All Posts and/or Site Home.
+	To remove a previously selected Theme, select the blank entry from the drop-down list.
+	</p>
+	<p>
+	In the <i>next</i> section, you will be able to select a Theme, including the Current Theme, to override any choice you make here, for individual Pages, Posts or
+	any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
+	</p>
+	<?php
 }
 
 function jr_mt_echo_all_things( $thing ) {
 	$settings = get_option( 'jr_mt_settings' );
 	$field = 'all_' . strtolower( $thing['thing'] );
-	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings' );
+	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings', TRUE );
+}
+
+function jr_mt_echo_site_home() {
+	$settings = get_option( 'jr_mt_settings' );
+	jr_mt_themes_field( 'site_home', $settings['site_home'], 'jr_mt_settings', FALSE );
 }
 
 /**
@@ -111,9 +150,15 @@ function jr_mt_echo_all_things( $thing ) {
  *
  */
 function jr_mt_delete_settings_expl() {
-	echo '<p>In this section, all entries are displayed for Themes selected for individual Pages, Posts or Admin Panel Pages.';
-	echo ' You can delete any of these entries by filling in the check box beside each one.</p>';
-	echo '<p>To change the Theme for an entry, add the same entry with a different Theme in the section below this one.</p>';
+	?>
+	<p>
+	In this section, all entries are displayed for Themes selected for individual Pages, Posts
+	and any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
+	</p>
+	<p>
+	You can delete any of these entries by filling in the check box beside each one.
+	To change the Theme for an entry, add the same entry with a different Theme in the section below this one.</p>
+	<?php
 }
 
 function jr_mt_echo_delete_entry() {
@@ -148,24 +193,37 @@ function jr_mt_echo_delete_entry() {
  *
  */
 function jr_mt_single_settings_expl() {
-	echo '<p>Select a Theme for an individual Page, Post or Admin Panel Page.';
-	echo ' Then cut and paste the URL of the desired Page, Post or Admin Page.';
-	echo ' And click the <b>Save Changes</b> button to add the entry.</p>'; 
+	?>
+	<p>
+	Select a Theme for an individual Page, Post	or
+	any other non-Admin pages that has its own Permalink; for example, a specific Archive or Category page.
+	<p>
+	</p>
+	Then cut and paste the URL of the desired Page, Post or other non-Admin page.
+	And click the <b>Save Changes</b> button to add the entry.
+	</p>
+	<?php	
 }
 
 function jr_mt_echo_add_theme() {
-	jr_mt_themes_field( 'add_theme', '', 'jr_mt_settings' );
+	jr_mt_themes_field( 'add_theme', '', 'jr_mt_settings', FALSE );
 }
 
 function jr_mt_echo_add_path_id() {
-	echo '<input id="add_path_id" name="jr_mt_settings[add_path_id]" type="text" size="100" maxlength="256" value="" /><br />(cut and paste URL of Page, Post, Admin Panel Page or Site Home here)';
-	echo '<p>Note: Few, if any, Themes alter the appearance of the Admin Panel Pages.  This Plugin hopes to change that.  For those who cannot wait, there are Plugins, most of which call themselves Themes but are listed in the WordPress Plugin Directory, that change the appearance of Admin Panel Pages.</p>';
+	?>
+	<input id="add_path_id" name="jr_mt_settings[add_path_id]" type="text" size="100" maxlength="256" value="" />
+	<br />
+	(cut and paste URL of Page or Post here)
+	<br />
+	URL must begin with
+	<?php
+	echo trim( get_home_url(), '\ /' ) . '/';
 }
 
 function jr_mt_validate_settings( $input ) {
 	$valid = array();
-	foreach ( array( 'pages', 'posts', 'admin' ) as $thing ) {
-		$valid["all_$thing"] = $input["all_$thing"];
+	foreach ( array( 'all_pages', 'all_posts', 'site_home' ) as $thing ) {
+		$valid[$thing] = $input[$thing];
 	}
 	
 	$settings = get_option( 'jr_mt_settings' );
@@ -176,23 +234,59 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	
-	//	This section needs error-checking for a bad URL pasted by Admin
 	$url = trim( $input['add_path_id'] );
-	if ( !empty( $url ) ) {
-		extract( jr_mt_url_to_id( $url ) );
-		if ( $id === FALSE ) {
-			$key = $page_url;
-		} else {
-			$key = $id;
+	if ( ( empty( $input['add_theme'] ) && !empty( $url ) ) || ( !empty( $input['add_theme'] ) && empty( $url ) ) ) {
+		add_settings_error(
+			'jr_mt_settings',
+			'jr_mt_emptyerror',
+			'Both URL and Theme must be specified to add an Individual entry',
+			'error'
+		);		
+	} else {
+		if ( !empty( $url ) ) {
+			$validate_url = jr_mt_site_url( $url );
+			if ( $validate_url === TRUE ) {
+				extract( jr_mt_url_to_id( $url ) );
+				if ( $home ) {
+					add_settings_error(
+						'jr_mt_settings',
+						'jr_mt_homeerror',
+						'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
+						'error'
+					);
+				} else {
+					if ( $type == 'admin' ) {
+						add_settings_error(
+							'jr_mt_settings',
+							'jr_mt_adminerror',
+							'Admin Page URLs are not allowed because no known Themes alter the appearance of Admin pages.',
+							'error'
+						);
+					} else {
+						if ( $id === FALSE ) {
+							$key = $page_url;
+						} else {
+							$key = $id;
+						}
+						$ids[$key] = array(
+							'theme' => $input['add_theme'],
+							'type' => $type,
+							'id' => $id,
+							'page_url' => $page_url,
+							'rel_url' => $rel_url,
+							'url' => $url
+							);
+					}
+				}
+			} else {
+				add_settings_error(
+					'jr_mt_settings',
+					'jr_mt_urlerror',
+					"Invalid URL specified for Individual page/post: '$url'. $validate_url",
+					'error'
+				);			
+			}
 		}
-		$ids[$key] = array(
-			'theme' => $input['add_theme'],
-			'type' => $type,
-			'id' => $id,
-			'page_url' => $page_url,
-			'rel_url' => $rel_url,
-			'url' => $url
-			);
 	}
 	$valid['ids'] = $ids;
 	return $valid;
@@ -215,11 +309,11 @@ add_filter( "plugin_action_links_$jr_mt_plugin_basename", 'jr_mt_plugin_action_l
 function jr_mt_plugin_action_links( $links ) {
 	// The "page=" query string value must be equal to the slug
 	// of the Settings admin page.
-	array_unshift( $links, '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=jr_mt_settings' . '">Settings</a>' );
+	array_push( $links, '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=jr_mt_settings' . '">Settings</a>' );
 	return $links;
 }
 
-function jr_mt_themes_field( $field_name, $theme_name, $setting ) {
+function jr_mt_themes_field( $field_name, $theme_name, $setting, $excl_current_theme ) {
 	echo "<select id='$field_name' name='$setting" . "[$field_name]' size='1'>";
 	if ( empty( $theme_name ) ) {
 		$selected = 'selected="selected"';
@@ -228,6 +322,12 @@ function jr_mt_themes_field( $field_name, $theme_name, $setting ) {
 	}
 	echo "<option value='' $selected></option>";
 	foreach ( wp_get_themes() as $folder => $theme_obj ) {
+		if ( $excl_current_theme ) {
+			if ( jr_mt_current_theme() == $folder ) {
+				//	Skip the Current Theme
+				continue;
+			}
+		}
 		if ( $theme_name == $folder ) {
 			$selected = 'selected="selected"';
 		} else {

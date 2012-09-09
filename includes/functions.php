@@ -1,5 +1,19 @@
 <?php
 /**
+ * Return WordPress Current Theme, as defined in Appearance Admin panels
+ *
+ * Obtains Folder Name of Current Theme, from 'template' option of wp_load_alloptions().
+ *
+ * @param	string		$option		optional parameter that is not currently used,
+ *									but may in the future select current template or stylesheet
+ * @return	string		type		Folder Name of Current Theme
+ */
+function jr_mt_current_theme( $option='stylesheet' ) {
+	global $jr_mt_options_cache;
+	return $jr_mt_options_cache[$option];
+}
+
+/**
  * Given URL, return post or page ID, if possible, and relative path if not
  * 
  * Calls jr_mt_query_keywords.
@@ -10,15 +24,21 @@
  *			string		id			Page ID or Post ID or FALSE
  *			string		page_url	relative URL WordPress page, post, admin, etc. or FALSE
  *			string		rel_url		URL relative to WordPress home
+ *			bool		home		is URL Site Home?
  */
-function jr_mt_url_to_id( $url ) {
+function jr_mt_url_to_id( $url_orig ) {
+	//	Some hosts, likely IIS, insert an erroneous "/index.php" into the middle of the Permalink in $_SERVER['REQUEST_URI']
+	$url = str_replace( '/index.php', '', $url_orig );
+	
 	$trim = '\ /';	// remove leading and trailing backslashes, blanks and forward slashes
 
+	$is_home = FALSE;
+	
 	//	get_home_url() returns "https://subdomain.domain.com/wp" - the full URL of the home page of the site
 	$home = trim( parse_url( get_home_url(), PHP_URL_PATH ), $trim );	// "wp"
 	
-	$admin_home = trim( wp_make_link_relative( admin_url() ), $trim );
-	$page_url = trim( wp_make_link_relative( $url ), $trim );	// "wp/fruit/apples"
+	$admin_home = trim( parse_url( admin_url(), PHP_URL_PATH ), $trim );
+	$page_url = trim( parse_url( $url, PHP_URL_PATH ), $trim );	// "wp/fruit/apples"
 	$is_admin = ( $admin_home == substr( $page_url, 0, strlen( $admin_home ) ) );
 	if ( !empty( $home ) ) {	// Only if WordPress is installed in a subfolder, NOT in the Root
 		$page_url = trim( substr( $page_url, stripos( $page_url, $home ) + strlen( $home ) ), $trim );	// "fruit/apples"
@@ -35,6 +55,7 @@ function jr_mt_url_to_id( $url ) {
 		} else {	
 			//	Check for home page (get_page_by_path() does not work for home page)
 			if ( empty( $page_url ) ) {
+				$is_home = TRUE;
 				$id = get_option('page_on_front');
 				if ( $id == 0 ) {
 					//	There is no home Page; posts are displayed instead on the home page
@@ -67,7 +88,7 @@ function jr_mt_url_to_id( $url ) {
 		$id = $id[$type];
 		$page_url = FALSE;
 	}
-	return array( 'type' => $type, 'id' => $id, 'page_url' => $page_url, 'rel_url' => $rel_url );
+	return array( 'type' => $type, 'id' => $id, 'page_url' => $page_url, 'rel_url' => $rel_url, 'home' => $is_home );
 }
 
 /**
@@ -98,5 +119,25 @@ function jr_mt_query_keywords( $url_query ) {
 			}
 		}
 	}
+}
+
+/**
+ * Is the URL on the current WordPress web site?
+ * 
+ * Checks if URL begins with Site Home URL.
+ *
+ * @param    string  $url		URL to be checked to be sure it is "on" the current WordPress web site
+ * @return   var                bool TRUE if URL on current WordPress web site; string error message otherwise
+ */
+function jr_mt_site_url( $url ) {
+	$check_url = trim( $url );
+	if ( strcasecmp( 'http', substr( $check_url, 0, 4 ) ) != 0 ) {
+		return 'URL does not begin with http://';
+	}
+	$site_home = get_home_url();
+	if ( strcasecmp( $site_home, substr( $check_url, 0, strlen( $site_home ) ) ) != 0 ) {
+		return "URL specified is not part of current WordPress web site.  URL must begin with '$site_home'";
+	}
+	return TRUE;
 }
 ?>

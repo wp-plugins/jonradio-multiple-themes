@@ -2,8 +2,8 @@
 /*
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
-Description: Select different Themes for one or more, or all WordPress Pages, Posts or Admin Panels.  Or Site Home.
-Version: 2.0
+Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
+Version: 2.9
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -46,6 +46,18 @@ function jr_mt_path() {
 global $jr_mt_plugin_basename;
 $jr_mt_plugin_basename = plugin_basename( __FILE__ );
 
+if ( !function_exists( 'get_plugin_data' ) ) {
+	require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+}
+
+global $jr_mt_plugin_data;
+$jr_mt_plugin_data = get_plugin_data( __FILE__ );
+
+global $jr_mt_options_cache;
+$all_options = wp_load_alloptions();
+$jr_mt_options_cache['stylesheet'] = $all_options['stylesheet'];
+$jr_mt_options_cache['template'] = $all_options['template'];
+	
 register_activation_hook( __FILE__, 'jr_mt_activate' );
 register_deactivation_hook( __FILE__, 'jr_mt_deactivate' );
 
@@ -69,19 +81,17 @@ function jr_mt_activate1() {
 	$settings = array(
 		'all_pages' => '',
 		'all_posts' => '',
-		'all_admin' => '',
+		'site_home' => '',
 		'ids'       => array()
 	);
 	//	Nothing happens if Settings already exist
 	add_option( 'jr_mt_settings', $settings );
 	
-	$plugin_data = get_plugin_data( __FILE__ );
-	$version = $plugin_data['Version'];
+	global $jr_mt_plugin_data;
 	$internal_settings = array(
-		'version' => $version
-	);
-	//	Nothing happens if Settings already exist
-	add_option( 'jr_mt_internal_settings', $internal_settings );
+		'version' => $jr_mt_plugin_data['Version']
+	);	// Only records you version when plugin installed, not current version
+	add_option( 'jr_mt_internal_settings', $internal_settings );	//	Nothing happens if Settings already exist
 }
 
 add_action( 'wpmu_new_blog', 'jr_mt_new_site', 10, 6 );
@@ -98,14 +108,55 @@ function jr_mt_deactivate() {
 	//	Nothing (yet)
 }
 
-require_once( jr_mt_path() . 'includes/select-theme.php' );
+jr_mt_version_check();
+
+function jr_mt_version_check() {
+	//	Check for Plugin Version update (Deactivate and Activate Hooks not fired)
+	$internal_settings = get_option( 'jr_mt_internal_settings' );
+	if ( $internal_settings ) {	//	Just in case Activation has not occurred yet
+		global $jr_mt_plugin_data;
+		if ( version_compare( $internal_settings['version'], $jr_mt_plugin_data['Version'], '<' ) ) {
+			if ( version_compare( $internal_settings['version'], '2.1', '<' ) ) {
+				$settings = get_option( 'jr_mt_settings' );
+				unset( $settings['all_admin'] );
+				//	Check for Site Home entry, remove it and set Site Home field
+				//	And remove all Admin entries (no longer supported)
+				if ( isset( $settings['ids'] ) ) {
+					$ids = $settings['ids'];
+					if ( isset( $ids[''] ) ) {
+						$settings['site_home'] = $ids['']['theme'];
+						unset( $ids[''] );
+					} else {
+						$settings['site_home'] = '';
+					}
+					foreach ( $ids as $key => $arr ) {
+						if ( $arr['type'] == 'admin' ) {
+							unset( $ids[$key] );
+						}
+					}
+					$settings['ids'] = $ids;
+				}
+				update_option( 'jr_mt_settings', $settings );
+			}
+			$internal_settings['version'] = $jr_mt_plugin_data['Version'];
+			update_option( 'jr_mt_internal_settings', $internal_settings );
+		}
+	}
+}
+
+require_once( jr_mt_path() . 'includes/functions.php' );
 
 if ( is_admin() ) {
 	//	Admin panel
 	require_once( jr_mt_path() . 'includes/admin.php' );
+} else {
+	//	Do not try and select a Theme for Admin Pages
+	//	Check that template and stylesheet have the same value for the Current Theme, as Plugin expects this to be true.
+	global $jr_mt_options_cache;
+	if ( $jr_mt_options_cache['template'] == $jr_mt_options_cache['stylesheet'] ) {
+		require_once( jr_mt_path() . 'includes/select-theme.php' );
+	}
 }
-
-require_once( jr_mt_path() . 'includes/functions.php' );
 
 /*
 Research Notes:

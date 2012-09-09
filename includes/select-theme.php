@@ -23,8 +23,9 @@ function jr_mt_theme( $option ) {
 	if ( !isset( $jr_mt_theme[$option] ) ) {	
 		$theme = jr_mt_chosen();
 		if ( $theme === FALSE ) {
-			$all_options = wp_load_alloptions();
-			$jr_mt_theme[$option] = $all_options[$option];
+			// $jr_mt_theme[$option] = jr_mt_current_theme( $option );  if stylesheet and template are ever different
+			$jr_mt_theme['template'] = jr_mt_current_theme();
+			$jr_mt_theme['stylesheet'] = jr_mt_current_theme();
 		} else {
 			$jr_mt_theme[$option] = $theme;
 		}
@@ -35,6 +36,11 @@ function jr_mt_theme( $option ) {
 function jr_mt_chosen() {	
 	extract( jr_mt_url_to_id( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) );
 	$settings = get_option( 'jr_mt_settings' );
+	if ( $home ) {
+		if ( trim( $settings['site_home'] ) != '' ) {
+			return $settings['site_home'];
+		}
+	}
 	$ids = $settings['ids'];
 	if ( $id === FALSE ) {
 		if ( isset( $ids[$page_url] ) ) {
