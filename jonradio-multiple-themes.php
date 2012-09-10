@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 2.9
+Version: 3.0
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -116,28 +116,37 @@ function jr_mt_version_check() {
 	if ( $internal_settings ) {	//	Just in case Activation has not occurred yet
 		global $jr_mt_plugin_data;
 		if ( version_compare( $internal_settings['version'], $jr_mt_plugin_data['Version'], '<' ) ) {
+			$settings = get_option( 'jr_mt_settings' );
+			if ( isset( $settings['ids'] ) ) {
+				$ids = $settings['ids'];
+			} else {
+				$ids = array();
+			}
 			if ( version_compare( $internal_settings['version'], '2.1', '<' ) ) {
-				$settings = get_option( 'jr_mt_settings' );
 				unset( $settings['all_admin'] );
 				//	Check for Site Home entry, remove it and set Site Home field
 				//	And remove all Admin entries (no longer supported)
-				if ( isset( $settings['ids'] ) ) {
-					$ids = $settings['ids'];
-					if ( isset( $ids[''] ) ) {
-						$settings['site_home'] = $ids['']['theme'];
-						unset( $ids[''] );
-					} else {
-						$settings['site_home'] = '';
-					}
-					foreach ( $ids as $key => $arr ) {
-						if ( $arr['type'] == 'admin' ) {
-							unset( $ids[$key] );
-						}
-					}
-					$settings['ids'] = $ids;
+				if ( isset( $ids[''] ) ) {
+					$settings['site_home'] = $ids['']['theme'];
+					unset( $ids[''] );
+				} else {
+					$settings['site_home'] = '';
 				}
-				update_option( 'jr_mt_settings', $settings );
+				foreach ( $ids as $key => $arr ) {
+					if ( $arr['type'] == 'admin' ) {
+						unset( $ids[$key] );
+					}
+				}
 			}
+			if ( version_compare( $internal_settings['version'], '3.0', '<' ) ) {
+				foreach ( $ids as $key => $arr ) {
+					if ( strcasecmp( 'http', substr( $arr['rel_url'], 0, 4 ) ) == 0 ) {
+						unset( $ids[$key] );
+					}
+				}
+			}
+			$settings['ids'] = $ids;
+			update_option( 'jr_mt_settings', $settings );
 			$internal_settings['version'] = $jr_mt_plugin_data['Version'];
 			update_option( 'jr_mt_internal_settings', $internal_settings );
 		}

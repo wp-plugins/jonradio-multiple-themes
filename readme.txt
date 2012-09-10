@@ -4,15 +4,13 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme
 Requires at least: 3.4.1
 Tested up to: 3.4.2
-Stable tag: 2.9
+Stable tag: 3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
 
 == Description ==
-
-**This is a Beta Version of Version 3.0, but all testing to date indicates that its release now will correct major problems with previous versions, without introducing any new bugs.**
 
 Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
 
@@ -33,6 +31,10 @@ This section describes how to install the plugin and get it working.
 
 == Frequently Asked Questions ==
 
+= What happens when I change Permalinks? =
+
+For entries you have created for individual Pages and Posts with this plugin, you can subsequently change your Permalink structure or you can change the Permalink of a Page or Post, without having to change the plugin's entry.  However, for other pages, such as Categories or Archives, you will have to delete your old entries and create new ones with this plugin.
+
 = I added a new entry but why doesn't it appear in the list of entries? =
 
 If you add an entry that already exists, it merely replaces the previous entry.
@@ -48,7 +50,12 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 3.0 =
+* Add Support for Categories and Archives when no Permalinks exist (support already existed Categories and Archives with Permalinks)
+* Resolve several minor bugs
+
 = 2.9 =
+* Rewrite much of the Settings page and Plugin Directory documentation
 * Add Support for IIS which returns incorrect values in $_SERVER['REQUEST_URI']
 * Make it easier to select the Theme for the Site Home by providing a new Settings field
 * Remove ability to set Theme for Admin pages since no known Theme provides Admin templates, and because the previous implementation sometimes displayed the incorrect Current Theme in Admin;  this feature may be re-added in a future release, and could even be used to change Settings of Themes that are not currently the Current Theme
@@ -66,6 +73,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 3.0 =
+Improve support for Categories and Archives, and eliminate all known bugs.
 
 = 2.9 =
 Improve Settings fields, correct display of wrong Current Theme in Appearance-Themes Admin panel, and add IIS Support.

@@ -171,15 +171,23 @@ function jr_mt_echo_delete_entry() {
 		if ( $path_id == '' ) {
 			echo 'Site=<a href="' . get_home_url() . '" target="_blank">Home</a>';
 		} else {
-			$p_array = get_posts( array( 'post_type' => 'any', 'include' => array( $path_id ) ) );
-			if ( empty( $p_array ) ) {
-				if ( $opt_array['type'] == 'admin' ) {
-					echo 'Admin=<a href="' . get_home_url() . '/' . $opt_array['rel_url'] . '" target="_blank">'. "$path_id</a>";
-				} else {
-					echo 'Path=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">'. "$path_id</a>";
-				}
+			if ( $opt_array['type'] == 'cat' ) {
+				echo 'Category=<a href="' . get_home_url() . '/?cat=' . $opt_array['id'] . '" target="_blank">' . get_cat_name( $opt_array['id'] ) . '</a>';
 			} else {
-				echo ucfirst( $p_array[0]->post_type ) . '=<a href="' . get_permalink( $path_id ) . '" target="_blank">' . $p_array[0]->post_title . '</a>';
+				if ( $opt_array['type'] == 'archive' ) {
+					echo 'Archive=<a href="' . get_home_url() . '/?m=' . $opt_array['id'] . '" target="_blank">' . $opt_array['id'] . '</a>';
+				} else {
+					$p_array = get_posts( array( 'post_type' => 'any', 'include' => array( $path_id ) ) );
+					if ( empty( $p_array ) ) {
+						if ( $opt_array['type'] == 'admin' ) {
+							echo 'Admin=<a href="' . get_home_url() . '/' . $opt_array['rel_url'] . '" target="_blank">' . "$path_id</a>";
+						} else {
+							echo 'Path=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
+						}
+					} else {
+						echo ucfirst( $p_array[0]->post_type ) . '=<a href="' . get_permalink( $path_id ) . '" target="_blank">' . $p_array[0]->post_title . '</a>';
+					}
+				}
 			}
 		}
 		echo '<br />';

@@ -113,8 +113,16 @@ function jr_mt_query_keywords( $url_query ) {
 			} else {
 				if ( isset( $page ) ) {
 					return array( 'admin' => $page );
-				} else {
-					return NULL;
+					} else {
+					if ( isset( $cat ) ) {
+						return array( 'cat' => $cat );
+					} else {
+						if ( isset( $m ) ) {
+							return array( 'archive' => $m );
+						} else {
+							return NULL;
+						}
+					}
 				}
 			}
 		}

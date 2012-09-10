@@ -63,7 +63,11 @@ function jr_mt_check_all( $type ) {
 		$theme = FALSE;
 	} else {	
 		$settings = get_option( 'jr_mt_settings' );
-		$theme = $settings["all_$type"];
+		if ( isset( $settings["all_$type"] ) ) {
+			$theme = $settings["all_$type"];
+		} else {
+			$theme = '';
+		}
 		if ( empty( $theme ) ) {
 			$theme = FALSE;
 		}
