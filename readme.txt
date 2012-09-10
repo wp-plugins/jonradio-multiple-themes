@@ -45,8 +45,7 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Screenshots ==
 
-1. Plugin's Admin Page when first installed
-2. Plugin's Admin Page with entries added
+1. Screenshots not currently available
 
 == Changelog ==
 
