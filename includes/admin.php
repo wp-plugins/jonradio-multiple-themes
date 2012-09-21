@@ -110,7 +110,8 @@ function jr_mt_admin_init() {
 		'jr_mt_settings_page' 
 	);
 	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_field( 'add_path_id', 'URL of Page or Post', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
+	add_settings_field( 'add_path_id', 'URL of Page, Post, Prefix or other', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
+	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 }
 
 /**
@@ -171,21 +172,25 @@ function jr_mt_echo_delete_entry() {
 		if ( $path_id == '' ) {
 			echo 'Site=<a href="' . get_home_url() . '" target="_blank">Home</a>';
 		} else {
-			if ( $opt_array['type'] == 'cat' ) {
-				echo 'Category=<a href="' . get_home_url() . '/?cat=' . $opt_array['id'] . '" target="_blank">' . get_cat_name( $opt_array['id'] ) . '</a>';
+			if ( $opt_array['type'] == 'prefix' ) {
+				echo 'Prefix=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
 			} else {
-				if ( $opt_array['type'] == 'archive' ) {
-					echo 'Archive=<a href="' . get_home_url() . '/?m=' . $opt_array['id'] . '" target="_blank">' . $opt_array['id'] . '</a>';
+				if ( $opt_array['type'] == 'cat' ) {
+					echo 'Category=<a href="' . get_home_url() . '/?cat=' . $opt_array['id'] . '" target="_blank">' . get_cat_name( $opt_array['id'] ) . '</a>';
 				} else {
-					$p_array = get_posts( array( 'post_type' => 'any', 'include' => array( $path_id ) ) );
-					if ( empty( $p_array ) ) {
-						if ( $opt_array['type'] == 'admin' ) {
-							echo 'Admin=<a href="' . get_home_url() . '/' . $opt_array['rel_url'] . '" target="_blank">' . "$path_id</a>";
-						} else {
-							echo 'Path=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
-						}
+					if ( $opt_array['type'] == 'archive' ) {
+						echo 'Archive=<a href="' . get_home_url() . '/?m=' . $opt_array['id'] . '" target="_blank">' . $opt_array['id'] . '</a>';
 					} else {
-						echo ucfirst( $p_array[0]->post_type ) . '=<a href="' . get_permalink( $path_id ) . '" target="_blank">' . $p_array[0]->post_title . '</a>';
+						$p_array = get_posts( array( 'post_type' => 'any', 'include' => array( $path_id ) ) );
+						if ( empty( $p_array ) ) {
+							if ( $opt_array['type'] == 'admin' ) {
+								echo 'Admin=<a href="' . get_home_url() . '/' . $opt_array['rel_url'] . '" target="_blank">' . "$path_id</a>";
+							} else {
+								echo 'Path=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
+							}
+						} else {
+							echo ucfirst( $p_array[0]->post_type ) . '=<a href="' . get_permalink( $path_id ) . '" target="_blank">' . $p_array[0]->post_title . '</a>';
+						}
 					}
 				}
 			}
@@ -221,11 +226,17 @@ function jr_mt_echo_add_path_id() {
 	?>
 	<input id="add_path_id" name="jr_mt_settings[add_path_id]" type="text" size="100" maxlength="256" value="" />
 	<br />
-	(cut and paste URL of Page or Post here)
+	(cut and paste URL here of Page, Post, Prefix or other)
 	<br />
 	URL must begin with
 	<?php
 	echo trim( get_home_url(), '\ /' ) . '/';
+}
+
+function jr_mt_echo_add_is_prefix() {
+	?>
+	<input type="checkbox" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="true" /> Anything that begins with this URL will use this Theme
+	<?php
 }
 
 function jr_mt_validate_settings( $input ) {
@@ -255,35 +266,56 @@ function jr_mt_validate_settings( $input ) {
 			$validate_url = jr_mt_site_url( $url );
 			if ( $validate_url === TRUE ) {
 				extract( jr_mt_url_to_id( $url ) );
-				if ( $home ) {
-					add_settings_error(
-						'jr_mt_settings',
-						'jr_mt_homeerror',
-						'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
-						'error'
-					);
-				} else {
-					if ( $type == 'admin' ) {
-						add_settings_error(
-							'jr_mt_settings',
-							'jr_mt_adminerror',
-							'Admin Page URLs are not allowed because no known Themes alter the appearance of Admin pages.',
-							'error'
-						);
-					} else {
-						if ( $id === FALSE ) {
-							$key = $page_url;
-						} else {
-							$key = $id;
-						}
-						$ids[$key] = array(
+				if ( isset ( $input['add_is_prefix'] ) && ( $input['add_is_prefix'] == "true" ) ) {
+					if ( parse_url( $url, PHP_URL_QUERY ) === NULL ) {
+						$ids[$rel_url] = array(
 							'theme' => $input['add_theme'],
-							'type' => $type,
+							'type' => 'prefix',
 							'id' => $id,
 							'page_url' => $page_url,
 							'rel_url' => $rel_url,
 							'url' => $url
 							);
+					} else {
+						add_settings_error(
+							'jr_mt_settings',
+							'jr_mt_queryerror',
+							'?key=val&key=val Queries are not supported in a URL Prefix',
+							'error'
+						);		
+					
+					}
+				} else {
+					if ( $home ) {
+						add_settings_error(
+							'jr_mt_settings',
+							'jr_mt_homeerror',
+							'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
+							'error'
+						);
+					} else {
+						if ( $type == 'admin' ) {
+							add_settings_error(
+								'jr_mt_settings',
+								'jr_mt_adminerror',
+								'Admin Page URLs are not allowed because no known Themes alter the appearance of Admin pages.',
+								'error'
+							);
+						} else {
+							if ( $id === FALSE ) {
+								$key = $page_url;
+							} else {
+								$key = $id;
+							}
+							$ids[$key] = array(
+								'theme' => $input['add_theme'],
+								'type' => $type,
+								'id' => $id,
+								'page_url' => $page_url,
+								'rel_url' => $rel_url,
+								'url' => $url
+								);
+						}
 					}
 				}
 			} else {

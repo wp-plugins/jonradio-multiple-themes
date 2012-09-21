@@ -46,30 +46,48 @@ function jr_mt_chosen() {
 		if ( isset( $ids[$page_url] ) ) {
 			$theme = $ids[$page_url]['theme'];
 		} else {
-			$theme = jr_mt_check_all( $type );
+			$theme = jr_mt_check_all( $type, $rel_url, $ids );
 		}
 	} else {
 		if ( isset( $ids[$id] ) ) {
 			$theme = $ids[$id]['theme'];
 		} else {
-			$theme = jr_mt_check_all( $type );
+			$theme = jr_mt_check_all( $type, $rel_url, $ids );
 		}
 	}
 	return $theme;
 }
 
-function jr_mt_check_all( $type ) {
-	if ( $type === FALSE ) {
-		$theme = FALSE;
-	} else {	
-		$settings = get_option( 'jr_mt_settings' );
-		if ( isset( $settings["all_$type"] ) ) {
-			$theme = $settings["all_$type"];
-		} else {
-			$theme = '';
+function jr_mt_check_all( $type, $rel_url, $ids ) {
+	//	Check Prefix entries first, because we already know there is no specific entry for this URL.
+	$theme = '';
+	$match_length = 0;
+	foreach ( $ids as $key => $array ) {
+		if ( $array['type'] == 'prefix' ) {
+			$this_length = strlen( $array['rel_url'] );
+			if ( $array['rel_url'] == substr( $rel_url, 0, $this_length ) ) {
+				//	Need to find longest match if there are multiple prefix matches.
+				if ( $this_length > $match_length ) {
+					$theme = $array['theme'];
+					$match_length = $this_length;
+				}
+			}
 		}
-		if ( empty( $theme ) ) {
+	}
+	//	See if a Prefix entry was found
+	if ( $match_length == 0 ) {
+		if ( $type === FALSE ) {
 			$theme = FALSE;
+		} else {	
+			$settings = get_option( 'jr_mt_settings' );
+			if ( isset( $settings["all_$type"] ) ) {
+				$theme = $settings["all_$type"];
+			} else {
+				$theme = '';
+			}
+			if ( empty( $theme ) ) {
+				$theme = FALSE;
+			}
 		}
 	}
 	return $theme;

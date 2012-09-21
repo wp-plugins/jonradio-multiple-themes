@@ -27,7 +27,7 @@ function jr_mt_current_theme( $option='stylesheet' ) {
  *			bool		home		is URL Site Home?
  */
 function jr_mt_url_to_id( $url_orig ) {
-	//	Some hosts, likely IIS, insert an erroneous "/index.php" into the middle of the Permalink in $_SERVER['REQUEST_URI']
+	//	Some hosts, likely only IIS, insert an erroneous "/index.php" into the middle of the Permalink in $_SERVER['REQUEST_URI']
 	$url = str_replace( '/index.php', '', $url_orig );
 	
 	$trim = '\ /';	// remove leading and trailing backslashes, blanks and forward slashes
@@ -88,7 +88,13 @@ function jr_mt_url_to_id( $url_orig ) {
 		$id = $id[$type];
 		$page_url = FALSE;
 	}
-	return array( 'type' => $type, 'id' => $id, 'page_url' => $page_url, 'rel_url' => $rel_url, 'home' => $is_home );
+	return array(
+		'type' => $type, 
+		'id' => $id, 
+		'page_url' => $page_url, 
+		'rel_url' => $rel_url, 
+		'home' => $is_home
+	);
 }
 
 /**
