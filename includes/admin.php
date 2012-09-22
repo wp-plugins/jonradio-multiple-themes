@@ -328,6 +328,15 @@ function jr_mt_validate_settings( $input ) {
 			}
 		}
 	}
+	$errors = get_settings_errors();
+	if ( empty( $errors ) ) {
+		add_settings_error(
+			'jr_mt_settings',
+			'jr_mt_saved',
+			'Settings Saved',
+			'updated'
+		);	
+	}
 	$valid['ids'] = $ids;
 	return $valid;
 }
