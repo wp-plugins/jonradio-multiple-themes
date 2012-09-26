@@ -14,7 +14,7 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
 
-To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the Plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs with a Query will be matched by the Prefix.
+To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the Plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
 If a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.
 
