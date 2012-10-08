@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme
 Requires at least: 3.4.1
-Tested up to: 3.4.2
-Stable tag: 3.1
+Tested up to: 3.5
+Stable tag: 3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,11 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 3.2 =
+* Correct Problem with P2 Theme is NOT the Active Theme, and its logged on verification at wp-admin/admin-ajax.php?p2ajax=true&action=logged_in_out&_loggedin={nonce}
+* Add "Settings Saved" message to Admin page
+* Tested with WordPress Version 3.5 beta
+
 = 3.1 =
 * Add Support for Prefixes, where all URLs beginning with the specified characters ("Prefix") can be assigned to a specified Theme
 
@@ -78,6 +83,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 3.2 =
+Add Support for P2 Theme and provide "Settings Saved" message
 
 = 3.1 =
 Allow Prefix URLs to be used to specify where a Theme will be displayed

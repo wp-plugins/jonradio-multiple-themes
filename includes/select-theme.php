@@ -34,25 +34,37 @@ function jr_mt_theme( $option ) {
 }
 
 function jr_mt_chosen() {	
-	extract( jr_mt_url_to_id( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) );
-	$settings = get_option( 'jr_mt_settings' );
-	if ( $home ) {
-		if ( trim( $settings['site_home'] ) != '' ) {
-			return $settings['site_home'];
-		}
-	}
-	$ids = $settings['ids'];
-	if ( $id === FALSE ) {
-		if ( isset( $ids[$page_url] ) ) {
-			$theme = $ids[$page_url]['theme'];
+	if ( is_admin() ) {
+		//	Admin panel
+		//	return P2 theme if p2ajax= is present; current theme otherwise
+		parse_str( $_SERVER['QUERY_STRING'], $keywords );
+		if ( isset( $keywords['p2ajax'] ) && array_key_exists( 'p2', wp_get_themes() ) ) {
+			$theme = 'p2';
 		} else {
-			$theme = jr_mt_check_all( $type, $rel_url, $ids );
+			$theme = jr_mt_current_theme();
 		}
 	} else {
-		if ( isset( $ids[$id] ) ) {
-			$theme = $ids[$id]['theme'];
+		//	Non-Admin page, i.e. - Public Site, etc.
+		extract( jr_mt_url_to_id( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) );
+		$settings = get_option( 'jr_mt_settings' );
+		if ( $home ) {
+			if ( trim( $settings['site_home'] ) != '' ) {
+				return $settings['site_home'];
+			}
+		}
+		$ids = $settings['ids'];
+		if ( $id === FALSE ) {
+			if ( isset( $ids[$page_url] ) ) {
+				$theme = $ids[$page_url]['theme'];
+			} else {
+				$theme = jr_mt_check_all( $type, $rel_url, $ids );
+			}
 		} else {
-			$theme = jr_mt_check_all( $type, $rel_url, $ids );
+			if ( isset( $ids[$id] ) ) {
+				$theme = $ids[$id]['theme'];
+			} else {
+				$theme = jr_mt_check_all( $type, $rel_url, $ids );
+			}
 		}
 	}
 	return $theme;

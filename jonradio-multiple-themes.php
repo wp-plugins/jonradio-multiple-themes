@@ -155,16 +155,16 @@ function jr_mt_version_check() {
 
 require_once( jr_mt_path() . 'includes/functions.php' );
 
+//	Do not try and select a Theme for Admin Pages
+//	Check that template and stylesheet have the same value for the Current Theme, as Plugin expects this to be true.
+global $jr_mt_options_cache;
+if ( $jr_mt_options_cache['template'] == $jr_mt_options_cache['stylesheet'] ) {
+	require_once( jr_mt_path() . 'includes/select-theme.php' );
+}
+
 if ( is_admin() ) {
 	//	Admin panel
 	require_once( jr_mt_path() . 'includes/admin.php' );
-} else {
-	//	Do not try and select a Theme for Admin Pages
-	//	Check that template and stylesheet have the same value for the Current Theme, as Plugin expects this to be true.
-	global $jr_mt_options_cache;
-	if ( $jr_mt_options_cache['template'] == $jr_mt_options_cache['stylesheet'] ) {
-		require_once( jr_mt_path() . 'includes/select-theme.php' );
-	}
 }
 
 /*
