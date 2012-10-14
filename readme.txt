@@ -14,6 +14,19 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
 
+**Using Sidebars and Widgets?**:  See the Frequently-Asked Questions tab for important information on the use of Sidebars and Widgets on Themes other than the Active Theme.
+
+Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
+
+* Divide your site into Sections, each with its own unique look
+* Style individual Pages, Posts, or other elements (Site Home, Category main page, Archive main page) with a different Theme
+* Select a unique Theme for all Pages, Posts, Attachments, Category pages or Archive pages
+* Supports Multiple Stylesheets for Accessibility and other purposes (create one Child Theme for each Stylesheet)
+* Test a new Theme on one or more Pages or Posts
+* Convert to a new Theme a Page or Post at a time
+* Host multiple mini-web sites on your WordPress site, each with a different Theme
+* When a larger version of an image attachment is displayed, for example, when clicking on a gallery image thumbnail, use a different theme to display it, for one or all images attached to a Page or Post
+
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the Plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
 If a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.
@@ -30,8 +43,27 @@ This section describes how to install the plugin and get it working.
 1. Activate the plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
 1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 1. Select Themes to be used on the Plugin's "Multiple Themes plugin" page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page.
+1. If you are using Sidebars/Widgets, see the Frequently-Asked Questions tab for important information.
 
 == Frequently Asked Questions ==
+
+= How do Widgets and Sidebars work with Multiple Themes? =
+
+Sidebars and Widgets were designed by WordPress for a single Active Theme.  Design work is currently underway to fully support Sidebars and Widgets for each Theme used with this plugin, jonradio Multiple Themes.  Until that work is completed, in a future version of this plugin, the following Workaround has proven itself useful:
+
+1. Go to Appearance-Widgets and be sure the Active Theme is set up the way you want it to be 
+1. Deactivate jonradio Multiple Themes 
+1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
+1. Activate the Theme Test Drive plugin
+1. Go to Appearance-Theme Test Drive 
+1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
+1. Push the Enable Theme Drive button at the bottom 
+1. Go to Appearance-Widgets 
+1. Set up the Sidebars and Widgets the way you want them for this alternate Theme 
+1. If you have more than one alternate Theme with sidebars, repeat Steps 5-9 for each alternate Theme 
+1. Deactivate the Theme Test Drive plugin 
+1. Activate jonradio Multiple Themes 
+1. Both the alternate and active Themes should now display sidebars and widgets properly, i.e. – the way you set them up in Appearances-Widgets, in jonradio Multiple Themes
 
 = What happens when I change Permalinks? =
 
