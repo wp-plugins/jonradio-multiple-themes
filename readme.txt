@@ -47,7 +47,7 @@ This section describes how to install the plugin and get it working.
 
 == Frequently Asked Questions ==
 
-= How do I change Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
+= How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
 
 Options for all Themes, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
