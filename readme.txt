@@ -14,7 +14,7 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
 
-**Using Sidebars and Widgets?**:  See the FAQ (Frequently-Asked Questions) tab for important information on the use of Sidebars and Widgets on Themes other than the Active Theme.
+**Changing Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
 Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
 
@@ -43,27 +43,37 @@ This section describes how to install the plugin and get it working.
 1. Activate the plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
 1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 1. Select Themes to be used on the Plugin's "Multiple Themes plugin" page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page.
-1. If you are using Sidebars/Widgets, see the FAQ (Frequently-Asked Questions) tab for important information.
+1. If you need to change Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
 
 == Frequently Asked Questions ==
 
-= How do Widgets and Sidebars work with Multiple Themes? =
+= How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
 
-Sidebars and Widgets were designed by WordPress for a single Active Theme.  Design work is currently underway to fully support Sidebars and Widgets for each Theme used with this plugin, jonradio Multiple Themes.  Until that work is completed, in a future version of this plugin, the following Workaround has proven itself useful:
+Options for all Themes, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
-1. Go to Appearance-Widgets and be sure the Active Theme is set up the way you want it to be 
+For the Current Theme, there are no issues, as WordPress provides this functionality without any intervention by plugins.
+
+However, to modify Options for Active Themes that are *not* the Current Theme, the jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Options to be set "as if" it were the Current Theme.
+
+
+Design work is currently underway to fully support Theme Options for each Theme used with the jonradio Multiple Themes plugin.  Until that work is completed, in a future version of this plugin, the following Workaround using the Theme Test Drive plugin is being provided:
+
+
 1. Deactivate jonradio Multiple Themes 
 1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
 1. Activate the Theme Test Drive plugin
 1. Go to Appearance-Theme Test Drive 
 1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
 1. Push the Enable Theme Drive button at the bottom 
-1. Go to Appearance-Widgets 
-1. Set up the Sidebars and Widgets the way you want them for this alternate Theme 
-1. If you have more than one alternate Theme with sidebars, repeat Steps 5-9 for each alternate Theme 
+1. Go to the WordPress Admin panel's Appearance menu (left sidebar) 
+1. Make your changes to the Theme Options, including Widgets, Sidebars, Menus, Background, Header and other Customizations for this alternate Theme (which will appear as if it were the Current Theme)
+
+
+1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
 1. Deactivate the Theme Test Drive plugin 
-1. Activate jonradio Multiple Themes 
-1. Both the alternate and active Themes should now display sidebars and widgets properly, just as you set them up in Appearances-Widgets, in jonradio Multiple Themes
+1. Activate jonradio Multiple Themes
+1. Changes to the Options for the Current Theme can now be made normally, just as you would without either plugin
+1. Both the alternate and Current Themes should now display all Theme options properly when selected through the jonradio Multiple Themes plugin
 
 = What happens when I change Permalinks? =
 
@@ -85,7 +95,7 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 == Changelog ==
 
 = 3.2 =
-* Correct Problem with P2 Theme is NOT the Active Theme, and its logged on verification at wp-admin/admin-ajax.php?p2ajax=true&action=logged_in_out&_loggedin={nonce}
+* Correct Problem with P2 Theme, and its logged on verification at wp-admin/admin-ajax.php?p2ajax=true&action=logged_in_out&_loggedin={nonce}
 * Add "Settings Saved" message to Admin page
 * Tested with WordPress Version 3.5 beta
 
