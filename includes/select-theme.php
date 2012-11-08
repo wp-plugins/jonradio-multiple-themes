@@ -23,9 +23,7 @@ function jr_mt_theme( $option ) {
 	if ( !isset( $jr_mt_theme[$option] ) ) {	
 		$theme = jr_mt_chosen();
 		if ( $theme === FALSE ) {
-			// $jr_mt_theme[$option] = jr_mt_current_theme( $option );  if stylesheet and template are ever different
-			$jr_mt_theme['template'] = jr_mt_current_theme();
-			$jr_mt_theme['stylesheet'] = jr_mt_current_theme();
+			$jr_mt_theme[$option] = jr_mt_current_theme( $option );  // in case stylesheet and template name differ
 		} else {
 			$jr_mt_theme[$option] = $theme;
 		}

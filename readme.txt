@@ -55,9 +55,7 @@ For the Current Theme, there are no issues, as WordPress provides this functiona
 
 However, to modify Options for Active Themes that are *not* the Current Theme, the jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Options to be set "as if" it were the Current Theme.
 
-
 Design work is currently underway to fully support Theme Options for each Theme used with the jonradio Multiple Themes plugin.  Until that work is completed, in a future version of this plugin, the following Workaround using the Theme Test Drive plugin is being provided:
-
 
 1. Deactivate jonradio Multiple Themes 
 1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
@@ -67,8 +65,6 @@ Design work is currently underway to fully support Theme Options for each Theme 
 1. Push the Enable Theme Drive button at the bottom 
 1. Go to the WordPress Admin panel's Appearance menu (left sidebar) 
 1. Make your changes to the Theme Options, including Widgets, Sidebars, Menus, Background, Header and other Customizations for this alternate Theme (which will appear as if it were the Current Theme)
-
-
 1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
 1. Deactivate the Theme Test Drive plugin 
 1. Activate jonradio Multiple Themes
@@ -93,6 +89,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 2. Plugin's Admin Page, adding entries
 
 == Changelog ==
+
+= 3.3 =
+* Support Child Themes and any other situation where stylesheet and template names are not the same
 
 = 3.2 =
 * Correct Problem with P2 Theme, and its logged on verification at wp-admin/admin-ajax.php?p2ajax=true&action=logged_in_out&_loggedin={nonce}
@@ -125,6 +124,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 3.3 =
+Add Support for Child Themes and other any situation where Stylesheet Name differs from Template Name
 
 = 3.2 =
 Add Support for P2 Theme and provide "Settings Saved" message
