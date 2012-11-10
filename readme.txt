@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4.1
 Tested up to: 3.5
-Stable tag: 3.2
+Stable tag: 3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,7 @@ Think what you could do if you could easily use more than one Theme on your Word
 * Divide your site into Sections, each with its own unique look
 * Style individual Pages, Posts, or other elements (Site Home, Category main page, Archive main page) with a different Theme
 * Select a unique Theme for all Pages, Posts, Attachments, Category pages or Archive pages
+* Make slight variations to a Theme, using Child Themes, for one or more Pages, Posts or other elements (Site Home, Category main page, Archive main page)
 * Supports Multiple Stylesheets for Accessibility and other purposes (create one Child Theme for each Stylesheet)
 * Test a new Theme on one or more Pages or Posts
 * Convert to a new Theme a Page or Post at a time
@@ -126,7 +127,7 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 == Upgrade Notice ==
 
 = 3.3 =
-Add Support for Child Themes and other any situation where Stylesheet Name differs from Template Name
+Remove Restriction that Stylesheet Name must match Template Name, which it does not with Child Themes 
 
 = 3.2 =
 Add Support for P2 Theme and provide "Settings Saved" message
