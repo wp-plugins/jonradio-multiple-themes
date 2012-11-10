@@ -31,39 +31,31 @@ function jr_mt_settings_page() {
 	
 	$theme = wp_get_theme()->Name;
 	global $jr_mt_options_cache;
-	// if ( $jr_mt_options_cache['template'] == $jr_mt_options_cache['stylesheet'] ) {
-		?>
-		<p>This plugin allows you to selectively change the Theme you have selected as your <b>Current Theme</b> in <b>Appearance-Themes</b> on the Admin panels.
-		You can choose from any of the <b>Available Themes</b> listed on the Appearance-Themes Admin panel for:
-		<ul>
-		<li> &raquo; All Pages</li>
-		<li> &raquo; All Posts</li>
-		<li> &raquo; The Site Home</li>
-		<li> &raquo; A Specific Page</li>
-		<li> &raquo; A Specific Post</li>
-		<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
-		</ul>
-		<?php
-		if ( function_exists('is_multisite') && is_multisite() ) {
-			echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
-		}
-		echo '</p>';
-		echo '<p>';
-		echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
-		echo '</p>';
-		echo '<form action="options.php" method="POST">';
-		
-		//	Plugin Settings are displayed and entered here:
-		settings_fields( 'jr_mt_settings' );
-		do_settings_sections( 'jr_mt_settings_page' );
-		echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
-	/* } else {
-		echo '<p>Please report this problem to the Plugin Author:<br />';
-		echo "Stylesheet and Template names do not match for Theme $theme: " . $jr_mt_options_cache['stylesheet'] . ' v.s. ' . $jr_mt_options_cache['template'];
-		global $jr_mt_plugin_data;
-		echo '</p><p><a href="' . $jr_mt_plugin_data['AuthorURI'] . '"' . ">Click here</a> to get to The Plugin Author's page where you can click Contact Us in the menu bar.</p>";
+	?>
+	<p>This plugin allows you to selectively change the Theme you have selected as your <b>Current Theme</b> in <b>Appearance-Themes</b> on the Admin panels.
+	You can choose from any of the <b>Available Themes</b> listed on the Appearance-Themes Admin panel for:
+	<ul>
+	<li> &raquo; All Pages</li>
+	<li> &raquo; All Posts</li>
+	<li> &raquo; The Site Home</li>
+	<li> &raquo; A Specific Page</li>
+	<li> &raquo; A Specific Post</li>
+	<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
+	</ul>
+	<?php
+	if ( function_exists('is_multisite') && is_multisite() ) {
+		echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
 	}
-	*/
+	echo '</p>';
+	echo '<p>';
+	echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
+	echo '</p>';
+	echo '<form action="options.php" method="POST">';
+	
+	//	Plugin Settings are displayed and entered here:
+	settings_fields( 'jr_mt_settings' );
+	do_settings_sections( 'jr_mt_settings_page' );
+	echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
 }
 
 add_action( 'admin_init', 'jr_mt_admin_init' );
@@ -363,6 +355,7 @@ function jr_mt_plugin_action_links( $links ) {
 	return $links;
 }
 
+//	$theme_name is the name of the Theme's folder within the Theme directory
 function jr_mt_themes_field( $field_name, $theme_name, $setting, $excl_current_theme ) {
 	echo "<select id='$field_name' name='$setting" . "[$field_name]' size='1'>";
 	if ( empty( $theme_name ) ) {
@@ -373,7 +366,7 @@ function jr_mt_themes_field( $field_name, $theme_name, $setting, $excl_current_t
 	echo "<option value='' $selected></option>";
 	foreach ( wp_get_themes() as $folder => $theme_obj ) {
 		if ( $excl_current_theme ) {
-			if ( jr_mt_current_theme() == $folder ) {
+			if ( ( jr_mt_current_theme( 'stylesheet' ) == $theme_obj['stylesheet'] ) && ( jr_mt_current_theme( 'template' ) == $theme_obj['template'] ) ) {
 				//	Skip the Current Theme
 				continue;
 			}

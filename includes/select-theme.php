@@ -15,6 +15,15 @@ function jr_mt_template() {
 function jr_mt_theme( $option ) {
 	/*	The hooks that (indirectly) call this function are called repeatedly by WordPress, 
 		so do the checking once and store the values in a global array.
+		$jt_mt_theme['stylesheet'] - Stylesheet Name of Theme chosen
+		$jt_mt_theme['template'] - Template Name of Theme chosen
+		
+		Very important note:
+			- get_option( 'jr_mt_settings' ) ['ids']['theme'] is the Theme Subdirectory Name,
+			as opposed to the Template or Stylesheet Name for the Theme.
+			- likewise, the variable local variable $theme
+		These three different values for each Theme must be clearly separated, as all three usually
+		match, but do not have to, e.g. - Child Themes.
 	*/
 	global $jr_mt_theme;
 	if ( !isset( $jr_mt_theme ) ) {
@@ -23,14 +32,19 @@ function jr_mt_theme( $option ) {
 	if ( !isset( $jr_mt_theme[$option] ) ) {	
 		$theme = jr_mt_chosen();
 		if ( $theme === FALSE ) {
-			$jr_mt_theme[$option] = jr_mt_current_theme( $option );  // in case stylesheet and template name differ
+			//	Get both at once, to save a repeat of this logic later:
+			$jr_mt_theme['stylesheet'] = jr_mt_current_theme( 'stylesheet' );
+			$jr_mt_theme['template'] = jr_mt_current_theme( 'template' );
 		} else {
-			$jr_mt_theme[$option] = $theme;
+			$themes = wp_get_themes();
+			$jr_mt_theme['stylesheet'] = $themes[$theme]->stylesheet;
+			$jr_mt_theme['template'] = $themes[$theme]->template;
 		}
 	}
 	return $jr_mt_theme[$option];
 }
 
+//	Returns FALSE for Current Theme
 function jr_mt_chosen() {	
 	if ( is_admin() ) {
 		//	Admin panel
@@ -39,7 +53,7 @@ function jr_mt_chosen() {
 		if ( isset( $keywords['p2ajax'] ) && array_key_exists( 'p2', wp_get_themes() ) ) {
 			$theme = 'p2';
 		} else {
-			$theme = jr_mt_current_theme();
+			$theme = FALSE;	// Current Theme
 		}
 	} else {
 		//	Non-Admin page, i.e. - Public Site, etc.
@@ -53,13 +67,13 @@ function jr_mt_chosen() {
 		$ids = $settings['ids'];
 		if ( $id === FALSE ) {
 			if ( isset( $ids[$page_url] ) ) {
-				$theme = $ids[$page_url]['theme'];
+				$theme = $ids[$page_url][$option];
 			} else {
 				$theme = jr_mt_check_all( $type, $rel_url, $ids );
 			}
 		} else {
 			if ( isset( $ids[$id] ) ) {
-				$theme = $ids[$id]['theme'];
+				$theme = $ids[$id][$option];
 			} else {
 				$theme = jr_mt_check_all( $type, $rel_url, $ids );
 			}
@@ -68,6 +82,7 @@ function jr_mt_chosen() {
 	return $theme;
 }
 
+//	Returns FALSE for Current Theme
 function jr_mt_check_all( $type, $rel_url, $ids ) {
 	//	Check Prefix entries first, because we already know there is no specific entry for this URL.
 	$theme = '';
@@ -87,7 +102,7 @@ function jr_mt_check_all( $type, $rel_url, $ids ) {
 	//	See if a Prefix entry was found
 	if ( $match_length == 0 ) {
 		if ( $type === FALSE ) {
-			$theme = FALSE;
+			$theme = FALSE;	// Current Theme
 		} else {	
 			$settings = get_option( 'jr_mt_settings' );
 			if ( isset( $settings["all_$type"] ) ) {
@@ -96,7 +111,7 @@ function jr_mt_check_all( $type, $rel_url, $ids ) {
 				$theme = '';
 			}
 			if ( empty( $theme ) ) {
-				$theme = FALSE;
+				$theme = FALSE;	// Current Theme
 			}
 		}
 	}

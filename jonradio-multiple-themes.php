@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 3.3
+Version: 3.2.9
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -142,7 +142,7 @@ function jr_mt_version_check() {
 						unset( $ids[$key] );
 					}
 				}
-			}
+			}		
 			$settings['ids'] = $ids;
 			update_option( 'jr_mt_settings', $settings );
 			$internal_settings['version'] = $jr_mt_plugin_data['Version'];
@@ -152,13 +152,7 @@ function jr_mt_version_check() {
 }
 
 require_once( jr_mt_path() . 'includes/functions.php' );
-
-//	Do not try and select a Theme for Admin Pages
-//	Check that template and stylesheet have the same value for the Current Theme, as Plugin expects this to be true.
-global $jr_mt_options_cache;
-if ( $jr_mt_options_cache['template'] == $jr_mt_options_cache['stylesheet'] ) {
-	require_once( jr_mt_path() . 'includes/select-theme.php' );
-}
+require_once( jr_mt_path() . 'includes/select-theme.php' );
 
 if ( is_admin() ) {
 	//	Admin panel

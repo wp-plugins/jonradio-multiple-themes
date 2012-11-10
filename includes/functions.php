@@ -4,11 +4,10 @@
  *
  * Obtains Folder Name of Current Theme, from 'template' option of wp_load_alloptions().
  *
- * @param	string		$option		optional parameter that is not currently used,
- *									but may in the future select current template or stylesheet
+ * @param	string		$option		parameter to select current template or stylesheet
  * @return	string		type		Folder Name of Current Theme
  */
-function jr_mt_current_theme( $option='stylesheet' ) {
+function jr_mt_current_theme( $option ) {
 	global $jr_mt_options_cache;
 	return $jr_mt_options_cache[$option];
 }
