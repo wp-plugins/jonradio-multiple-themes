@@ -52,11 +52,13 @@ This section describes how to install the plugin and get it working.
 
 Options for all Themes, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
-For the Current Theme, there are no issues, as WordPress provides this functionality without any intervention by plugins.
+For the Current Theme, there are no issues, as WordPress provides this functionality without any intervention by plugins. 
 
 However, to modify Options for Active Themes that are *not* the Current Theme, the jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Options to be set "as if" it were the Current Theme.
 
-Design work is currently underway to fully support Theme Options for each Theme used with the jonradio Multiple Themes plugin.  Until that work is completed, in a future version of this plugin, the following Workaround using the Theme Test Drive plugin is being provided:
+**MENUS - this approach only allows Menus to be set for one Theme.  Using this method to assign one or more menus to a Theme will unassign menus for all other Themes.**
+
+Design work is currently underway to fully support Theme Options, including Menus, for each Theme used with the jonradio Multiple Themes plugin.  Until that work is completed, in a future version of this plugin, the following Workaround using the Theme Test Drive plugin is being provided:
 
 1. Deactivate jonradio Multiple Themes 
 1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
@@ -65,7 +67,7 @@ Design work is currently underway to fully support Theme Options for each Theme 
 1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
 1. Push the Enable Theme Drive button at the bottom 
 1. Go to the WordPress Admin panel's Appearance menu (left sidebar) 
-1. Make your changes to the Theme Options, including Widgets, Sidebars, Menus, Background, Header and other Customizations for this alternate Theme (which will appear as if it were the Current Theme)
+1. Make your changes to the Theme Options, including Widgets, Sidebars, Menus (see note above about Menus), Background, Header and other Customizations for this alternate Theme (which will appear as if it were the Current Theme)
 1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
 1. Deactivate the Theme Test Drive plugin 
 1. Activate jonradio Multiple Themes
