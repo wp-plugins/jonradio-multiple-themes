@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4.1
 Tested up to: 3.5
-Stable tag: 3.2
+Stable tag: 3.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,6 +91,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 3.3.1 =
+* Fix White Screen of Death on a Page selected by plugin
+
 = 3.3 =
 * Support Child Themes and any other situation where stylesheet and template names are not the same
 
@@ -125,6 +128,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 3.3.1 =
+Fix White Screen of Death on a Page, Post or other element selected by plugin
 
 = 3.3 =
 Remove Restriction that Stylesheet Name must match Template Name, which it does not with Child Themes 

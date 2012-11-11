@@ -67,13 +67,13 @@ function jr_mt_chosen() {
 		$ids = $settings['ids'];
 		if ( $id === FALSE ) {
 			if ( isset( $ids[$page_url] ) ) {
-				$theme = $ids[$page_url][$option];
+				$theme = $ids[$page_url]['theme'];
 			} else {
 				$theme = jr_mt_check_all( $type, $rel_url, $ids );
 			}
 		} else {
 			if ( isset( $ids[$id] ) ) {
-				$theme = $ids[$id][$option];
+				$theme = $ids[$id]['theme'];
 			} else {
 				$theme = jr_mt_check_all( $type, $rel_url, $ids );
 			}
