@@ -14,8 +14,6 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
 
-**Changing Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
-
 Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
 
 * Divide your site into Sections, each with its own unique look
@@ -27,6 +25,10 @@ Think what you could do if you could easily use more than one Theme on your Word
 * Convert to a new Theme a Page or Post at a time
 * Host multiple mini-web sites on your WordPress site, each with a different Theme
 * When a larger version of an image attachment is displayed, for example, when clicking on a gallery image thumbnail, use a different theme to display it, for one or all images attached to a Page or Post
+
+**Use with other Plugins**:  **BuddyPress** and Theme Test Drive plugins must both be Deactivated when jonradio Multiple Themes is Activated
+
+**Changing Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the Plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
