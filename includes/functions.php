@@ -52,7 +52,7 @@ function jr_mt_url_to_id( $url_orig ) {
 			$id = FALSE;
 			$type = 'admin';
 		} else {	
-			//	Check for home page (get_page_by_path() does not work for home page)
+			//	Check for home page (url_to_postid() does not work for home page)
 			if ( empty( $page_url ) ) {
 				$is_home = TRUE;
 				$id = get_option('page_on_front');
@@ -64,20 +64,18 @@ function jr_mt_url_to_id( $url_orig ) {
 					$type = 'pages';
 				}
 			} else {
-				$page = get_page_by_path( $page_url );
-				if ( $page === NULL ) {
-					//	get_page_by_path() returns NULL for Posts, Home Page, Admin, etc.
-					//	So, check for Posts:
-					$post = get_posts( array( 'name' => $page_url ) );
-					if ( empty( $post ) ) {
-						$id = FALSE;
-					} else {
-						$id = $post[0]->ID;
-						$type = 'posts';
-					}
+				$id = url_to_postid( $url );
+				if ( $id == 0 ) {
+					$id = FALSE;
 				} else {
-					$id = $page->ID;
-					$type = 'pages';
+					$post_obj = get_post( $id );
+					if ( $post_obj->post_type == 'page' ) {
+						$type = 'pages';
+					} else {
+						if ( $post_obj->post_type == 'post' ) {
+							$type = 'posts';
+						}
+					}
 				}
 			}
 		}
