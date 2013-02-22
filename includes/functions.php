@@ -64,6 +64,10 @@ function jr_mt_url_to_id( $url_orig ) {
 					$type = 'pages';
 				}
 			} else {
+				global $wp_rewrite;
+				if ( is_null( $wp_rewrite ) ) {
+					$GLOBALS['wp_rewrite'] = new WP_Rewrite();
+				}
 				$id = url_to_postid( $url );
 				if ( $id == 0 ) {
 					$id = FALSE;

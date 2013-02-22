@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4.1
 Tested up to: 3.5.1
-Stable tag: 4
+Stable tag: 4.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.0.1 =
+* Prevent Fatal Error by initializing global $wp_rewrite
+
 = 4 =
 * Discovered url_to_postid() function, to address situations where Slug differed from Permalink, such as Posts with Year/Month folders
 
@@ -135,6 +138,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.0.1 =
+Fix "Fatal error: Call to a member function wp_rewrite_rules() on a non-object in domain.com/wp-includes/rewrite.php on line 294"
 
 = 4 =
 Fix Posts not working in some Permalink setups, most notably Year/Month
