@@ -25,11 +25,12 @@ function jr_mt_theme( $option ) {
 		These three different values for each Theme must be clearly separated, as all three usually
 		match, but do not have to, e.g. - Child Themes.
 	*/
+	$GLOBALS['jr_mt_cache'] = TRUE;
 	global $jr_mt_theme;
 	if ( !isset( $jr_mt_theme ) ) {
 		$jr_mt_theme = array();
 	}
-	if ( !isset( $jr_mt_theme[$option] ) ) {	
+	if ( !isset( $jr_mt_theme[$option] ) ) {
 		$theme = jr_mt_chosen();
 		if ( $theme === FALSE ) {
 			//	Get both at once, to save a repeat of this logic later:
@@ -41,7 +42,12 @@ function jr_mt_theme( $option ) {
 			$jr_mt_theme['template'] = $themes[$theme]->template;
 		}
 	}
-	return $jr_mt_theme[$option];
+	$theme = $jr_mt_theme[$option];
+	global $jr_mt_cache;
+	if ( $jr_mt_cache === FALSE ) {
+		unset( $jr_mt_theme[$option] );
+	}
+	return $theme;
 }
 
 //	Returns FALSE for Current Theme

@@ -68,6 +68,16 @@ function jr_mt_url_to_id( $url_orig ) {
 				if ( is_null( $wp_rewrite ) ) {
 					$GLOBALS['wp_rewrite'] = new WP_Rewrite();
 				}
+				global $wp;
+				if ( is_null( $wp ) ) {
+					$GLOBALS['jr_mt_cache'] = FALSE;
+					$wp = (object) array( 'public_query_vars' => array() );
+				} else {
+					if ( !isset( $wp->public_query_vars ) ) {
+						$GLOBALS['jr_mt_cache'] = FALSE;
+						$wp->public_query_vars = array();
+					}
+				}
 				$id = url_to_postid( $url );
 				if ( $id == 0 ) {
 					$id = FALSE;
