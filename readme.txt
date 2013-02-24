@@ -52,15 +52,30 @@ This section describes how to install the plugin and get it working.
 
 = How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
 
-Options for all Themes, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
+For the Current Theme, nothing changes when using this Plugin.  Options for the Current Theme, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
-For the Current Theme, there are no issues, as WordPress provides this functionality without any intervention by plugins. 
+It is more difficult to modify Options for Active Themes that are *not* the Current Theme.  We hope to build this functionality into this plugin in a future Version, but it is not clear just how practical that is, so the best that can be said is:  Maybe.
 
-However, to modify Options for Active Themes that are *not* the Current Theme, the jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Options to be set "as if" it were the Current Theme.
+For now, there are two approaches.  Except for Widgets, the first approach is the most likely to give you success.  Menus, on the other hand, really work well with the first approach, and are severely restricted with the second method.
 
-**MENUS - this approach only allows Menus to be set for one Theme.  Using this method to assign one or more menus to a Theme will unassign menus for all other Themes.**
+**Method #1:**
 
-Design work is currently underway to fully support Theme Options, including Menus, for each Theme used with the jonradio Multiple Themes plugin.  Until that work is completed, in a future version of this plugin, the following Workaround using the Theme Test Drive plugin is being provided:
+Set the Theme Options with Live Preview.
+
+Note:  Widgets cannot be placed using this Method.
+
+1. Go to Appearance-Themes-Live Preview in the Admin panels.
+1. Use the right sidebar to modify the Theme Options.  Note that "Navigation" will not appear until a Custom Menu has been defined in Appearance-Menus.  Navigation-Primary Navigation is where you would set the custom menu to be used for the Theme you are currently previewing.
+1. Click the Save & Activate button.
+1. Go immediately to Appearance-Themes to reactivate the Current Theme.
+
+**Method #2:**
+
+Use the Theme Test Drive plugin.
+
+Note:  this approach only allows Menus to be set for one Theme.  Using this method to assign one or more menus to a Theme will unassign menus for all other Themes.
+
+The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Options to be set "as if" it were the Current Theme.
 
 1. Deactivate jonradio Multiple Themes 
 1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
