@@ -58,6 +58,8 @@ It is more difficult to modify Options for Active Themes that are *not* the Curr
 
 For now, there are two approaches.  Except for Widgets, the first approach is the most likely to give you success.  Menus, on the other hand, really work well with the first approach, and are severely restricted with the second method.
 
+**WARNING**:  So far, we have not received any reports of, nor have we tested, using both Method #1 and #2 on the same WordPress site.  Use Caution if you plan to do so, as we cannot predict the results. 
+
 **Method #1:**
 
 Set the Theme Options with Live Preview.
