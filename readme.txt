@@ -3,7 +3,7 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4.1
-Tested up to: 3.5.1
+Tested up to: 3.6
 Stable tag: 4.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -28,7 +28,7 @@ Think what you could do if you could easily use more than one Theme on your Word
 
 **Use with other Plugins**:  **BuddyPress** and Theme Test Drive plugins must both be Deactivated when jonradio Multiple Themes is Activated
 
-**Changing Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
+**Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the Plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
@@ -46,11 +46,19 @@ This section describes how to install the plugin and get it working.
 1. Activate the plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
 1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 1. Select Themes to be used on the Plugin's "Multiple Themes plugin" page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page.
-1. If you need to change Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
+1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
 
 == Frequently Asked Questions ==
 
+= Will this plugin work with Paid Themes? =
+
+Probably, and we do encourage you to contact us if you run into problems as the problem may not be unique to the Paid Theme.  In some situations, where the problem is specific to the Paid Theme, Support is next to impossible unless you can get the author(s) of the Paid Theme to provide a legal copy of the Theme(s).  We are willing to sign a non-disclosure agreement.
+
+As you might guess, the cost of purchasing a license for all Paid Themes for testing purposes is prohibitive for an Open Source plugin such as this one.  To date, our attempts to obtain courtesy copies from Paid Theme authors have failed, our inquiries typically being ignored.  You, as the Customer, have already paid for Support when you purchased a license to the Paid Theme, so you are much more likely to get a positive response from the Paid Theme author than we are.
+
 = How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
+
+**NOTE**:  See the next FAQ for information on Templates.
 
 For the Current Theme, nothing changes when using this Plugin.  Options for the Current Theme, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
@@ -87,6 +95,57 @@ The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, an
 1. Push the Enable Theme Drive button at the bottom 
 1. Go to the WordPress Admin panel's Appearance menu (left sidebar) 
 1. Make your changes to the Theme Options, including Widgets, Sidebars, Menus (see note above about Menus), Background, Header and other Customizations for this alternate Theme (which will appear as if it were the Current Theme)
+1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
+1. Deactivate the Theme Test Drive plugin 
+1. Activate jonradio Multiple Themes
+1. Changes to the Options for the Current Theme can now be made normally, just as you would without either plugin
+1. Both the alternate and Current Themes should now display all Theme options properly when selected through the jonradio Multiple Themes plugin
+
+= How do I change the Template for a specific Page or Post? =
+
+For the Current Theme, nothing changes when using this Plugin.  Select an alternate Template from the drop-down list in the Template field of the Page Attributes section of the Add New Page, Edit Page, Add New Post or Edit Post page of the Admin panels.  Or the Template field in Quick Edit.
+
+It is more difficult to change Templates for Pages or Posts defined with this Plugin to use Active Themes that are *not* the Current Theme.  We hope to build this functionality into this plugin in a future Version.
+
+Use the Theme Test Drive plugin.  The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Template to be set for each Page or Post using that Theme "as if" it were the Current Theme.
+
+1. Deactivate jonradio Multiple Themes 
+1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
+1. Activate the Theme Test Drive plugin
+1. Go to Appearance-Theme Test Drive 
+1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
+1. Push the Enable Theme Drive button at the bottom 
+1. Go to the WordPress Admin panel's Page or Post menu (left sidebar) 
+1. Make your changes to the Template field of each Page and/or Post that has been selected for this alternate Theme AND requires a non-default Template 
+1. If you have more than one alternate Theme with Templates you wish to change, repeat Steps 4-8 for each alternate Theme 
+1. Deactivate the Theme Test Drive plugin 
+1. Activate jonradio Multiple Themes
+1. Changes to the Templates for Pages and Posts using the Current Theme can now be made normally, just as you would without either plugin
+1. Both the alternate and Current Themes should now display all Templates properly when selected through the jonradio Multiple Themes plugin
+
+= How do I Edit a Theme? =
+
+WordPress includes a built-in Theme Editor.  Select Editor in the Admin panel's Appearance menu items on the left sidebar.
+
+By default, the style.css file of the Current Theme is displayed.  You can edit other Themes by selecting them in the "Select theme to edit" field and clicking the Select button.
+
+Alternatively, you can edit any Theme on your own computer.  If your computer runs Windows, NotePad++ and FileZilla run very well together, using FileZilla's View/Edit feature to provide a Theme Editor with syntax highlighting and other advanced features.
+
+If one or more of the Active Themes have their own Theme Editor or other type of Theme Options panels, such as Elegant's epanel, please read the next FAQ.
+
+= How do I use Elegant's epanel? =
+
+Unfortunately, it is not practical to fully support Paid Themes with this plugin, because that would require buying each Theme.  Elegant is a paid Theme with a Theme Editor or Theme Options replacement called epanel that only allows changes to the Current Theme.  As a result, we have not been able to test this solution, but we do believe it should work.
+
+To make changes to other Active Themes that you will be specifying with this plugin:
+
+1. Deactivate jonradio Multiple Themes 
+1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
+1. Activate the Theme Test Drive plugin
+1. Go to Appearance-Theme Test Drive 
+1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
+1. Push the Enable Theme Drive button at the bottom 
+1. Elegant's epanel will now allow you to change the options of this alternate Theme
 1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
 1. Deactivate the Theme Test Drive plugin 
 1. Activate jonradio Multiple Themes
@@ -194,3 +253,11 @@ Eliminate possibility of foreach error message if PHP warning level is set at a 
 
 = 1.0 =
 Beta version 0.9 had not been tested when installed from the WordPress Plugin Repository
+
+== Support ==
+
+This plugin is actively supported, to the very best of the author's ability.  One problem being faced that has no easy answer:  Paid Themes.  As an Open Source plugin, there just is no money available to purchase Paid Themes to test them with this Plugin.
+
+Of course, some problems are not unique to the Paid Theme, so please report problems that you encounter with Paid Themes.  Because plugin authors are easy targets for lawsuits over software licensing, and even the threat of legal action could bankrupt us, we cannot accept a copy of a Theme you paid for.  So, please understand why we might have to ask you to approach the Paid Theme's author, to provide us with a courtesy copy of the Paid Theme.  We are willing to sign a non-disclosure agreement provided by the Paid Theme author.
+
+Again, at the risk of being repetitive, let none of this dissuade you from contacting the plugin author either at the bottom of this page or through the contact form on the plugin's web site. 
