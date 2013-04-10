@@ -253,11 +253,3 @@ Eliminate possibility of foreach error message if PHP warning level is set at a 
 
 = 1.0 =
 Beta version 0.9 had not been tested when installed from the WordPress Plugin Repository
-
-== Support ==
-
-This plugin is actively supported, to the very best of the author's ability.  One problem being faced that has no easy answer:  Paid Themes.  As an Open Source plugin, there just is no money available to purchase Paid Themes to test them with this Plugin.
-
-Of course, some problems are not unique to the Paid Theme, so please report problems that you encounter with Paid Themes.  Because plugin authors are easy targets for lawsuits over software licensing, and even the threat of legal action could bankrupt us, we cannot accept a copy of a Theme you paid for.  So, please understand why we might have to ask you to approach the Paid Theme's author, to provide us with a courtesy copy of the Paid Theme.  We are willing to sign a non-disclosure agreement provided by the Paid Theme author.
-
-Again, at the risk of being repetitive, let none of this dissuade you from contacting the plugin author either at the bottom of this page or through the contact form on the plugin's web site. 
