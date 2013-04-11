@@ -54,7 +54,7 @@ This section describes how to install the jonradio Multiple Themes plugin and ge
 
 Yes, in most cases.  But we have only tested the few Paid Themes whose authors have provided us with permission to use, without charge, their themes for test purposes.  Elegant, for example, allows us to accept copies of its Themes provided by its customers who require assistance with the jonradio Multiple Themes plugin.  On the other hand, some other Paid Theme authors have simply ignored our requests, despite our stated willingness to sign a non-disclosure agreement.
 
-We do encourage you to contact us if you run into problems when using jonradio Multiple Themes with a Paid Theme, as the problem may not be unique to the Paid Theme.
+We do encourage you to contact us if you run into problems when using the jonradio Multiple Themes plugin with a Paid Theme, as the problem may not be unique to the Paid Theme.
 
 To state the obvious, the cost of purchasing a license for all Paid Themes for testing purposes is prohibitive for an Open Source plugin such as this one.
 
