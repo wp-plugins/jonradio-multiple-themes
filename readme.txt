@@ -125,6 +125,19 @@ Use the Theme Test Drive plugin.  The jonradio Multiple Themes plugin (i.e. - th
 1. Changes to the Templates for Pages and Posts using the Current Theme can now be made normally, just as you would without either plugin
 1. Both the alternate and Current Themes should now display all Templates properly when selected through the jonradio Multiple Themes plugin
 
+= How do I select a Theme for a Category of Posts? =
+
+That functionality, to directly specify a Theme for a Category on the Settings page, is being investigated for a future version of the jonradio Multiple Themes plugin.  But there is already a solution based on Permalinks:
+
+1. In the WordPress Admin panels, go to Settings-Permalinks
+1. Specify a Permalinks structure that begins with /%category%/
+1. Push the Save Changes button
+1. Go to Settings-Multiple Themes plugin
+1. In the Section "For An Individual Page, Post or other non-Admin page", select the Theme for the Category of Posts
+1. Enter the URL of the Categories page, e.g. - http://domain.com/news/
+1. Click the checkbox "Select here if URL is a Prefix"
+1. Push the Save Changes button
+
 = How do I Edit a Theme? =
 
 WordPress includes a built-in Theme Editor.  Select Editor in the Admin panel's Appearance menu items on the left sidebar.
