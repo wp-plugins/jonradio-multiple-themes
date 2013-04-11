@@ -30,20 +30,20 @@ Think what you could do if you could easily use more than one Theme on your Word
 
 **Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
-To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the Plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
+To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
 If a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.
 
 When selecting a Theme for Site Home or all or specific Pages, Posts or other non-Admin pages, the Theme must be shown in the list of Available Themes on the Appearance-Themes Admin panel. If necessary, install the Theme.  In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 
-I hesitate to use the term **Theme Switcher** to describe this plugin, because the term has so many meanings.  This plugin does **not** alter the standard WordPress options that define what Theme is used on your WordPress site.  Instead, it dynamically (and selectively) overrides that choice.  Technical details aside, what this means is that deactivating or deleting the plugin will instantly revert to the WordPress Current Theme that you have defined through the standard WordPress Appearance-Themes Admin panel.
+I hesitate to use the term **Theme Switcher** to describe this plugin, because the term has so many meanings.  The jonradio Multiple Themes plugin does **not** alter the standard WordPress options that define what Theme is used on your WordPress site.  Instead, it dynamically (and selectively) overrides that choice.  Technical details aside, what this means is that deactivating or deleting the jonradio Multiple Themes plugin will instantly revert to the WordPress Current Theme that you have defined through the standard WordPress Appearance-Themes Admin panel.
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
+This section describes how to install the jonradio Multiple Themes plugin and get it working.
 
-1. Use "Add Plugin" within the WordPress Admin panel to download and install this plugin from the WordPress.org plugin repository (preferred method).  Or download and unzip this plugin, then upload the `/jonradio-multiple-themes/` directory to your WordPress web site's `/wp-content/plugins/` directory.
-1. Activate the plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
+1. Use "Add Plugin" within the WordPress Admin panel to download and install this jonradio Multiple Themes plugin from the WordPress.org plugin repository (preferred method).  Or download and unzip this plugin, then upload the `/jonradio-multiple-themes/` directory to your WordPress web site's `/wp-content/plugins/` directory.
+1. Activate the jonradio Multiple Themes plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
 1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 1. Select Themes to be used on the Plugin's "Multiple Themes plugin" page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page.
 1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
@@ -52,17 +52,19 @@ This section describes how to install the plugin and get it working.
 
 = Will this plugin work with Paid Themes? =
 
-Probably, and we do encourage you to contact us if you run into problems as the problem may not be unique to the Paid Theme.  In some situations, where the problem is specific to the Paid Theme, Support is next to impossible unless you can get the author(s) of the Paid Theme to provide a legal copy of the Theme(s).  We are willing to sign a non-disclosure agreement.
+Yes, in most cases.  But we have only tested the few Paid Themes whose authors have provided us with permission to use, without charge, their themes for test purposes.  Elegant, for example, allows us to accept copies of its Themes provided by its customers who require assistance with the jonradio Multiple Themes plugin.  On the other hand, some other Paid Theme authors have simply ignored our requests, despite our stated willingness to sign a non-disclosure agreement.
 
-As you might guess, the cost of purchasing a license for all Paid Themes for testing purposes is prohibitive for an Open Source plugin such as this one.  To date, our attempts to obtain courtesy copies from Paid Theme authors have failed, our inquiries typically being ignored.  You, as the Customer, have already paid for Support when you purchased a license to the Paid Theme, so you are much more likely to get a positive response from the Paid Theme author than we are.
+We do encourage you to contact us if you run into problems when using jonradio Multiple Themes with a Paid Theme, as the problem may not be unique to the Paid Theme.
+
+To state the obvious, the cost of purchasing a license for all Paid Themes for testing purposes is prohibitive for an Open Source plugin such as this one.
 
 = How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
 
 **NOTE**:  See the next FAQ for information on Templates.
 
-For the Current Theme, nothing changes when using this Plugin.  Options for the Current Theme, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
+For the Current Theme, nothing changes when using the jonradio Multiple Themes plugin.  Options for the Current Theme, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
-It is more difficult to modify Options for Active Themes that are *not* the Current Theme.  We hope to build this functionality into this plugin in a future Version, but it is not clear just how practical that is, so the best that can be said is:  Maybe.
+It is more difficult to modify Options for Active Themes that are *not* the Current Theme.  We hope to build this functionality into the jonradio Multiple Themes plugin in a future Version, but it is not clear just how practical that is, so the best that can be said is:  Maybe.
 
 For now, there are two approaches.  Except for Widgets, the first approach is the most likely to give you success.  Menus, on the other hand, really work well with the first approach, and are severely restricted with the second method.
 
@@ -103,9 +105,9 @@ The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, an
 
 = How do I change the Template for a specific Page or Post? =
 
-For the Current Theme, nothing changes when using this Plugin.  Select an alternate Template from the drop-down list in the Template field of the Page Attributes section of the Add New Page, Edit Page, Add New Post or Edit Post page of the Admin panels.  Or the Template field in Quick Edit.
+For the Current Theme, nothing changes when using the jonradio Multiple Themes plugin.  Select an alternate Template from the drop-down list in the Template field of the Page Attributes section of the Add New Page, Edit Page, Add New Post or Edit Post page of the Admin panels.  Or the Template field in Quick Edit.
 
-It is more difficult to change Templates for Pages or Posts defined with this Plugin to use Active Themes that are *not* the Current Theme.  We hope to build this functionality into this plugin in a future Version.
+It is more difficult to change Templates for Pages or Posts defined with the jonradio Multiple Themes plugin to use Active Themes that are *not* the Current Theme.  We hope to build this functionality into the jonradio Multiple Themes plugin in a future Version.
 
 Use the Theme Test Drive plugin.  The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Template to be set for each Page or Post using that Theme "as if" it were the Current Theme.
 
@@ -135,9 +137,9 @@ If one or more of the Active Themes have their own Theme Editor or other type of
 
 = How do I use Elegant's epanel? =
 
-Unfortunately, it is not practical to fully support Paid Themes with this plugin, because that would require buying each Theme.  Elegant is a paid Theme with a Theme Editor or Theme Options replacement called epanel that only allows changes to the Current Theme.  As a result, we have not been able to test this solution, but we do believe it should work.
+Nothing changes for the Current Theme.  epanel can be accessed just as it would be without the jonradio Multiple Themes plugin, simply by selecting the WordPress Admin panel's Appearance submenu item titled Theme Options preceded by the name of your Elegant Theme.
 
-To make changes to other Active Themes that you will be specifying with this plugin:
+To make changes to other Active Themes that you will be specifying with the jonradio Multiple Themes plugin:
 
 1. Deactivate jonradio Multiple Themes 
 1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
@@ -145,16 +147,21 @@ To make changes to other Active Themes that you will be specifying with this plu
 1. Go to Appearance-Theme Test Drive 
 1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
 1. Push the Enable Theme Drive button at the bottom 
-1. Elegant's epanel will now allow you to change the options of this alternate Theme
-1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
+1. Click on the Appearance menu item on the left sidebar of the WordPress Admin panel to refresh the submenu
+1. Click on the submenu item titled with your Elegant theme's name followed by "Theme Options"
+1. Elegant's epanel will now appear
+1. Make all the changes for this Theme, being sure to push the Save button
+1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-10 for each alternate Theme 
 1. Deactivate the Theme Test Drive plugin 
 1. Activate jonradio Multiple Themes
 1. Changes to the Options for the Current Theme can now be made normally, just as you would without either plugin
 1. Both the alternate and Current Themes should now display all Theme options properly when selected through the jonradio Multiple Themes plugin
 
+Thanks to Elegant for allowing us to test copies of any of their Themes provided by their customers.
+
 = What happens when I change Permalinks? =
 
-For entries you have created for individual Pages and Posts with this plugin, you can subsequently change your Permalink structure or you can change the Permalink of a Page or Post, without having to change the plugin's entry.  However, for other pages, such as Categories or Archives, you will have to delete your old entries and create new ones with this plugin.
+For entries you have created for individual Pages and Posts with the jonradio Multiple Themes plugin, you can subsequently change your Permalink structure or you can change the Permalink of a Page or Post, without having to change the plugin's entry.  However, for other pages, such as Categories or Archives, you will have to delete your old entries and create new ones with the jonradio Multiple Themes plugin.
 
 = I added a new entry but why doesn't it appear in the list of entries? =
 
