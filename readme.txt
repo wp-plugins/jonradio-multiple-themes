@@ -260,3 +260,4 @@ Eliminate possibility of foreach error message if PHP warning level is set at a 
 
 = 1.0 =
 Beta version 0.9 had not been tested when installed from the WordPress Plugin Repository
+
