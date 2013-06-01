@@ -28,7 +28,7 @@ Think what you could do if you could easily use more than one Theme on your Word
 
 **Use with other Plugins**:  **BuddyPress** and Theme Test Drive plugins must both be Deactivated when jonradio Multiple Themes is Activated
 
-**Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
+**Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information and warnings on changing Options on Themes other than the Current Theme.
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
@@ -46,7 +46,7 @@ This section describes how to install the jonradio Multiple Themes plugin and ge
 1. Activate the jonradio Multiple Themes plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
 1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 1. Select Themes to be used on the Plugin's "Multiple Themes plugin" page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page.
-1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
+1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information and warnings.
 
 == Frequently Asked Questions ==
 
@@ -61,6 +61,8 @@ To state the obvious, the cost of purchasing a license for all Paid Themes for t
 = How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
 
 **NOTE**:  See the next FAQ for information on Templates.
+
+**WARNING**:  It is not currently possible to have separate Widgets **AND** Menus for multiple Themes using the current version of this Plugin.  The only known solution to this problem is to have multiple WordPress sites, either as a separate WordPress installation or as part of a WordPress Network using its Multisite feature.  This can be done on the same domain name using either folders/subdirectories or subdomains.  Each site would then have just one Theme, and you would not require this Plugin.
 
 For the Current Theme, nothing changes when using the jonradio Multiple Themes plugin.  Options for the Current Theme, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
 
