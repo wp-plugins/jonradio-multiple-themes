@@ -158,7 +158,7 @@ function jr_mt_version_check() {
 					}
 				}
 			}
-			if ( version_compare( $internal_settings['version'], '4.0.9', '<' ) ) {
+			if ( version_compare( $internal_settings['version'], '4.1', '<' ) ) {
 				//	Replace %hex with real character to support languages like Chinese
 				foreach ( $ids as $key => $arr ) {
 					$newkey = rawurldecode( $key );
