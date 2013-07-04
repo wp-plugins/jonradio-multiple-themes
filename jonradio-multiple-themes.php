@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.0.2
+Version: 4.1
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -26,16 +26,18 @@ License: GPLv2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-global $jr_mt_plugin_folder;
-$jr_mt_plugin_folder = basename( dirname( __FILE__ ) );
-
-function jr_mt_plugin_folder() {
-	global $jr_mt_plugin_folder;
-	return $jr_mt_plugin_folder;
-}
+global $jr_mt_incompat_plugins;
+$jr_mt_incompat_plugins = array( 'Theme Test Drive', 'BuddyPress' );
 
 global $jr_mt_path;
 $jr_mt_path = plugin_dir_path( __FILE__ );
+/**
+ * Return Plugin's full directory path with trailing slash
+ * 
+ * Local XAMPP install might return:
+ *	C:\xampp\htdocs\wpbeta\wp-content\plugins\jonradio-multiple-themes/
+ *
+ */
 function jr_mt_path() {
 	global $jr_mt_path;
 	return $jr_mt_path;
@@ -43,6 +45,17 @@ function jr_mt_path() {
 
 global $jr_mt_plugin_basename;
 $jr_mt_plugin_basename = plugin_basename( __FILE__ );
+/**
+ * Return Plugin's Basename
+ * 
+ * For this plugin, it would be:
+ *	jonradio-multiple-themes/jonradio-multiple-themes.php
+ *
+ */
+function jr_mt_plugin_basename() {
+	global $jr_mt_plugin_basename;
+	return $jr_mt_plugin_basename;
+}
 
 if ( !function_exists( 'get_plugin_data' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
@@ -50,11 +63,13 @@ if ( !function_exists( 'get_plugin_data' ) ) {
 
 global $jr_mt_plugin_data;
 $jr_mt_plugin_data = get_plugin_data( __FILE__ );
+$jr_mt_plugin_data['slug'] = basename( dirname( __FILE__ ) );
 
 global $jr_mt_options_cache;
 $all_options = wp_load_alloptions();
 $jr_mt_options_cache['stylesheet'] = $all_options['stylesheet'];
 $jr_mt_options_cache['template'] = $all_options['template'];
+
 	
 register_activation_hook( __FILE__, 'jr_mt_activate' );
 register_deactivation_hook( __FILE__, 'jr_mt_deactivate' );
@@ -142,7 +157,19 @@ function jr_mt_version_check() {
 						unset( $ids[$key] );
 					}
 				}
-			}		
+			}
+			if ( version_compare( $internal_settings['version'], '4.0.9', '<' ) ) {
+				//	Replace %hex with real character to support languages like Chinese
+				foreach ( $ids as $key => $arr ) {
+					$newkey = rawurldecode( $key );
+					$newarr = $arr;
+					unset( $ids[$key] );
+					$newarr['page_url'] = rawurldecode( $newarr['page_url'] );
+					$newarr['rel_url'] = rawurldecode( $newarr['rel_url'] );
+					$newarr['url'] = rawurldecode( $newarr['url'] );
+					$ids[$newkey] = $newarr;
+				}
+			}
 			$settings['ids'] = $ids;
 			update_option( 'jr_mt_settings', $settings );
 			$internal_settings['version'] = $jr_mt_plugin_data['Version'];
@@ -158,6 +185,21 @@ if ( is_admin() ) {
 	//	Admin panel
 	require_once( jr_mt_path() . 'includes/admin.php' );
 }
+
+/*	Settings structure:
+	code - get_option( 'jr_mt_settings' )
+	['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
+	['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
+	['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
+	['ids']
+		[id] - zero length string or WordPress ID of Page, Post, etc.
+			['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
+			['theme'] => folder in Themes directory containing theme to use
+			['id'] => FALSE or WordPress ID of Page, Post, etc.
+			['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
+			['rel_url'] => URL relative to WordPress home
+			['url'] => original full URL, from Settings page entry by user	
+*/
 
 /*
 Research Notes:

@@ -1,7 +1,11 @@
 <?php
+
 //	Admin Page
 
+require_once( jr_mt_path() . 'includes/admin-other.php' );
+
 add_action( 'admin_menu', 'jr_mt_admin_hook' );
+//	Runs just after admin_init (below)
 
 /**
  * Add Admin Menu item for plugin
@@ -11,8 +15,10 @@ add_action( 'admin_menu', 'jr_mt_admin_hook' );
  */
 function jr_mt_admin_hook() {
 	//  Add Settings Page for this Plugin
-	add_theme_page( 'jonradio Multiple Themes', 'Multiple Themes plugin', 'manage_options', 'jr_mt_settings', 'jr_mt_settings_page' );
-	add_options_page( 'jonradio Multiple Themes', 'Multiple Themes plugin', 'manage_options', 'jr_mt_settings', 'jr_mt_settings_page' );
+	global $jr_mt_plugin_data;
+	$jr_mt_plugin_data = array_merge( $jr_mt_plugin_data, jr_readme() );
+	add_theme_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'manage_options', 'jr_mt_settings', 'jr_mt_settings_page' );
+	add_options_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'manage_options', 'jr_mt_settings', 'jr_mt_settings_page' );
 }
 
 /**
@@ -22,40 +28,256 @@ function jr_mt_admin_hook() {
  *
  */
 function jr_mt_settings_page() {
+	global $jr_mt_plugin_data;
+	global $jr_mt_themes_cache;
+	$jr_mt_themes_cache = wp_get_themes();
+	global $jr_mt_plugins_cache;
+	$jr_mt_plugins_cache = get_plugins();
+	add_thickbox();
 	echo '<div class="wrap">';
 	screen_icon( 'plugins' );
-	echo '<h2>jonradio Multiple Themes</h2>';
+	echo '<h2>' . $jr_mt_plugin_data['Name'] . '</h2>';
 	
 	//	Required because it is only called automatically for Admin Pages in the Settings section
 	settings_errors( 'jr_mt_settings' );
 	
 	$theme = wp_get_theme()->Name;
 	global $jr_mt_options_cache;
-	?>
-	<p>This plugin allows you to selectively change the Theme you have selected as your <b>Current Theme</b> in <b>Appearance-Themes</b> on the Admin panels.
-	You can choose from any of the <b>Available Themes</b> listed on the Appearance-Themes Admin panel for:
-	<ul>
-	<li> &raquo; All Pages</li>
-	<li> &raquo; All Posts</li>
-	<li> &raquo; The Site Home</li>
-	<li> &raquo; A Specific Page</li>
-	<li> &raquo; A Specific Post</li>
-	<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
-	</ul>
-	<?php
-	if ( function_exists('is_multisite') && is_multisite() ) {
-		echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
+
+	$current_wp_version = get_bloginfo( 'version' );
+	if ( version_compare( $current_wp_version, $jr_mt_plugin_data['Requires at least'], '<' ) ) {
+		//	Plugin requires newer version of WordPress
+		echo '<h3>Error</h3><p>Here is the problem:<ul><li> &raquo; This Plugin (' . $jr_mt_plugin_data['Name'] 
+			. ') does not support versions of WordPress before WordPress Version '
+			. $jr_mt_plugin_data['Requires at least'] . '.</li><li> &raquo; You are running WordPress Version ' . $current_wp_version 
+			. '.</li><li> &raquo; This Plugin uses the wp_get_themes() function which became available in Version '
+			. '3.4.0 of WordPress.</li></ul></p>';
+	} else {
+		if ( version_compare( $current_wp_version, $jr_mt_plugin_data['Tested up to'], '>' ) ) {
+			/*	WordPress version is too new:
+				When currently-installed version of Plugin was installed, 
+				it did not support currently-installed version of WordPress.  
+				So, check if a newer version of plugin is available.		*/
+			$current = FALSE;
+			//	Check if latest version of the plugin supports this version of WordPress
+			if ( !function_exists( 'plugins_api' ) ) {
+				require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
+			}
+			$directory = plugins_api( 'plugin_information', array( 'slug' => $jr_mt_plugin_data['slug'],
+				'fields' => array( 'download_link' => TRUE, 
+					'tested' => TRUE,
+					'version' => TRUE,
+					'error_data' => TRUE,
+					'tags' => FALSE,
+					'compatibility' => FALSE,
+					'sections' => FALSE
+					)
+				) );
+			if ( property_exists( $directory, 'errors' ) && ( $directory->error_data->plugins_api_failed == 'N;' ) ) {
+				//	Plugin not found in WordPress Directory
+				echo '<h3>Warnings</h3><p>Here is the problem:<ul><li> &raquo; This Plugin (' . $jr_mt_plugin_data['Name'] 
+					. ') has not been tested with the version of WordPress you are currently running: ' . $current_wp_version
+					. '.</li><li> &raquo; This Plugin could not be found in the WordPress Plugin Directory.  '
+					. 'If you are sure it should be there, the WordPress Plugin Directory may be currently unavailable or inaccessible from your web server.</li></ul></p>'
+					. '<p>The plugin will probably still work with your newer version of WordPress, but you need to be aware of the issue.</p>';
+			} else {
+				if ( version_compare( $current_wp_version, $directory->tested, '>' ) ) {
+					//	Latest version of readme.txt for latest version of Plugin indicates that Plugin has not yet been tested for this version of WordPress
+					echo '<h3>Warning</h3><p>Here is the problem:<ul><li> &raquo; This Plugin (' . $jr_mt_plugin_data['Name'] 
+						. ') has not been tested with the version of WordPress you are currently running: ' . $current_wp_version
+						. '.</li></ul></p>'
+						. '<p>The plugin will probably still work with your newer version of WordPress, but you need to be aware of the issue.</p>';
+				} else {
+					if ( version_compare( $jr_mt_plugin_data['Version'], $directory->version, '=' ) ) {
+						/*	The latest version of the Plugin has been installed, 
+							but the readme.txt has been updated in the WordPress Plugin Directory
+							to indicate that it now supports the installed version of WordPress.
+						
+							Latest version of Plugin has already been installed, but readme.txt is out of date,
+							so update readme.txt.																*/
+						
+						$errmsg_before = '<h3>Warning</h3><p>Here is the problem:<ul><li> &raquo; This version (' . $jr_mt_plugin_data['Version']
+							. ') of this Plugin (' . $jr_mt_plugin_data['Name']
+							. ') has been tested with the version of WordPress you are currently running (' . $current_wp_version
+							. '), but</li><li> &raquo; The currently installed readme.txt file for this plugin is out of date,'
+							. '</li><li> &raquo; The attempt to update the readme.txt from the WordPress Plugin Repository failed, and'
+							. '</li><li> &raquo; The specific error is:  ';
+						$errmsg_after = '</li></ul></p>'
+							. '<p>Another attempt will be made to update readme.txt each time this Settings page is displayed.'
+							. ' Nonetheless, this plugin should work properly even if readme.txt is out of date.</p>';
+						
+						if ( is_wp_error( $file_name = download_url( $directory->download_link ) ) ) {
+							//	Error
+							echo $errmsg_before . 'The plugin failed to completely download from the WordPress Repository with 300 seconds' . $errmsg_after;
+						} else {
+							if ( is_int( $resource_handle = zip_open( $file_name ) ) ) {
+								//	Error
+								echo $errmsg_before 
+									. "php function zip_open error number $resource_handle while attempting to open the plugin's"
+									. 'compressed .zip file successfully downloaded from the WordPress Plugin Repository' 
+									. $errmsg_after;
+							} else {
+								$find_readme = TRUE;
+								while ( $find_readme && ( FALSE !== $dir_ent = zip_read( $resource_handle ) ) ) {
+									if ( is_int( $dir_ent ) ) {
+										//	Error code
+										echo $errmsg_before 
+											. "php function zip_read error number $dir_ent while attempting to read the plugin's"
+											. ' compressed .zip file successfully downloaded from the WordPress Plugin Repository' 
+											. $errmsg_after;
+										//	Get out of While loop
+										$find_readme = FALSE;	
+									} else {
+										//	Wait until the While loop gets to the readme.txt entry in the Plugin's Zip file
+										if ( zip_entry_name( $dir_ent ) == $jr_mt_plugin_data['slug'] . '/readme.txt' ) {
+											if ( FALSE === zip_entry_open( $resource_handle, $dir_ent, 'rb' ) ) {
+												//	Error
+												echo $errmsg_before 
+													. 'php function zip_entry_open failed to open readme.txt file compressed within plugin .zip file in WordPress Repository' 
+													. $errmsg_after;
+											} else {
+												$filesize = zip_entry_filesize( $dir_ent );
+												if ( !is_int( $filesize ) || ( $filesize < 100 ) ) {
+													//	Error
+													echo $errmsg_before 
+														. 'Size, in bytes, of readme.txt file is being incorrectly reported by php function zip_entry_filesize as '
+														. var_export( $filesize, TRUE )
+														. $errmsg_after;
+												} else {
+													$readme_content = zip_entry_read( $dir_ent, $filesize );
+													if ( ( $readme_content === FALSE ) || ( $readme_content === '' ) ) {
+														//	Error
+														echo $errmsg_before 
+															. 'php function zip_entry_read failed to read readme.txt file compressed within plugin .zip file in WordPress Repository'
+															. $errmsg_after;
+													} else {
+														if ( FALSE === zip_entry_close( $dir_ent ) ) {
+															//	Error
+															echo $errmsg_before 
+																. 'php function zip_entry_close failed to close readme.txt file compressed within plugin .zip file in WordPress Repository'
+																. $errmsg_after;
+														} else {
+															//	Alternate:  file_put_contents( jr_mt_path() . 'readme.txt', $readme_content );
+															$write_return = jr_filesystem_text_write( $readme_content, 'readme.txt', jr_mt_path() );
+															if ( is_wp_error( $write_return ) || ( FALSE === $write_return ) ) {
+																//	Error
+																echo $errmsg_before 
+																	. 'WP_filesystem failed to store readme.txt file as part of download/update process from WordPress Repository'
+																	. $errmsg_after;
+															}
+														}
+													}
+												}
+											}
+											//	Get out of While loop because we have found and processed readme.txt
+											$find_readme = FALSE;
+										}
+									}
+								}
+								zip_close( $resource_handle );
+							}
+							// Delete temporary download file
+							if ( !unlink( $file_name ) ) {
+								echo $errmsg_before 
+									. "php unlink function failed to delete downloaded readme.txt in temporary download file $file_name"
+									. $errmsg_after;
+							}
+						}
+						$current = TRUE;
+					} else {
+						//	Recommend updating Plugin to latest version which supports the version of WordPress being run, 
+						//	but the currently-installed version of the Plugin does not.
+						echo '<h3>Warning</h3><p>This plugin is out of date and should be updated for performance and reliability reasons.'
+							. '  Plugin updates are shown on the Plugins-Installed Plugins page and the Dashboard-Updates page here in the Admin panels.</p>';
+					}
+				}
+			}
+		} else {
+			//	Currently-installed version of Plugin supports currently-installed version of WordPress
+			$current = TRUE;
+		}
+		
+		global $jr_mt_plugins_cache;
+		
+		$compatible = TRUE;
+		
+		//	Check for incompatible plugins that have been activated:  BuddyPress and Theme Test Drive
+		global $jr_mt_incompat_plugins;
+		foreach ( $jr_mt_plugins_cache as $rel_path => $plugin_data ) {
+			if ( in_array( $plugin_data['Name'], $jr_mt_incompat_plugins ) && is_plugin_active( $rel_path ) ) {
+				if ( $compatible ) {
+					echo '<h3>Plugin Conflict Error Detected</h3>';
+					$compatible = FALSE;
+				}
+				echo '<p>This Plugin (' . $jr_mt_plugin_data['Name'] . ') cannot be used when the <b>' . $plugin_data['Name'] 
+					. '</b> plugin is Activated.  If you wish to use the ' . $jr_mt_plugin_data['Name'] 
+					. ' plugin, please deactivate the '  . $plugin_data['Name'] 
+					. ' plugin (not just when using this Settings page, but whenever the ' 
+					. $jr_mt_plugin_data['Name'] . ' plugin is activated).</p>';
+			}
+		}
+		
+		if ( $compatible ) {
+			?>		
+			<h3>Overview</h3>
+			<p>This Plugin allows you to selectively change the Theme you have selected as your <b>Current Theme</b> in <b>Appearance-Themes</b> on the Admin panels.
+			You can choose from any of the <b>Available Themes</b> listed on the Appearance-Themes Admin panel for:
+			<ul>
+			<li> &raquo; All Pages</li>
+			<li> &raquo; All Posts</li>
+			<li> &raquo; The Site Home</li>
+			<li> &raquo; A Specific Page</li>
+			<li> &raquo; A Specific Post</li>
+			<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
+			</ul>
+			</p>
+			<h3>Important Notes</h3>
+			<?php
+			if ( function_exists('is_multisite') && is_multisite() ) {
+				echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
+			}
+			echo '<p>';
+			echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
+			echo '</p>';
+			if ( $current ) {
+				echo '<p>This Plugin (' . $jr_mt_plugin_data['Name'] . ') has been tested with the version of WordPress you are currently running: ' 
+					. $current_wp_version . '</p>';
+			}
+			if ( jr_mt_plugin_update_available() ) {
+				echo '<p>A new version of this Plugin (' . $jr_mt_plugin_data['Name'] . ') is available from the WordPress Repository.'
+					. ' We strongly recommend updating ASAP because new versions fix problems that users like yourself have reported to us.'
+					. ' <a class="thickbox" title="' . $jr_mt_plugin_data['Name'] . '" href="' . network_admin_url()
+					. 'plugin-install.php?tab=plugin-information&plugin=' . $jr_mt_plugin_data['slug']
+					. '&section=changelog&TB_iframe=true&width=640&height=768">Click here</a> for more details.</p>';
+			}
+			echo '<form action="options.php" method="POST">';
+			
+			//	Plugin Settings are displayed and entered here:
+			settings_fields( 'jr_mt_settings' );
+			do_settings_sections( 'jr_mt_settings_page' );
+			echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
+		}
 	}
-	echo '</p>';
-	echo '<p>';
-	echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
-	echo '</p>';
-	echo '<form action="options.php" method="POST">';
-	
-	//	Plugin Settings are displayed and entered here:
-	settings_fields( 'jr_mt_settings' );
-	do_settings_sections( 'jr_mt_settings_page' );
-	echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
+	echo '<hr /><h3>System Information</h3><p>You are currently running:<ul>';
+	echo "<li> &raquo; The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>";
+	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is " . rtrim( jr_mt_path(), '/' ) . '<li>';
+	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is " . plugins_url() . "/{$jr_mt_plugin_data['slug']}</li>";
+	echo "<li> &raquo; WordPress Version $current_wp_version</li>";
+	echo '<li> &nbsp; &raquo;&raquo; WordPress language is set to ' , get_bloginfo( 'language' ) . '</li>';
+	echo '<li> &raquo; ' . php_uname( 's' ) . ' operating system, Release/Version ' . php_uname( 'r' ) . ' / ' . php_uname( 'v' ) . '</li>';
+	echo '<li> &raquo; ' . php_uname( 'm' ) . ' computer hardware</li>';
+	echo '<li> &raquo; Host name ' . php_uname( 'n' ) . '</li>';
+	echo '<li> &raquo; php Version ' . phpversion() . '</li>';
+	echo '<li> &nbsp; &raquo;&raquo; php memory_limit ' . ini_get('memory_limit') . '</li>';
+	echo '<li> &raquo; Zend engine Version ' . zend_version() . '</li>';
+	echo '<li> &raquo; Web Server software is ' . getenv( 'SERVER_SOFTWARE' ) . '</li>';
+	if ( function_exists( 'apache_get_version' ) && ( FALSE !== $apache = apache_get_version() ) ) {
+		echo "<li> &nbsp; &raquo;&raquo; Apache Version $apache</li>";
+	}
+	global $wpdb;
+	echo '<li> &raquo; MySQL Version ' . $wpdb->get_var( 'SELECT VERSION();', 0, 0 ) . '</li>';
+
+	echo '</ul></p>';
 }
 
 add_action( 'admin_init', 'jr_mt_admin_init' );
@@ -98,7 +320,7 @@ function jr_mt_admin_init() {
 		add_settings_field( 'del_entry', 'Entries:', 'jr_mt_echo_delete_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
 	}
 	add_settings_section( 'jr_mt_single_settings_section', 
-		'For An Individual Page, Post or other non-Admin page', 
+		'For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix', 
 		'jr_mt_single_settings_expl', 
 		'jr_mt_settings_page' 
 	);
@@ -202,10 +424,11 @@ function jr_mt_single_settings_expl() {
 	?>
 	<p>
 	Select a Theme for an individual Page, Post	or
-	any other non-Admin pages that has its own Permalink; for example, a specific Archive or Category page.
-	<p>
+	any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page.
+	Or for a group of pages which have URLs that all begin with the same characters ("Prefix").
 	</p>
-	Then cut and paste the URL of the desired Page, Post or other non-Admin page.
+	<p>
+	Then cut and paste the URL of the desired Page, Post, Prefix or other non-Admin page.
 	And click the <b>Save Changes</b> button to add the entry.
 	</p>
 	<?php	
@@ -246,7 +469,7 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	
-	$url = trim( $input['add_path_id'] );
+	$url = rawurldecode( trim( $input['add_path_id'] ) );
 	if ( ( empty( $input['add_theme'] ) && !empty( $url ) ) || ( !empty( $input['add_theme'] ) && empty( $url ) ) ) {
 		add_settings_error(
 			'jr_mt_settings',
@@ -334,27 +557,6 @@ function jr_mt_validate_settings( $input ) {
 	return $valid;
 }
 
-// Add Link to the plugin's entry on the Admin "Plugins" Page, for easy access
-global $jr_mt_plugin_basename;
-add_filter( "plugin_action_links_$jr_mt_plugin_basename", 'jr_mt_plugin_action_links', 10, 1 );
-
-/**
- * Creates Settings entry right on the Plugins Page entry.
- *
- * Helps the user understand where to go immediately upon Activation of the Plugin
- * by creating entries on the Plugins page, right beside Deactivate and Edit.
- *
- * @param	array	$links	Existing links for our Plugin, supplied by WordPress
- * @param	string	$file	Name of Plugin currently being processed
- * @return	string	$links	Updated set of links for our Plugin
- */
-function jr_mt_plugin_action_links( $links ) {
-	// The "page=" query string value must be equal to the slug
-	// of the Settings admin page.
-	array_push( $links, '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=jr_mt_settings' . '">Settings</a>' );
-	return $links;
-}
-
 //	$theme_name is the name of the Theme's folder within the Theme directory
 function jr_mt_themes_field( $field_name, $theme_name, $setting, $excl_current_theme ) {
 	echo "<select id='$field_name' name='$setting" . "[$field_name]' size='1'>";
@@ -364,7 +566,8 @@ function jr_mt_themes_field( $field_name, $theme_name, $setting, $excl_current_t
 		$selected = '';
 	}
 	echo "<option value='' $selected></option>";
-	foreach ( wp_get_themes() as $folder => $theme_obj ) {
+	global $jr_mt_themes_cache;
+	foreach ( $jr_mt_themes_cache as $folder => $theme_obj ) {
 		if ( $excl_current_theme ) {
 			if ( ( jr_mt_current_theme( 'stylesheet' ) == $theme_obj['stylesheet'] ) && ( jr_mt_current_theme( 'template' ) == $theme_obj['template'] ) ) {
 				//	Skip the Current Theme

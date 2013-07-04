@@ -63,7 +63,10 @@ function jr_mt_chosen() {
 		}
 	} else {
 		//	Non-Admin page, i.e. - Public Site, etc.
-		extract( jr_mt_url_to_id( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) );
+		extract( jr_mt_url_to_id( rawurldecode( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) ) );	
+		if ( ( 'livesearch' === $type ) && ( FALSE !== $livesearch_theme = jr_mt_livesearch_theme() ) ) {
+			return $livesearch_theme;
+		}
 		$settings = get_option( 'jr_mt_settings' );
 		if ( $home ) {
 			if ( trim( $settings['site_home'] ) != '' ) {
@@ -122,6 +125,25 @@ function jr_mt_check_all( $type, $rel_url, $ids ) {
 		}
 	}
 	return $theme;
+}
+
+function jr_mt_livesearch_theme() {
+	$livesearch_themes = array( 'knowhow' );
+	if ( in_array( jr_mt_current_theme( 'stylesheet' ), $livesearch_themes ) ) {
+		return jr_mt_current_theme( 'stylesheet' );
+	} else {
+		if ( in_array( jr_mt_current_theme( 'template' ), $livesearch_themes ) ) {
+			return jr_mt_current_theme( 'template' );
+		} else {
+			//	Go through all the Themes defined in the Plugin's settings
+			foreach ( jr_mt_themes_defined() as $theme ) {
+				if ( in_array( $theme, $livesearch_themes ) ) {
+					return $theme;
+				}
+			}
+		}
+	}
+	return FALSE;
 }
 
 ?>

@@ -2,9 +2,9 @@
 Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
-Requires at least: 3.4.1
+Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.0.2
+Stable tag: 4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 == Description ==
 
-Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
+Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home;  a Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL").  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
 
 Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
 
@@ -191,6 +191,12 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.1 =
+* Support for non-alphanumeric characters in URLs, e.g. - languages using characters not in the English alphabet
+* Support for Live Search feature of KnowHow Theme
+* Display errors, not settings, on plugin's Admin page for activated BuddyPress or Theme Test Drive plugins, or old versions of WordPress
+* Add error checking/messages and diagnostic information to plugin's Admin page
+
 = 4.0.2 =
 * Prevent Warning and Notice by initializing global $wp
 
@@ -238,6 +244,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Upgrade Notice ==
 
+= 4.1 =
+Support non-English alphabet in URLs and Live Search feature in KnowHow Theme
+
 = 4.0.2 =
 Fix "Warning: in_array() expects parameter 2 to be array, null given in domain.com/wp-includes/rewrite.php on line 364"
 
@@ -273,4 +282,3 @@ Eliminate possibility of foreach error message if PHP warning level is set at a 
 
 = 1.0 =
 Beta version 0.9 had not been tested when installed from the WordPress Plugin Repository
-

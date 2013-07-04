@@ -137,7 +137,11 @@ function jr_mt_query_keywords( $url_query ) {
 						if ( isset( $m ) ) {
 							return array( 'archive' => $m );
 						} else {
-							return NULL;
+							if ( isset( $s ) ) {
+								return array( 'livesearch' => $s );
+							} else {	
+								return NULL;
+							}
 						}
 					}
 				}
@@ -165,4 +169,182 @@ function jr_mt_site_url( $url ) {
 	}
 	return TRUE;
 }
+
+function jr_readme() {
+	$readme = array();
+	$file_array = jr_filesystem_text_read('readme.txt', jr_mt_path());
+	//	Get first non-blank line
+	$results = jr_nextline( $file_array, 0 );
+	if ( '===' === substr( $results['line'], 0, 3) ) {
+		$readme['name'] = trim( $results['line'], ' =' );
+		do {
+			$results = jr_nextline( $file_array, $results['index'] );
+			if ( '==' === substr( $results['line'], 0, 2) ) {
+				break;
+			} else {
+				$colon = strpos( $results['line'], ":", 4 );
+				if ( $colon !== FALSE ) {
+					$key = preg_replace( '/\s+/', ' ', trim( substr( $results['line'], 0, $colon ) ) );
+					$readme[$key] = trim( substr( $results['line'], $colon + 1 ) );
+				}
+			}
+		} while ( $results['line'] != "" );
+	}
+	return $readme;
+}
+function jr_nextline( $file_array, $index ) {
+	$line = "";
+	while ( ( $index < count( $file_array ) ) && ( $line === "" ) ) {
+		$line = trim( $file_array[$index++] );
+	};
+	return array( 'line' => $line, 'index' => $index );
+	//	['line'] of "" indicates End of File
+	//	['index'] is the next line to be read
+}
+
+/**
+ * Initialize Filesystem object
+ *
+ * @param str $form_url - URL of the page to display request form
+ * @param str $method - connection method
+ * @param str $context - destination folder
+ * @param array $fields - fileds of $_POST array that should be preserved between screens
+ * @return bool/str - false on failure, stored text on success
+ **/
+function jr_filesystem_init( $form_url, $method, $context, $fields = null ) {
+	global $wp_filesystem;
+	
+	/* first attempt to get credentials */
+	if (false === ($creds = request_filesystem_credentials($form_url, $method, false, $context, $fields))) {
+	
+	/**
+	* if we comes here - we don't have credentials
+	* so the request for them is displaying
+	* no need for further processing
+	**/
+	return false;
+	}
+	
+	/* now we got some credentials - try to use them*/
+	if ( !WP_Filesystem( $creds ) ) {
+	
+	/* incorrect connection data - ask for credentials again, now with error message */
+	request_filesystem_credentials($form_url, $method, true, $context);
+	return false;
+	}
+	
+	return true; //filesystem object successfully initiated
+}
+
+/**
+ * Read text from file
+ *
+ * @param str $form_url - URL of the page where request form will be displayed
+ * @return bool/str - false on failure, stored text on success
+ **/
+function jr_filesystem_text_read($file_name, $context){
+  global $wp_filesystem;
+  
+  $text = '';
+
+  $form_url = wp_nonce_url('themes.php?page=jr_mt_settings', 'filesystem_dummy_screen');
+  $method = ''; //leave this empty to perform test for 'direct' writing 
+
+  if(!jr_filesystem_init($form_url, $method, $context))
+    return false; //stop further processing when request forms displaying
+
+  /*
+   * now $wp_filesystem could be used
+   * get correct target file first
+   **/
+  $target_dir = $wp_filesystem->find_folder($context);
+  $target_file = trailingslashit($target_dir).$file_name;
+
+  /* read the file */
+  if($wp_filesystem->exists($target_file)){ //check for existence
+
+    $text = $wp_filesystem->get_contents_array($target_file);
+    if(!$text)
+      return new WP_Error('reading_error', 'Error when reading file'); //return error object      
+
+  }  
+
+  return $text;
+}
+
+/**
+ * Perform writing into file
+ *
+ * @param str $form_url - URL of the page to display request form
+ * @return bool/str - false on failure, stored text on success
+ **/
+function jr_filesystem_text_write( $content, $file_name, $context ) {
+  global $wp_filesystem;
+
+  $method = ''; //leave this empty to perform test for 'direct' writing
+  $form_url = wp_nonce_url('themes.php?page=jr_mt_settings', 'filesystem_dummy_screen');
+
+  if(!jr_filesystem_init($form_url, $method, $context))
+    return false; //stop further processing when request form is displaying
+
+  /*
+   * now $wp_filesystem could be used
+   * get correct target file first
+   **/
+  $target_dir = $wp_filesystem->find_folder($context);
+  $target_file = trailingslashit($target_dir) . $file_name;
+
+  /* write into file */
+  if(!$wp_filesystem->put_contents($target_file, $content, FS_CHMOD_FILE))
+    return new WP_Error('writing_error', 'Error when writing file'); //return error object
+
+  return $content;
+}
+
+/**
+ * Update available for Plugin?
+ *
+ * @return bool - TRUE if an update is available in the WordPress Repository,
+ *	FALSE if no update is available or if the update_plugins transient is not available
+ *	(which also results in an error message). 
+ **/
+function jr_mt_plugin_update_available() {
+	global $jr_mt_update_plugins;
+	if ( !isset( $jr_mt_update_plugins ) ) {
+		$transient = get_site_transient( 'update_plugins' );
+		if ( FALSE === $transient ) {
+			//	Error
+			return FALSE;
+		} else {
+			$jr_mt_update_plugins = $transient;
+		}
+	}
+	if ( empty( $jr_mt_update_plugins->response ) ) {
+		return FALSE;
+	}
+	return array_key_exists( jr_mt_plugin_basename(), $jr_mt_update_plugins->response );
+}
+
+/**
+ * What Themes are defined to Plugin?
+ *
+ * @return arr - a list of Themes (folder names) defined in Settings of Plugin 
+ **/
+function jr_mt_themes_defined() {
+	$themes = array();
+	$settings = get_option( 'jr_mt_settings' );
+	foreach ( $settings as $key => $value ) {
+		if ( 'ids' == $key ) {
+			foreach ( $value as $id => $arr ) {
+				$themes[] = $arr['theme'];
+			}
+		} else {
+			if ( !empty( $value ) ) {
+				$themes[] = $value;
+			}
+		}
+	}
+	return array_unique( $themes );
+}
+
 ?>
