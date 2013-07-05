@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.1
+Stable tag: 4.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -191,6 +191,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.1.1 =
+* Handle situations where readme.txt file in plugin's directory cannot be read or written
+
 = 4.1 =
 * Support for non-alphanumeric characters in URLs, e.g. - languages using characters not in the English alphabet
 * Support for Live Search feature of KnowHow Theme
@@ -243,6 +246,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.1.1 =
+Resolve issues with readme.txt permissions introduced in Version 4.1's compatibility checking
 
 = 4.1 =
 Support non-English alphabet in URLs and Live Search feature in KnowHow Theme

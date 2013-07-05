@@ -16,7 +16,6 @@ add_action( 'admin_menu', 'jr_mt_admin_hook' );
 function jr_mt_admin_hook() {
 	//  Add Settings Page for this Plugin
 	global $jr_mt_plugin_data;
-	$jr_mt_plugin_data = array_merge( $jr_mt_plugin_data, jr_readme() );
 	add_theme_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'manage_options', 'jr_mt_settings', 'jr_mt_settings_page' );
 	add_options_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'manage_options', 'jr_mt_settings', 'jr_mt_settings_page' );
 }
@@ -29,6 +28,7 @@ function jr_mt_admin_hook() {
  */
 function jr_mt_settings_page() {
 	global $jr_mt_plugin_data;
+	$jr_mt_plugin_data = array_merge( $jr_mt_plugin_data, jr_readme() );
 	global $jr_mt_themes_cache;
 	$jr_mt_themes_cache = wp_get_themes();
 	global $jr_mt_plugins_cache;
@@ -45,15 +45,15 @@ function jr_mt_settings_page() {
 	global $jr_mt_options_cache;
 
 	$current_wp_version = get_bloginfo( 'version' );
-	if ( version_compare( $current_wp_version, $jr_mt_plugin_data['Requires at least'], '<' ) ) {
+	if ( version_compare( $current_wp_version, '3.4', '<' ) ) {
 		//	Plugin requires newer version of WordPress
 		echo '<h3>Error</h3><p>Here is the problem:<ul><li> &raquo; This Plugin (' . $jr_mt_plugin_data['Name'] 
 			. ') does not support versions of WordPress before WordPress Version '
-			. $jr_mt_plugin_data['Requires at least'] . '.</li><li> &raquo; You are running WordPress Version ' . $current_wp_version 
+			. '3.4.0' . '.</li><li> &raquo; You are running WordPress Version ' . $current_wp_version 
 			. '.</li><li> &raquo; This Plugin uses the wp_get_themes() function which became available in Version '
 			. '3.4.0 of WordPress.</li></ul></p>';
 	} else {
-		if ( version_compare( $current_wp_version, $jr_mt_plugin_data['Tested up to'], '>' ) ) {
+		if ( $jr_mt_plugin_data['read readme'] && version_compare( $current_wp_version, $jr_mt_plugin_data['Tested up to'], '>' ) ) {
 			/*	WordPress version is too new:
 				When currently-installed version of Plugin was installed, 
 				it did not support currently-installed version of WordPress.  
@@ -239,9 +239,13 @@ function jr_mt_settings_page() {
 			echo '<p>';
 			echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
 			echo '</p>';
-			if ( $current ) {
-				echo '<p>This Plugin (' . $jr_mt_plugin_data['Name'] . ') has been tested with the version of WordPress you are currently running: ' 
-					. $current_wp_version . '</p>';
+			if ( $jr_mt_plugin_data['read readme'] ) {
+				if ( $current ) {
+					echo '<p>This Plugin (' . $jr_mt_plugin_data['Name'] . ') has been tested with the version of WordPress you are currently running: ' 
+						. $current_wp_version . '</p>';
+				}
+			} else {
+				echo '<p>Compatibility checks could not be done because the plugin was unable to read its readme.txt file, likely a user/permissions hosting issue.</p>';
 			}
 			if ( jr_mt_plugin_update_available() ) {
 				echo '<p>A new version of this Plugin (' . $jr_mt_plugin_data['Name'] . ') is available from the WordPress Repository.'

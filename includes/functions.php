@@ -171,24 +171,27 @@ function jr_mt_site_url( $url ) {
 }
 
 function jr_readme() {
-	$readme = array();
+	$readme = array( 'read readme' => FALSE );
 	$file_array = jr_filesystem_text_read('readme.txt', jr_mt_path());
-	//	Get first non-blank line
-	$results = jr_nextline( $file_array, 0 );
-	if ( '===' === substr( $results['line'], 0, 3) ) {
-		$readme['name'] = trim( $results['line'], ' =' );
-		do {
-			$results = jr_nextline( $file_array, $results['index'] );
-			if ( '==' === substr( $results['line'], 0, 2) ) {
-				break;
-			} else {
-				$colon = strpos( $results['line'], ":", 4 );
-				if ( $colon !== FALSE ) {
-					$key = preg_replace( '/\s+/', ' ', trim( substr( $results['line'], 0, $colon ) ) );
-					$readme[$key] = trim( substr( $results['line'], $colon + 1 ) );
+	if ( ( FALSE !== $file_array ) && !is_wp_error( $file_array ) ) {
+		//	Get first non-blank line
+		$results = jr_nextline( $file_array, 0 );
+		if ( '===' === substr( $results['line'], 0, 3) ) {
+			$readme['read readme'] = TRUE;
+			$readme['name'] = trim( $results['line'], ' =' );
+			do {
+				$results = jr_nextline( $file_array, $results['index'] );
+				if ( '==' === substr( $results['line'], 0, 2) ) {
+					break;
+				} else {
+					$colon = strpos( $results['line'], ":", 4 );
+					if ( $colon !== FALSE ) {
+						$key = preg_replace( '/\s+/', ' ', trim( substr( $results['line'], 0, $colon ) ) );
+						$readme[$key] = trim( substr( $results['line'], $colon + 1 ) );
+					}
 				}
-			}
-		} while ( $results['line'] != "" );
+			} while ( $results['line'] != "" );
+		}
 	}
 	return $readme;
 }
