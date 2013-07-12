@@ -1,4 +1,8 @@
 <?php
+//	Exit if .php file accessed directly
+if ( !defined( 'ABSPATH' ) ) exit;
+
+
 /*	require_once( jr_mt_path() . 'includes/debug/debug.php' );
 jr_dump( 'jr_mt_validate_settings $input', $input );
 */

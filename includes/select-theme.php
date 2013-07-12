@@ -1,4 +1,8 @@
 <?php
+//	Exit if .php file accessed directly
+if ( !defined( 'ABSPATH' ) ) exit;
+
+
 //	Select the relevant Theme
 
 add_filter( 'pre_option_stylesheet', 'jr_mt_stylesheet' );

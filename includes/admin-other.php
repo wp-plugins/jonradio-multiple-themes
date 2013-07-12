@@ -1,4 +1,7 @@
 <?php
+//	Exit if .php file accessed directly
+if ( !defined( 'ABSPATH' ) ) exit;
+
 
 add_action( 'all_admin_notices', 'jr_mt_all_admin_notice' );
 //	Runs after admin_menu hook

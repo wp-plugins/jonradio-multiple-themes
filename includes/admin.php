@@ -1,4 +1,7 @@
 <?php
+//	Exit if .php file accessed directly
+if ( !defined( 'ABSPATH' ) ) exit;
+
 
 //	Admin Page
 
@@ -225,6 +228,7 @@ function jr_mt_settings_page() {
 			<ul>
 			<li> &raquo; All Pages</li>
 			<li> &raquo; All Posts</li>
+			<li> &raquo; Everything (see Advanced Settings below)</li> 
 			<li> &raquo; The Site Home</li>
 			<li> &raquo; A Specific Page</li>
 			<li> &raquo; A Specific Post</li>
@@ -237,7 +241,15 @@ function jr_mt_settings_page() {
 				echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
 			}
 			echo '<p>';
-			echo "The Current Theme is <b>$theme</b>. You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages or All Posts and wish to use the Current Theme for a specific Page, Post or other non-Admin page."; 
+			echo "The Current Theme, defined to WordPress in Appearance-Themes admin panel, is <b>$theme</b>.";
+			$settings = get_option( 'jr_mt_settings' );
+			if ( trim( $settings['current'] ) ) {
+				echo " But it is being overridden in Advanced Settings (see below), which set the plugin's default Theme to <b>";
+				echo wp_get_theme( $settings['current'] )->Name;
+				echo '</b>. You will not normally need to specify this default Theme in any of the other Settings on this page, though you will need to specify the WordPress Current Theme wherever you want it appear. Or, if you specify a different Theme for All Pages, All Posts or Everything, and wish to use the default Theme for one or more specific Pages, Posts or other non-Admin pages.';
+			} else {
+				echo ' You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages, All Posts or Everything, and wish to use the Current Theme for one or more specific Pages, Posts or other non-Admin pages.';
+			}
 			echo '</p>';
 			if ( $jr_mt_plugin_data['read readme'] ) {
 				if ( $current ) {
@@ -331,6 +343,17 @@ function jr_mt_admin_init() {
 	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_path_id', 'URL of Page, Post, Prefix or other', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
+	add_settings_section( 'jr_mt_advanced_settings_section', 
+		'Advanced Settings', 
+		'jr_mt_advanced_settings_expl', 
+		'jr_mt_settings_page' 
+	);
+	add_settings_field( 'current', 
+		'Select Theme for Everything, to Override WordPress Current Theme (<b>' . wp_get_theme()->Name . '</b>)', 
+		'jr_mt_echo_current', 
+		'jr_mt_settings_page', 
+		'jr_mt_advanced_settings_section' 
+	);
 }
 
 /**
@@ -348,6 +371,7 @@ function jr_mt_all_settings_expl() {
 	<p>
 	In the <i>next</i> section, you will be able to select a Theme, including the Current Theme, to override any choice you make here, for individual Pages, Posts or
 	any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
+	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
 	</p>
 	<?php
 }
@@ -374,6 +398,7 @@ function jr_mt_delete_settings_expl() {
 	<p>
 	In this section, all entries are displayed for Themes selected for individual Pages, Posts
 	and any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
+	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
 	</p>
 	<p>
 	You can delete any of these entries by filling in the check box beside each one.
@@ -459,9 +484,39 @@ function jr_mt_echo_add_is_prefix() {
 	<?php
 }
 
+/**
+ * Section text for Section4
+ * 
+ * Display an explanation of this Section
+ *
+ */
+function jr_mt_advanced_settings_expl() {
+	?>
+	<p>
+	<b>Warning:</b>
+	As the name of the section implies, Advanced Settings
+	may surprise you with unintended consequences,
+	so please be careful.
+	</p>
+	<p>
+	<b>Theme for Everything</b> simplifies the use of a Theme with Admin panel settings that you need to change frequently,
+	when the Theme is only going to be used on one or more Pages or Posts.
+	The Theme can be set as the WordPress Current Theme through the Appearance-Themes admin panel,
+	and set for specific Pages or Posts using this plugin's settings (above),
+	with another Theme specified below as the plugin's default theme ("Theme for Everything").
+	</p>
+	<?php
+}
+
+function jr_mt_echo_current() {
+	$settings = get_option( 'jr_mt_settings' );
+	jr_mt_themes_field( 'current', $settings['current'], 'jr_mt_settings', TRUE );
+	echo '<br />(select blank entry for default: WordPress Current Theme defined in Appearance-Themes, currently <b>' . wp_get_theme()->Name . '</b>)';
+}
+
 function jr_mt_validate_settings( $input ) {
 	$valid = array();
-	foreach ( array( 'all_pages', 'all_posts', 'site_home' ) as $thing ) {
+	foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $thing ) {
 		$valid[$thing] = $input[$thing];
 	}
 	

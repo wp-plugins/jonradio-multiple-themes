@@ -1,4 +1,8 @@
 <?php
+//	Exit if .php file accessed directly
+if ( !defined( 'ABSPATH' ) ) exit;
+
+
 /**
  * Return WordPress Current Theme, as defined in Appearance Admin panels
  *

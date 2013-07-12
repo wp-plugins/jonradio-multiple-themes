@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.1.1
+Stable tag: 4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 == Description ==
 
-Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home;  a Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL").  Also allows a Theme to be specified for All Pages or All Posts. In turn, even when a Theme is specified for All Pages or All Posts, a different Theme can still be specified for specific Pages or Posts.
+Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home;  a Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL").  Also allows a Theme to be specified for All Pages, All Posts or Everywhere. In turn, even when a Theme is specified for All Pages, All Posts or Everywhere, a different Theme can still be specified for specific Pages or Posts.
 
 Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
 
@@ -32,7 +32,7 @@ Think what you could do if you could easily use more than one Theme on your Word
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
-If a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.
+Normally, if a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.  The plugin has an Advanced Setting "Select Theme for Everything" that can be used to define a default Theme for the plugin to use instead of the WordPress Current Theme.  This is useful for a Theme that has many frequently-used options that are much easier to access when it is the WordPress Current Theme, but there is another Theme to be used everywhere except for a few select Pages or Posts.
 
 When selecting a Theme for Site Home or all or specific Pages, Posts or other non-Admin pages, the Theme must be shown in the list of Available Themes on the Appearance-Themes Admin panel. If necessary, install the Theme.  In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
 
@@ -49,6 +49,13 @@ This section describes how to install the jonradio Multiple Themes plugin and ge
 1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
 
 == Frequently Asked Questions ==
+
+= What if a Theme has a lot of Options that I need to change frequently? =
+
+You will probably want to make it the WordPress Current Theme defined in the Appearance-Themes admin panel,
+so that you will have instant access to the Theme's many Options, especially if the Theme has its own Section(s) of the Admin panel menu.
+
+The plugin's Advanced Setting "Select Theme for Everything" can be used to select another Theme to be used everywhere except for the specific Page(s) or Post(s) where you wish the WordPress Current Theme to appear.
 
 = Will this plugin work with Paid Themes? =
 
@@ -186,10 +193,13 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Screenshots ==
 
-1. Plugin's Admin Page when first installed
-2. Plugin's Admin Page, adding entries
+1. Plugin's Admin Page
 
 == Changelog ==
+
+= 4.2 =
+* Add option to override WordPress Current Theme
+* Security enhancements to eliminate direct execution of .php files
 
 = 4.1.1 =
 * Handle situations where readme.txt file in plugin's directory cannot be read or written
@@ -246,6 +256,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.2 =
+Add "Select Theme for Everything" feature and improve security
 
 = 4.1.1 =
 Resolve issues with readme.txt permissions introduced in Version 4.1's compatibility checking

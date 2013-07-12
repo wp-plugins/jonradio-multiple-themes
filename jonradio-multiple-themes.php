@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.1.1
+Version: 4.2
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -25,6 +25,10 @@ License: GPLv2
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+
+//	Exit if .php file accessed directly
+if ( !defined( 'ABSPATH' ) ) exit;
+
 
 global $jr_mt_incompat_plugins;
 $jr_mt_incompat_plugins = array( 'Theme Test Drive', 'BuddyPress' );
@@ -69,7 +73,6 @@ global $jr_mt_options_cache;
 $all_options = wp_load_alloptions();
 $jr_mt_options_cache['stylesheet'] = $all_options['stylesheet'];
 $jr_mt_options_cache['template'] = $all_options['template'];
-
 	
 register_activation_hook( __FILE__, 'jr_mt_activate' );
 register_deactivation_hook( __FILE__, 'jr_mt_deactivate' );
@@ -95,6 +98,7 @@ function jr_mt_activate1() {
 		'all_pages' => '',
 		'all_posts' => '',
 		'site_home' => '',
+		'current'   => '',
 		'ids'       => array()
 	);
 	//	Nothing happens if Settings already exist
@@ -170,6 +174,10 @@ function jr_mt_version_check() {
 					$ids[$newkey] = $newarr;
 				}
 			}
+			if ( version_compare( $internal_settings['version'], '4.1.2', '<' ) ) {
+				//	Add new Current Theme override option
+				$settings['current'] = '';
+			}
 			$settings['ids'] = $ids;
 			update_option( 'jr_mt_settings', $settings );
 			$internal_settings['version'] = $jr_mt_plugin_data['Version'];
@@ -184,6 +192,13 @@ require_once( jr_mt_path() . 'includes/select-theme.php' );
 if ( is_admin() ) {
 	//	Admin panel
 	require_once( jr_mt_path() . 'includes/admin.php' );
+} else {
+	$settings = get_option( 'jr_mt_settings' );
+	//	Setting of Blank uses WordPress Current Theme value
+	if ( trim( $settings['current'] ) ) {
+		$jr_mt_options_cache['stylesheet'] = $settings['current'];
+		$jr_mt_options_cache['template'] = $settings['current'];
+	}
 }
 
 /*	Settings structure:
@@ -191,6 +206,7 @@ if ( is_admin() ) {
 	['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
 	['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
 	['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
+	['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
 	['ids']
 		[id] - zero length string or WordPress ID of Page, Post, etc.
 			['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
