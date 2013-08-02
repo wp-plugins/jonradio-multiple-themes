@@ -67,7 +67,7 @@ function jr_mt_chosen() {
 		}
 	} else {
 		//	Non-Admin page, i.e. - Public Site, etc.
-		extract( jr_mt_url_to_id( rawurldecode( 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) ) );	
+		extract( jr_mt_url_to_id( rawurldecode(  parse_url( home_url(), PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) ) );	
 		if ( ( 'livesearch' === $type ) && ( FALSE !== $livesearch_theme = jr_mt_livesearch_theme() ) ) {
 			return $livesearch_theme;
 		}

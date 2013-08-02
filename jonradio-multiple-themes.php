@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.2
+Version: 4.3
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -107,7 +107,7 @@ function jr_mt_activate1() {
 	global $jr_mt_plugin_data;
 	$internal_settings = array(
 		'version' => $jr_mt_plugin_data['Version']
-	);	// Only records you version when plugin installed, not current version
+	);	// Only records your version when plugin installed, not current version
 	add_option( 'jr_mt_internal_settings', $internal_settings );	//	Nothing happens if Settings already exist
 }
 

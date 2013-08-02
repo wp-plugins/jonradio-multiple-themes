@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.2
+Stable tag: 4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.3 =
+* Add SSL support so that visitors can view the WordPress site with https:// URLs and Site URL can be https://
+
 = 4.2 =
 * Add option to override WordPress Current Theme
 * Security enhancements to eliminate direct execution of .php files
@@ -256,6 +259,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.3 =
+Add SSL support for sites with https:// URLs
 
 = 4.2 =
 Add "Select Theme for Everything" feature and improve security
