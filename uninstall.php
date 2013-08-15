@@ -16,4 +16,5 @@ if ( function_exists('is_multisite') && is_multisite() ) {
 	delete_option( 'jr_mt_settings' );
 	delete_option( 'jr_mt_internal_settings' );
 }
+
 ?>

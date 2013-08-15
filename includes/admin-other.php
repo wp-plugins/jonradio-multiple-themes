@@ -2,28 +2,6 @@
 //	Exit if .php file accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-/*	For future needs:
-add_action( 'all_admin_notices', 'jr_mt_all_admin_notice' );
-//	Runs after admin_menu hook
-
-function jr_mt_all_admin_notice() {
-	if ( 
-		in_array(
-				get_current_user_id(), 
-				get_users( 
-					array(
-						'role' => 'administrator',
-						'fields' => 'ID'
-					)
-				) 
-			) 
-		)
-	{
-		//	Administrators only see this:
-		// echo '<div class="error">Should Show on Every Admin Page</div>';
-	}
-}
-*/
 
 // Add Link to the plugin's entry on the Admin "Plugins" Page, for easy access
 add_filter( 'plugin_action_links_' . jr_mt_plugin_basename(), 'jr_mt_plugin_action_links', 10, 1 );

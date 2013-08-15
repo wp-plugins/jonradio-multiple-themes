@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.3
+Stable tag: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,11 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.4 =
+* Rewrite Plugin's handling of its own version number to fix issues when new sites are activated in a Network and plugin is Network-Activated
+* Prevent Fatal Error for Versions of WordPress before 3.4, and Deactivate Plugin instead, because plugin requires at least 3.4 to function
+* Security:  require "switch_themes" Capability rather than "manage_options" Capability to access plugin's Settings page
+
 = 4.3 =
 * Add SSL support so that visitors can view the WordPress site with https:// URLs and Site URL can be https://
 
@@ -259,6 +264,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.4 =
+Fix errors when new Network site created or old WordPress version used, and correct Setting page Permissions to "switch_themes"
 
 = 4.3 =
 Add SSL support for sites with https:// URLs
