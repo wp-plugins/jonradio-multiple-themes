@@ -8,7 +8,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 require_once( jr_mt_path() . 'includes/admin-other.php' );
 
 add_action( 'admin_menu', 'jr_mt_admin_hook' );
-//	Runs just after admin_init (below)
+//	Runs just before admin_init (below)
 
 /**
  * Add Admin Menu item for plugin

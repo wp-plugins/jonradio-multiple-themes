@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.4
+Stable tag: 4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,13 +40,13 @@ I hesitate to use the term **Theme Switcher** to describe this plugin, because t
 
 == Installation ==
 
-This section describes how to install the jonradio Multiple Themes plugin and get it working.
+This section describes how to install the *jonradio Multiple Themes* plugin and get it working.
 
-1. Use "Add Plugin" within the WordPress Admin panel to download and install this jonradio Multiple Themes plugin from the WordPress.org plugin repository (preferred method).  Or download and unzip this plugin, then upload the `/jonradio-multiple-themes/` directory to your WordPress web site's `/wp-content/plugins/` directory.
-1. Activate the jonradio Multiple Themes plugin through the 'Plugins' menu in WordPress.  If you have a WordPress Network ("Multisite"), you can either Network Activate this plugin, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.
-1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
-1. Select Themes to be used on the Plugin's "Multiple Themes plugin" page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page.
-1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme other than the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
+1. Use **Add Plugin** within the WordPress Admin panel to download and install this *jonradio Multiple Themes* plugin from the WordPress.org plugin repository (preferred method).  Or download and unzip this plugin, then upload the `/jonradio-multiple-themes/` directory to your WordPress web site's `/wp-content/plugins/` directory.
+1. Activate the *jonradio Multiple Themes* plugin through the **Installed Plugins** Admin panel in WordPress.  If you have a WordPress Network ("Multisite"), you can either **Network Activate** this plugin through the **Installed Plugins** Network Admin panel, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.  Alternatively, to avoid this confusion, you can install the *jonradio Reveal Network Activated Plugins* plugin.
+1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network ("Multisite"), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
+1. Select Themes to be used on the plugin's **Multiple Themes plugin** Settings page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this Settings page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page of the Admin panel.
+1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme *other than* the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
 
 == Frequently Asked Questions ==
 
@@ -55,7 +55,7 @@ This section describes how to install the jonradio Multiple Themes plugin and ge
 You will probably want to make it the WordPress Current Theme defined in the Appearance-Themes admin panel,
 so that you will have instant access to the Theme's many Options, especially if the Theme has its own Section(s) of the Admin panel menu.
 
-The plugin's Advanced Setting "Select Theme for Everything" can be used to select another Theme to be used everywhere except for the specific Page(s) or Post(s) where you wish the WordPress Current Theme to appear.
+The plugin's Advanced Setting **Select Theme for Everything** can be used to select another Theme to be used everywhere except for the specific Page(s) or Post(s) where you wish the WordPress Current Theme to appear.
 
 = Will this plugin work with Paid Themes? =
 
@@ -197,6 +197,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.5 =
+* Check with get_page_by_path() and get_posts( array( 'name' => $page_url ) ) if url_to_postid() fails to find URL input
+
 = 4.4 =
 * Rewrite Plugin's handling of its own version number to fix issues when new sites are activated in a Network and plugin is Network-Activated
 * Prevent Fatal Error for Versions of WordPress before 3.4, and Deactivate Plugin instead, because plugin requires at least 3.4 to function
@@ -264,6 +267,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.5 =
+Handle URL input for non-standard Pages and Posts
 
 = 4.4 =
 Fix errors when new Network site created or old WordPress version used, and correct Setting page Permissions to "switch_themes"

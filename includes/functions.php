@@ -84,7 +84,21 @@ function jr_mt_url_to_id( $url_orig ) {
 				}
 				$id = url_to_postid( $url );
 				if ( $id == 0 ) {
-					$id = FALSE;
+					$page = get_page_by_path( $page_url );
+					if ( $page === NULL ) {
+						//	get_page_by_path() returns NULL for Posts, Home Page, Admin, etc.
+						//	So, check for Posts:
+						$post = get_posts( array( 'name' => $page_url ) );
+						if ( empty( $post ) ) {
+							$id = FALSE;
+						} else {
+							$id = $post[0]->ID;
+							$type = 'posts';
+						}
+					} else {
+						$id = $page->ID;
+						$type = 'pages';
+					}
 				} else {
 					$post_obj = get_post( $id );
 					if ( $post_obj->post_type == 'page' ) {
