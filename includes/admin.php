@@ -521,7 +521,19 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	
-	$url = rawurldecode( trim( $input['add_path_id'] ) );
+	/*	Handle troublesome %E2%80%8E UTF Left-to-right Mark (LRM) suffix first.
+	*/
+	if ( FALSE === stripos( $input['add_path_id'], '%E2%80%8E' ) ) {
+		if ( FALSE === stripos( rawurlencode( $input['add_path_id'] ), '%E2%80%8E' ) ) {
+			$url = $input['add_path_id'];
+		} else {
+			$url = rawurldecode( str_ireplace( '%E2%80%8E', '', rawurlencode( $input['add_path_id'] ) ) );
+		}
+	} else {
+		$url = str_ireplace( '%E2%80%8E', '', $input['add_path_id'] );
+	}
+	$url = rawurldecode( trim( $url ) );
+	
 	if ( ( empty( $input['add_theme'] ) && !empty( $url ) ) || ( !empty( $input['add_theme'] ) && empty( $url ) ) ) {
 		add_settings_error(
 			'jr_mt_settings',

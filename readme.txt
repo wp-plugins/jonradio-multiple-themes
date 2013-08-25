@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.6
-Stable tag: 4.5
+Stable tag: 4.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.5.1 =
+* Remove %E2%80%8E suffix from URLs being entered
+
 = 4.5 =
 * Check with get_page_by_path() and get_posts( array( 'name' => $page_url ) ) if url_to_postid() fails to find URL input
 
@@ -267,6 +270,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.5.1 =
+Fix %E2%80%8E suffix problem on input URLs
 
 = 4.5 =
 Handle URL input for non-standard Pages and Posts
