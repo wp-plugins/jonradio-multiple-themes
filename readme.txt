@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 3.6
-Stable tag: 4.5.1
+Tested up to: 3.6.1
+Stable tag: 4.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.5.2 =
+* Eliminate Fatal Error if php zip_open() function is not available, when readme.txt is out of date
+
 = 4.5.1 =
 * Remove %E2%80%8E suffix from URLs being entered
 
@@ -270,6 +273,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.5.2 =
+Fix zip_open Fatal Error
 
 = 4.5.1 =
 Fix %E2%80%8E suffix problem on input URLs

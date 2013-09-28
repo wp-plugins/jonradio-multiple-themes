@@ -90,7 +90,8 @@ function jr_mt_settings_page() {
 						to indicate that it now supports the installed version of WordPress.
 					
 						Latest version of Plugin has already been installed, but readme.txt is out of date,
-						so update readme.txt.																*/
+						so update readme.txt.	...if you can
+					*/
 					
 					$errmsg_before = '<h3>Warning</h3><p>Here is the problem:<ul><li> &raquo; This version (' . $jr_mt_plugin_data['Version']
 						. ') of this Plugin (' . $jr_mt_plugin_data['Name']
@@ -106,71 +107,77 @@ function jr_mt_settings_page() {
 						//	Error
 						echo $errmsg_before . 'The plugin failed to completely download from the WordPress Repository with 300 seconds' . $errmsg_after;
 					} else {
-						if ( is_int( $resource_handle = zip_open( $file_name ) ) ) {
-							//	Error
-							echo $errmsg_before 
-								. "php function zip_open error number $resource_handle while attempting to open the plugin's"
-								. 'compressed .zip file successfully downloaded from the WordPress Plugin Repository' 
-								. $errmsg_after;
-						} else {
-							$find_readme = TRUE;
-							while ( $find_readme && ( FALSE !== $dir_ent = zip_read( $resource_handle ) ) ) {
-								if ( is_int( $dir_ent ) ) {
-									//	Error code
-									echo $errmsg_before 
-										. "php function zip_read error number $dir_ent while attempting to read the plugin's"
-										. ' compressed .zip file successfully downloaded from the WordPress Plugin Repository' 
-										. $errmsg_after;
-									//	Get out of While loop
-									$find_readme = FALSE;	
-								} else {
-									//	Wait until the While loop gets to the readme.txt entry in the Plugin's Zip file
-									if ( zip_entry_name( $dir_ent ) == $jr_mt_plugin_data['slug'] . '/readme.txt' ) {
-										if ( FALSE === zip_entry_open( $resource_handle, $dir_ent, 'rb' ) ) {
-											//	Error
-											echo $errmsg_before 
-												. 'php function zip_entry_open failed to open readme.txt file compressed within plugin .zip file in WordPress Repository' 
-												. $errmsg_after;
-										} else {
-											$filesize = zip_entry_filesize( $dir_ent );
-											if ( !is_int( $filesize ) || ( $filesize < 100 ) ) {
+						if ( function_exists( 'zip_open' ) ) {
+							if ( is_int( $resource_handle = zip_open( $file_name ) ) ) {
+								//	Error
+								echo $errmsg_before 
+									. "php function zip_open error number $resource_handle while attempting to open the plugin's"
+									. 'compressed .zip file successfully downloaded from the WordPress Plugin Repository' 
+									. $errmsg_after;
+							} else {
+								$find_readme = TRUE;
+								while ( $find_readme && ( FALSE !== $dir_ent = zip_read( $resource_handle ) ) ) {
+									if ( is_int( $dir_ent ) ) {
+										//	Error code
+										echo $errmsg_before 
+											. "php function zip_read error number $dir_ent while attempting to read the plugin's"
+											. ' compressed .zip file successfully downloaded from the WordPress Plugin Repository' 
+											. $errmsg_after;
+										//	Get out of While loop
+										$find_readme = FALSE;	
+									} else {
+										//	Wait until the While loop gets to the readme.txt entry in the Plugin's Zip file
+										if ( zip_entry_name( $dir_ent ) == $jr_mt_plugin_data['slug'] . '/readme.txt' ) {
+											if ( FALSE === zip_entry_open( $resource_handle, $dir_ent, 'rb' ) ) {
 												//	Error
 												echo $errmsg_before 
-													. 'Size, in bytes, of readme.txt file is being incorrectly reported by php function zip_entry_filesize as '
-													. var_export( $filesize, TRUE )
+													. 'php function zip_entry_open failed to open readme.txt file compressed within plugin .zip file in WordPress Repository' 
 													. $errmsg_after;
 											} else {
-												$readme_content = zip_entry_read( $dir_ent, $filesize );
-												if ( ( $readme_content === FALSE ) || ( $readme_content === '' ) ) {
+												$filesize = zip_entry_filesize( $dir_ent );
+												if ( !is_int( $filesize ) || ( $filesize < 100 ) ) {
 													//	Error
 													echo $errmsg_before 
-														. 'php function zip_entry_read failed to read readme.txt file compressed within plugin .zip file in WordPress Repository'
+														. 'Size, in bytes, of readme.txt file is being incorrectly reported by php function zip_entry_filesize as '
+														. var_export( $filesize, TRUE )
 														. $errmsg_after;
 												} else {
-													if ( FALSE === zip_entry_close( $dir_ent ) ) {
+													$readme_content = zip_entry_read( $dir_ent, $filesize );
+													if ( ( $readme_content === FALSE ) || ( $readme_content === '' ) ) {
 														//	Error
 														echo $errmsg_before 
-															. 'php function zip_entry_close failed to close readme.txt file compressed within plugin .zip file in WordPress Repository'
+															. 'php function zip_entry_read failed to read readme.txt file compressed within plugin .zip file in WordPress Repository'
 															. $errmsg_after;
 													} else {
-														//	Alternate:  file_put_contents( jr_mt_path() . 'readme.txt', $readme_content );
-														$write_return = jr_filesystem_text_write( $readme_content, 'readme.txt', jr_mt_path() );
-														if ( is_wp_error( $write_return ) || ( FALSE === $write_return ) ) {
+														if ( FALSE === zip_entry_close( $dir_ent ) ) {
 															//	Error
 															echo $errmsg_before 
-																. 'WP_filesystem failed to store readme.txt file as part of download/update process from WordPress Repository'
+																. 'php function zip_entry_close failed to close readme.txt file compressed within plugin .zip file in WordPress Repository'
 																. $errmsg_after;
+														} else {
+															//	Alternate:  file_put_contents( jr_mt_path() . 'readme.txt', $readme_content );
+															$write_return = jr_filesystem_text_write( $readme_content, 'readme.txt', jr_mt_path() );
+															if ( is_wp_error( $write_return ) || ( FALSE === $write_return ) ) {
+																//	Error
+																echo $errmsg_before 
+																	. 'WP_filesystem failed to store readme.txt file as part of download/update process from WordPress Repository'
+																	. $errmsg_after;
+															}
 														}
 													}
 												}
 											}
+											//	Get out of While loop because we have found and processed readme.txt
+											$find_readme = FALSE;
 										}
-										//	Get out of While loop because we have found and processed readme.txt
-										$find_readme = FALSE;
 									}
 								}
+								zip_close( $resource_handle );
 							}
-							zip_close( $resource_handle );
+						} else {
+							echo $errmsg_before 
+								. "php zip_open function is not defined, so readme.txt could not be updated from WordPress Plugin Repository"
+								. $errmsg_after;
 						}
 						// Delete temporary download file
 						if ( !unlink( $file_name ) ) {
@@ -269,7 +276,7 @@ function jr_mt_settings_page() {
 
 	echo '<hr /><h3>System Information</h3><p>You are currently running:<ul>';
 	echo "<li> &raquo; The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>";
-	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is " . rtrim( jr_mt_path(), '/' ) . '<li>';
+	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is " . rtrim( jr_mt_path(), '/' ) . '</li>';
 	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is " . plugins_url() . "/{$jr_mt_plugin_data['slug']}</li>";
 	echo "<li> &raquo; WordPress Version $current_wp_version</li>";
 	echo '<li> &nbsp; &raquo;&raquo; WordPress language is set to ' , get_bloginfo( 'language' ) . '</li>';
