@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 3.7
-Stable tag: 4.5.2
+Tested up to: 3.7.1
+Stable tag: 4.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 == Description ==
 
-Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home;  a Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL").  Also allows a Theme to be specified for All Pages, All Posts or Everywhere. In turn, even when a Theme is specified for All Pages, All Posts or Everywhere, a different Theme can still be specified for specific Pages or Posts.
+Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  A Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL"), and a Query Keyword feature allows a Theme to be selected whenever a specified ?keyword= or &keyword= is found in the URL.  A Theme can also be specified for All Pages, All Posts or Everywhere. In turn, even when a Theme is specified for All Pages, All Posts or Everywhere, a different Theme can still be specified for specific Pages or Posts.
 
 Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
 
@@ -31,6 +31,8 @@ Think what you could do if you could easily use more than one Theme on your Word
 **Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
+
+To select any URL on the site that contains a specified Query Keyword ("?keyword=" or "&keyword="), a "Query Keyword" can be created.
 
 Normally, if a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.  The plugin has an Advanced Setting "Select Theme for Everything" that can be used to define a default Theme for the plugin to use instead of the WordPress Current Theme.  This is useful for a Theme that has many frequently-used options that are much easier to access when it is the WordPress Current Theme, but there is another Theme to be used everywhere except for a few select Pages or Posts.
 
@@ -197,6 +199,10 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.6 =
+* Add option to select a Theme based on Query Keyword in URL
+* Rearrange Settings page
+
 = 4.5.2 =
 * Eliminate Fatal Error if php zip_open() function is not available, when readme.txt is out of date
 
@@ -273,6 +279,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.6 =
+Select Theme by Query Keyword in URL
 
 = 4.5.2 =
 Fix zip_open Fatal Error

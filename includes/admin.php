@@ -233,6 +233,7 @@ function jr_mt_settings_page() {
 		<li> &raquo; A Specific Page</li>
 		<li> &raquo; A Specific Post</li>
 		<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
+		<li> &raquo; A Specific Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code> in any URL)</li>
 		</ul>
 		</p>
 		<h3>Important Notes</h3>
@@ -306,6 +307,7 @@ add_action( 'admin_init', 'jr_mt_admin_init' );
  */
 function jr_mt_admin_init() {
 	register_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
+	$settings = get_option( 'jr_mt_settings' );
 	add_settings_section( 'jr_mt_all_settings_section', 
 		'For All Pages, All Posts and/or Site Home', 
 		'jr_mt_all_settings_expl', 
@@ -325,26 +327,36 @@ function jr_mt_admin_init() {
 		'jr_mt_settings_page', 
 		'jr_mt_all_settings_section' 
 	);
-	$settings = get_option( 'jr_mt_settings' );
-	$ids = $settings['ids'];
-	if ( !empty( $ids) ) {
-		add_settings_section( 'jr_mt_delete_settings_section', 
-			'To Display or Delete Theme Selections for Individual Pages or Posts', 
-			'jr_mt_delete_settings_expl', 
-			'jr_mt_settings_page' 
-		);
-		add_settings_field( 'del_entry', 'Entries:', 'jr_mt_echo_delete_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
-	}
 	add_settings_section( 'jr_mt_single_settings_section', 
 		'For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix', 
 		'jr_mt_single_settings_expl', 
-		'jr_mt_settings_page' 
+		'jr_mt_settings_page'
 	);
 	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_path_id', 'URL of Page, Post, Prefix or other', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
+	add_settings_section( 'jr_mt_query_section', 
+		'For A Query Keyword on any Page, Post or other non-Admin page', 
+		'jr_mt_query_expl', 
+		'jr_mt_settings_page' 
+	);
+	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
+	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
+	if ( !empty( $settings['ids']) || !empty( $settings['query'] ) ) {
+		add_settings_section( 'jr_mt_delete_settings_section', 
+			'Current Theme Selection Entries', 
+			'jr_mt_delete_settings_expl', 
+			'jr_mt_settings_page' 
+		);
+		if ( !empty( $settings['ids'] ) ) {
+			add_settings_field( 'del_entry', 'Page/Post/Prefix Entries:', 'jr_mt_echo_delete_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
+		}
+		if ( !empty( $settings['query'] ) ) {
+			add_settings_field( 'del_query_entry', 'Query Keyword Entries:', 'jr_mt_echo_delete_query_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
+		}
+	}
 	add_settings_section( 'jr_mt_advanced_settings_section', 
-		'Advanced Settings', 
+		'Advanced Setting', 
 		'jr_mt_advanced_settings_expl', 
 		'jr_mt_settings_page' 
 	);
@@ -354,37 +366,6 @@ function jr_mt_admin_init() {
 		'jr_mt_settings_page', 
 		'jr_mt_advanced_settings_section' 
 	);
-}
-
-/**
- * Section text for Section1
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_all_settings_expl() {
-	?>
-	<p>
-	In this section, you can select a different Theme for All Pages, All Posts and/or Site Home.
-	To remove a previously selected Theme, select the blank entry from the drop-down list.
-	</p>
-	<p>
-	In the <i>next</i> section, you will be able to select a Theme, including the Current Theme, to override any choice you make here, for individual Pages, Posts or
-	any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
-	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
-	</p>
-	<?php
-}
-
-function jr_mt_echo_all_things( $thing ) {
-	$settings = get_option( 'jr_mt_settings' );
-	$field = 'all_' . strtolower( $thing['thing'] );
-	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings', TRUE );
-}
-
-function jr_mt_echo_site_home() {
-	$settings = get_option( 'jr_mt_settings' );
-	jr_mt_themes_field( 'site_home', $settings['site_home'], 'jr_mt_settings', FALSE );
 }
 
 /**
@@ -398,19 +379,25 @@ function jr_mt_delete_settings_expl() {
 	<p>
 	In this section, all entries are displayed for Themes selected for individual Pages, Posts
 	and any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
-	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
+	Or groups of Pages, Posts or any other non-Admin pages that share the same <b>URL Prefix</b> 
+	or <b>Query Keyword</b> (<code>?keyword=value</code> or <code>&keyword=value</code>).
 	</p>
 	<p>
-	You can delete any of these entries by filling in the check box beside each one.
-	To change the Theme for an entry, add the same entry with a different Theme in the section below this one.</p>
+	You can delete any of these entries by filling in the check box beside each one
+	and clicking the <b>Save Changes</b> button.
+	To change the Theme for an entry, add the same entry with a different Theme in one of the sections above this one.</p>
 	<?php
 }
 
 function jr_mt_echo_delete_entry() {
-	$entry_num = 0;
 	$settings = get_option( 'jr_mt_settings' );
+	$first = TRUE;
 	foreach ( $settings['ids'] as $path_id => $opt_array ) {
-		++$entry_num;
+		if ( $first ) {
+			$first = FALSE;
+		} else {
+			echo '<br />';
+		}
 		echo "Delete <input type='checkbox' id='del_entry' name='jr_mt_settings[del_entry][]' value='$path_id' /> &nbsp; Theme="
 			. wp_get_theme( $opt_array['theme'] )->Name . '; ';
 		if ( $path_id == '' ) {
@@ -439,8 +426,72 @@ function jr_mt_echo_delete_entry() {
 				}
 			}
 		}
-		echo '<br />';
 	}
+}
+
+function jr_mt_echo_delete_query_entry() {
+	$settings = get_option( 'jr_mt_settings' );
+	$three_dots = '&#133;';
+	$first = TRUE;
+	foreach ( $settings['query'] as $order => $entry ) {
+		if ( $first ) {
+			$first = FALSE;
+		} else {
+			echo '<br />';
+		}
+		foreach ( $entry as $keyword => $theme ) {
+			echo "Delete <input type='checkbox' id='del_query_entry' name='jr_mt_settings[del_query_entry][]' value='$order' /> &nbsp; Theme="
+				. wp_get_theme( $theme )->Name . '; '
+				. 'Query='
+				. '<code>'
+				. trim( get_home_url(), '\ /' ) 
+				. "/</code>$three_dots<code>/?"
+				. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt$order' value='$keyword' size='"
+				. mb_strlen( $keyword )
+				. "' /></b>"
+				. '=</code>'
+				. $three_dots;
+		}
+	}
+}
+
+/**
+ * Section text for Section1
+ * 
+ * Display an explanation of this Section
+ *
+ */
+function jr_mt_all_settings_expl() {
+	?>
+	<p>
+	In this section, you can select a different Theme for All Pages, All Posts and/or Site Home.
+	To remove a previously selected Theme, select the blank entry from the drop-down list.
+	</p>
+	<p>
+	In the <i>next</i> section, you will be able to select a Theme, including the Current Theme, to override any choice you make here, for individual Pages, Posts or
+	any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
+	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
+	</p>
+	<p>	
+	There is also a Query Keyword section 
+	farther down this Settings page
+	that allows
+	you to select a Theme to use whenever a specified 
+	Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code>)
+	appears in the URL of any Page, Post or other non-Admin page.
+	</p>
+	<?php
+}
+
+function jr_mt_echo_all_things( $thing ) {
+	$settings = get_option( 'jr_mt_settings' );
+	$field = 'all_' . strtolower( $thing['thing'] );
+	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings', TRUE );
+}
+
+function jr_mt_echo_site_home() {
+	$settings = get_option( 'jr_mt_settings' );
+	jr_mt_themes_field( 'site_home', $settings['site_home'], 'jr_mt_settings', FALSE );
 }
 
 /**
@@ -475,7 +526,7 @@ function jr_mt_echo_add_path_id() {
 	<br />
 	URL must begin with
 	<?php
-	echo trim( get_home_url(), '\ /' ) . '/';
+	echo '<code>' . trim( get_home_url(), '\ /' ) . '/</code>';
 }
 
 function jr_mt_echo_add_is_prefix() {
@@ -485,7 +536,45 @@ function jr_mt_echo_add_is_prefix() {
 }
 
 /**
- * Section text for Section4
+ * Section text for Section5
+ * 
+ * Display an explanation of this Section
+ *
+ */
+function jr_mt_query_expl() {
+	?>
+	<p>
+	Select a Theme to use 
+	whenever a specified Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code>)
+	is found in the URL of
+	any Page, Post or
+	any other non-Admin page.
+	And click the <b>Save Changes</b> button to add the entry.
+	</p>
+	<p>
+	<b>
+	Note
+	</b>
+	that Query Keyword takes precedence over all other types of Theme selection entries.
+	For example, 
+	<?php
+	echo '<code>' . trim( get_home_url(), '\ /' ) . '?firstname=dorothy</code>'
+		. ' would use the Theme specified for the <code>dorothy</code> keyword, not the Theme specified for Site Home.	</p>';
+}
+function jr_mt_echo_add_query_theme() {
+	jr_mt_themes_field( 'add_query_theme', '', 'jr_mt_settings', FALSE );
+}
+function jr_mt_echo_add_query_keyword() {
+	$three_dots = '&#133;';
+	echo '<code>'
+		. trim( get_home_url(), '\ /' ) 
+		. "/</code>$three_dots<code>/?"
+		. '<input id="add_query_keyword" name="jr_mt_settings[add_query_keyword]" type="text" size="20" maxlength="64" value="" />=</code>'
+		. $three_dots;
+}
+
+/**
+ * Section text for Section6
  * 
  * Display an explanation of this Section
  *
@@ -522,9 +611,15 @@ function jr_mt_validate_settings( $input ) {
 	
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
+	$query = $settings['query'];
 	if ( isset ( $input['del_entry'] ) ) {
 		foreach ( $input['del_entry'] as $del_entry ) {
 			unset( $ids[$del_entry] );
+		}
+	}
+	if ( isset ( $input['del_query_entry'] ) ) {
+		foreach ( $input['del_query_entry'] as $del_entry ) {
+			unset( $query[$del_entry] );
 		}
 	}
 	
@@ -629,6 +724,38 @@ function jr_mt_validate_settings( $input ) {
 			}
 		}
 	}
+	
+	/*	Data Sanitization needed here
+	*/
+	$keyword = trim( $input['add_query_keyword'] );
+	if ( ( empty( $input['add_query_theme'] ) && !empty( $keyword ) ) || ( !empty( $input['add_query_theme'] ) && empty( $keyword ) ) ) {
+		add_settings_error(
+			'jr_mt_settings',
+			'jr_mt_emptyerror',
+			'Both Query Keyword and Theme must be specified to add an Individual Query entry',
+			'error'
+		);		
+	} else {
+		if ( !empty( $keyword ) ) {
+			/*	If there is an existing entry for the Keyword,
+				then replace it.
+				Otherwise, create a new entry.
+			*/
+			$found = FALSE;
+			foreach ( $query as $index => $array ) {
+				foreach ( $array as $key => $theme ) {
+					if ( $key === $keyword ) {
+						$query[$index] = array( $key => $input['add_query_theme'] );
+						$found = TRUE;
+					}
+				}
+			}
+			if ( !$found ) {
+				$query[] = array( $keyword => $input['add_query_theme'] );
+			}
+		}
+	}
+	
 	$errors = get_settings_errors();
 	if ( empty( $errors ) ) {
 		add_settings_error(
@@ -639,6 +766,7 @@ function jr_mt_validate_settings( $input ) {
 		);	
 	}
 	$valid['ids'] = $ids;
+	$valid['query'] = $query;
 	return $valid;
 }
 

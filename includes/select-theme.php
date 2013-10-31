@@ -56,22 +56,33 @@ function jr_mt_theme( $option ) {
 
 //	Returns FALSE for Current Theme
 function jr_mt_chosen() {	
+	parse_str( $_SERVER['QUERY_STRING'], $keywords );
 	if ( is_admin() ) {
 		//	Admin panel
 		//	return P2 theme if p2ajax= is present; current theme otherwise
-		parse_str( $_SERVER['QUERY_STRING'], $keywords );
 		if ( isset( $keywords['p2ajax'] ) && array_key_exists( 'p2', wp_get_themes() ) ) {
 			$theme = 'p2';
 		} else {
 			$theme = FALSE;	// Current Theme
 		}
 	} else {
-		//	Non-Admin page, i.e. - Public Site, etc.
+		/*	Non-Admin page, i.e. - Public Site, etc.
+		
+			Begin by checking for any Query keywords specified by the Admin in Settings
+		*/
+		$settings = get_option( 'jr_mt_settings' );
+		foreach ( $settings['query'] as $order => $entry ) {
+			foreach ( $entry as $keyword => $theme ) {
+				if ( isset( $keywords[$keyword] ) ) {
+					return $theme;
+				}
+			}
+		}
+		
 		extract( jr_mt_url_to_id( rawurldecode(  parse_url( home_url(), PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) ) );	
 		if ( ( 'livesearch' === $type ) && ( FALSE !== $livesearch_theme = jr_mt_livesearch_theme() ) ) {
 			return $livesearch_theme;
 		}
-		$settings = get_option( 'jr_mt_settings' );
 		if ( $home ) {
 			if ( trim( $settings['site_home'] ) != '' ) {
 				return $settings['site_home'];
