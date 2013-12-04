@@ -368,4 +368,11 @@ function jr_mt_themes_defined() {
 	return array_unique( $themes );
 }
 
+function jr_mt_prep_query_value( $value ) {
+	return str_ireplace( '%e2%80%8e', '', mb_strtolower( trim( $value ) ) );
+}
+function jr_mt_prep_query_keyword( $keyword ) {
+	return jr_mt_prep_query_value( $keyword );
+}
+
 ?>

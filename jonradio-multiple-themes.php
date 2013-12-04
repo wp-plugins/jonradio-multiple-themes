@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.6
+Version: 4.7
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -122,6 +122,8 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 		$old_version = $jr_mt_plugin_data['Version'];
 	}
 	
+	require_once( jr_mt_path() . 'includes/functions.php' );
+	
 	if ( version_compare( $old_version, $jr_mt_plugin_data['Version'], '!=' ) ) {
 		if ( isset( $settings['ids'] ) && is_array( $settings['ids'] ) ) {
 			$ids = $settings['ids'];
@@ -178,12 +180,22 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 			//	Add new Query Keyword override option
 			$settings['query'] = array();
 		}
+		if ( version_compare( $old_version, '4.7', '<' ) ) {
+			/*	Change the format of the Query array
+			*/
+			$query = array();
+			foreach ( $settings['query'] as $number => $keyword_array ) {
+				foreach ( $keyword_array as $keyword => $theme ) {
+					$query[ jr_mt_prep_query_keyword( $keyword ) ]['*'] = $theme;
+				}
+			}
+			$settings['query'] = $query;
+		}
 		
 		$settings['ids'] = $ids;
 		update_option( 'jr_mt_settings', $settings );
 	}
 	
-	require_once( jr_mt_path() . 'includes/functions.php' );
 	require_once( jr_mt_path() . 'includes/select-theme.php' );
 	
 	if ( is_admin() ) {

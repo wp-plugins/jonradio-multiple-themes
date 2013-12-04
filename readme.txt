@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.8
-Stable tag: 4.6
+Stable tag: 4.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,13 +26,13 @@ Think what you could do if you could easily use more than one Theme on your Word
 * Host multiple mini-web sites on your WordPress site, each with a different Theme
 * When a larger version of an image attachment is displayed, for example, when clicking on a gallery image thumbnail, use a different theme to display it, for one or all images attached to a Page or Post
 
-**Use with other Plugins**:  **BuddyPress** and Theme Test Drive plugins must both be Deactivated when jonradio Multiple Themes is Activated
+**Use with other Plugins**:  **BuddyPress**, Polylang and Theme Test Drive plugins must all be Deactivated when jonradio Multiple Themes is Activated
 
 **Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
-To select any URL on the site that contains a specified Query Keyword ("?keyword=" or "&keyword="), a "Query Keyword" can be created.
+To select any URL on the site that contains a specified Query Keyword ("?keyword=" or "&keyword=") or Query Keyword=Value combination ("?keyword=value" or "&keyword=value"), a "Query Keyword" entry can be created.
 
 Normally, if a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.  The plugin has an Advanced Setting "Select Theme for Everything" that can be used to define a default Theme for the plugin to use instead of the WordPress Current Theme.  This is useful for a Theme that has many frequently-used options that are much easier to access when it is the WordPress Current Theme, but there is another Theme to be used everywhere except for a few select Pages or Posts.
 
@@ -199,6 +199,11 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.7 =
+* Add option to select a Theme based on Query Keyword and Value pair in URL
+* Redesign how Query entries are stored
+* Full testing completed with WordPress Version 3.8
+
 = 4.6 =
 * Add option to select a Theme based on Query Keyword in URL
 * Rearrange Settings page
@@ -279,6 +284,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.6 =
+Select Theme by Query Keyword/Value pair in URL
 
 = 4.6 =
 Select Theme by Query Keyword in URL

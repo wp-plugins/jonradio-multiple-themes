@@ -56,7 +56,11 @@ function jr_mt_theme( $option ) {
 
 //	Returns FALSE for Current Theme
 function jr_mt_chosen() {	
-	parse_str( $_SERVER['QUERY_STRING'], $keywords );
+	parse_str( $_SERVER['QUERY_STRING'], $keywords_raw );
+	$keywords = array();
+	foreach ( $keywords_raw as $keyword => $value ) {
+		$keywords[jr_mt_prep_query_keyword( $keyword )] = jr_mt_prep_query_value( $value );
+	}
 	if ( is_admin() ) {
 		//	Admin panel
 		//	return P2 theme if p2ajax= is present; current theme otherwise
@@ -71,10 +75,15 @@ function jr_mt_chosen() {
 			Begin by checking for any Query keywords specified by the Admin in Settings
 		*/
 		$settings = get_option( 'jr_mt_settings' );
-		foreach ( $settings['query'] as $order => $entry ) {
-			foreach ( $entry as $keyword => $theme ) {
-				if ( isset( $keywords[$keyword] ) ) {
-					return $theme;
+		$settings_query = $settings['query'];
+		foreach ( $keywords as $keyword => $value ) {
+			if ( isset( $settings_query[$keyword] ) ) {
+				if ( isset( $settings_query[$keyword][$value] ) ) {
+					return $settings_query[$keyword][$value];
+				} else {
+					if ( isset( $settings_query[$keyword]['*'] ) ) {
+						return $settings_query[$keyword]['*'];
+					}
 				}
 			}
 		}

@@ -23,6 +23,11 @@ function jr_mt_admin_hook() {
 	add_options_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
 }
 
+global $jr_mt_kwvalsep;
+/*	Everything is converted to lower-case, so upper-case letter makes a good keyword-value separator
+*/
+$jr_mt_kwvalsep = 'A';
+
 /**
  * Settings page for plugin
  * 
@@ -233,7 +238,7 @@ function jr_mt_settings_page() {
 		<li> &raquo; A Specific Page</li>
 		<li> &raquo; A Specific Post</li>
 		<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
-		<li> &raquo; A Specific Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code> in any URL)</li>
+		<li> &raquo; A Specific Query Keyword, or Keyword/Value pair, in any URL (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
 		</ul>
 		</p>
 		<h3>Important Notes</h3>
@@ -335,13 +340,21 @@ function jr_mt_admin_init() {
 	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_path_id', 'URL of Page, Post, Prefix or other', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_section( 'jr_mt_query_section', 
+	add_settings_section( 'jr_mt_querykw_section', 
 		'For A Query Keyword on any Page, Post or other non-Admin page', 
+		'jr_mt_querykw_expl', 
+		'jr_mt_settings_page' 
+	);
+	add_settings_field( 'add_querykw_theme', 'Theme', 'jr_mt_echo_add_querykw_theme', 'jr_mt_settings_page', 'jr_mt_querykw_section' );
+	add_settings_field( 'add_querykw_keyword', 'Query Keyword', 'jr_mt_echo_add_querykw_keyword', 'jr_mt_settings_page', 'jr_mt_querykw_section' );
+	add_settings_section( 'jr_mt_query_section', 
+		'For A Query Keyword=Value on any Page, Post or other non-Admin page', 
 		'jr_mt_query_expl', 
 		'jr_mt_settings_page' 
 	);
 	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
+	add_settings_field( 'add_query_value', 'Query Value', 'jr_mt_echo_add_query_value', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	if ( !empty( $settings['ids']) || !empty( $settings['query'] ) ) {
 		add_settings_section( 'jr_mt_delete_settings_section', 
 			'Current Theme Selection Entries', 
@@ -430,27 +443,34 @@ function jr_mt_echo_delete_entry() {
 }
 
 function jr_mt_echo_delete_query_entry() {
+	global $jr_mt_kwvalsep;
 	$settings = get_option( 'jr_mt_settings' );
 	$three_dots = '&#133;';
 	$first = TRUE;
-	foreach ( $settings['query'] as $order => $entry ) {
-		if ( $first ) {
-			$first = FALSE;
-		} else {
-			echo '<br />';
-		}
-		foreach ( $entry as $keyword => $theme ) {
-			echo "Delete <input type='checkbox' id='del_query_entry' name='jr_mt_settings[del_query_entry][]' value='$order' /> &nbsp; Theme="
+	foreach ( $settings['query'] as $keyword => $value_array ) {
+		foreach ( $value_array as $value => $theme ) {
+			if ( $first ) {
+				$first = FALSE;
+			} else {
+				echo '<br />';
+			}
+			echo "Delete <input type='checkbox' id='del_query_entry' name='jr_mt_settings[del_query_entry][]' value='$keyword$jr_mt_kwvalsep$value' /> &nbsp; Theme="
 				. wp_get_theme( $theme )->Name . '; '
 				. 'Query='
 				. '<code>'
 				. trim( get_home_url(), '\ /' ) 
 				. "/</code>$three_dots<code>/?"
-				. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt$order' value='$keyword' size='"
+				. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_delkw' value='$keyword' size='"
 				. mb_strlen( $keyword )
 				. "' /></b>"
-				. '=</code>'
-				. $three_dots;
+				. '=';
+			if ( '*' === $value ) {	
+				echo '</code>' . $three_dots;
+			} else {
+				echo "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_delkwval' value='$value' size='"
+				. mb_strlen( $value )
+				. "' /></b></code>";
+			}
 		}
 	}
 }
@@ -541,11 +561,11 @@ function jr_mt_echo_add_is_prefix() {
  * Display an explanation of this Section
  *
  */
-function jr_mt_query_expl() {
+function jr_mt_querykw_expl() {
 	?>
 	<p>
 	Select a Theme to use 
-	whenever a specified Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code>)
+	whenever the specified Query Keyword (<code>?keyword=</code> or <code>&keyword=</code>)
 	is found in the URL of
 	any Page, Post or
 	any other non-Admin page.
@@ -559,7 +579,47 @@ function jr_mt_query_expl() {
 	For example, 
 	<?php
 	echo '<code>' . trim( get_home_url(), '\ /' ) . '?firstname=dorothy</code>'
-		. ' would use the Theme specified for the <code>dorothy</code> keyword, not the Theme specified for Site Home.	</p>';
+		. ' would use the Theme specified for the <code>firstname</code> keyword, not the Theme specified for Site Home.</p>';
+}
+function jr_mt_echo_add_querykw_theme() {
+	jr_mt_themes_field( 'add_querykw_theme', '', 'jr_mt_settings', FALSE );
+}
+function jr_mt_echo_add_querykw_keyword() {
+	$three_dots = '&#133;';
+	echo '<code>'
+		. trim( get_home_url(), '\ /' ) 
+		. "/</code>$three_dots<code>/?"
+		. '<input id="add_querykw_keyword" name="jr_mt_settings[add_querykw_keyword]" type="text" size="20" maxlength="64" value="" />=</code>'
+		. $three_dots;
+}
+
+/**
+ * Section text for Section5
+ * 
+ * Display an explanation of this Section
+ *
+ */
+function jr_mt_query_expl() {
+	?>
+	<p>
+	Select a Theme to use 
+	whenever the specified Query Keyword <b>and</b> Value (<code>?keyword=value</code> or <code>&keyword=value</code>)
+	are found in the URL of
+	any Page, Post or
+	any other non-Admin page.
+	And click the <b>Save Changes</b> button to add the entry.
+	</p>
+	<p>
+	<b>
+	Note
+	</b>
+	that Query Keyword=Value takes precedence over all other Theme selection entries,
+	including a Query Keyword entry for the same Keyword.
+	For example, 
+	<?php
+	echo '<code>' . trim( get_home_url(), '\ /' ) . '?firstname=dorothy</code>'
+		. ' would use the Theme specified for the <code>firstname=dorothy</code> keyword=value pair,'
+		. ' not the Theme specified for Site Home nor even the Theme specified for the Keyword <code>firstname</code>.</p>';
 }
 function jr_mt_echo_add_query_theme() {
 	jr_mt_themes_field( 'add_query_theme', '', 'jr_mt_settings', FALSE );
@@ -569,8 +629,12 @@ function jr_mt_echo_add_query_keyword() {
 	echo '<code>'
 		. trim( get_home_url(), '\ /' ) 
 		. "/</code>$three_dots<code>/?"
-		. '<input id="add_query_keyword" name="jr_mt_settings[add_query_keyword]" type="text" size="20" maxlength="64" value="" />=</code>'
-		. $three_dots;
+		. '<input id="add_query_keyword" name="jr_mt_settings[add_query_keyword]" type="text" size="20" maxlength="64" value="" /></code>';
+}
+function jr_mt_echo_add_query_value() {
+	echo '<code>'
+		. '='
+		. '<input id="add_query_value" name="jr_mt_settings[add_query_value]" type="text" size="20" maxlength="64" value="" /></code>';
 }
 
 /**
@@ -618,8 +682,13 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	if ( isset ( $input['del_query_entry'] ) ) {
+		global $jr_mt_kwvalsep;
 		foreach ( $input['del_query_entry'] as $del_entry ) {
-			unset( $query[$del_entry] );
+			$entry = explode( $jr_mt_kwvalsep, $del_entry );
+			unset( $query[$entry[0]][$entry[1]] );
+			if ( empty( $query[$entry[0]] ) ) {
+				unset( $query[$entry[0]] );
+			}
 		}
 	}
 	
@@ -725,34 +794,44 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	
+	/*	Data Sanitization needed here -- at least store as lower-case??
+	*/
+	$keyword = jr_mt_prep_query_keyword( $input['add_querykw_keyword'] );
+	if ( !empty( $input['add_querykw_theme'] ) && !empty( $keyword ) ) {
+		/*	If there is an existing entry for the Keyword,
+			then replace it.
+			Otherwise, create a new entry.
+		*/
+		$query[$keyword]['*'] = $input['add_querykw_theme'];
+	} else {
+		if ( !( empty( $input['add_querykw_theme'] ) && empty( $keyword ) ) ) {
+			add_settings_error(
+				'jr_mt_settings',
+				'jr_mt_emptyerror',
+				'Both Query Keyword and Theme must be specified to add an Individual Query Keyword entry',
+				'error'
+			);
+		}
+	}
+	
 	/*	Data Sanitization needed here
 	*/
-	$keyword = trim( $input['add_query_keyword'] );
-	if ( ( empty( $input['add_query_theme'] ) && !empty( $keyword ) ) || ( !empty( $input['add_query_theme'] ) && empty( $keyword ) ) ) {
-		add_settings_error(
-			'jr_mt_settings',
-			'jr_mt_emptyerror',
-			'Both Query Keyword and Theme must be specified to add an Individual Query entry',
-			'error'
-		);		
+	$keyword = jr_mt_prep_query_keyword( $input['add_query_keyword'] );
+	$value = jr_mt_prep_query_value( $input['add_query_value'] );
+	if ( !empty( $input['add_query_theme'] ) && !empty( $keyword ) && !empty( $value ) ) {
+		/*	If there is an existing entry for the Keyword and Value pair,
+			then replace it.
+			Otherwise, create a new entry.
+		*/
+		$query[$keyword][$value] = $input['add_query_theme'];
 	} else {
-		if ( !empty( $keyword ) ) {
-			/*	If there is an existing entry for the Keyword,
-				then replace it.
-				Otherwise, create a new entry.
-			*/
-			$found = FALSE;
-			foreach ( $query as $index => $array ) {
-				foreach ( $array as $key => $theme ) {
-					if ( $key === $keyword ) {
-						$query[$index] = array( $key => $input['add_query_theme'] );
-						$found = TRUE;
-					}
-				}
-			}
-			if ( !$found ) {
-				$query[] = array( $keyword => $input['add_query_theme'] );
-			}
+		if ( !( empty( $input['add_query_theme'] ) && empty( $keyword ) && empty( $value ) ) ) {
+			add_settings_error(
+				'jr_mt_settings',
+				'jr_mt_emptyerror',
+				'Query Keyword, Value and Theme must all be specified to add an Individual Query entry',
+				'error'
+			);
 		}
 	}
 	
