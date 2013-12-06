@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.8
-Stable tag: 4.7
+Stable tag: 4.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -199,6 +199,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.7.1 =
+* Handle PHP without mbstring extension
+
 = 4.7 =
 * Add option to select a Theme based on Query Keyword and Value pair in URL
 * Redesign how Query entries are stored
@@ -285,7 +288,10 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Upgrade Notice ==
 
-= 4.6 =
+= 4.7.1 =
+Avoid mb_ function errors for PHP without mbstring extension
+
+= 4.7 =
 Select Theme by Query Keyword/Value pair in URL
 
 = 4.6 =

@@ -461,14 +461,14 @@ function jr_mt_echo_delete_query_entry() {
 				. trim( get_home_url(), '\ /' ) 
 				. "/</code>$three_dots<code>/?"
 				. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_delkw' value='$keyword' size='"
-				. mb_strlen( $keyword )
+				. jr_mt_strlen( $keyword )
 				. "' /></b>"
 				. '=';
 			if ( '*' === $value ) {	
 				echo '</code>' . $three_dots;
 			} else {
 				echo "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_delkwval' value='$value' size='"
-				. mb_strlen( $value )
+				. jr_mt_strlen( $value )
 				. "' /></b></code>";
 			}
 		}

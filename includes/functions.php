@@ -2,6 +2,21 @@
 //	Exit if .php file accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
+if ( function_exists( 'mb_strtolower' ) ) {
+	function jr_mt_strlen( $string ) {
+		return mb_strlen( $string );
+	}
+	function jr_mt_strtolower( $string ) {
+		return mb_strtolower( $string );
+	}
+} else {
+	function jr_mt_strlen( $string ) {
+		return strlen( $string );
+	}
+	function jr_mt_strtolower( $string ) {
+		return strtolower( $string );
+	}
+}
 
 /**
  * Return WordPress Current Theme, as defined in Appearance Admin panels
@@ -369,7 +384,7 @@ function jr_mt_themes_defined() {
 }
 
 function jr_mt_prep_query_value( $value ) {
-	return str_ireplace( '%e2%80%8e', '', mb_strtolower( trim( $value ) ) );
+	return str_ireplace( '%e2%80%8e', '', jr_mt_strtolower( trim( $value ) ) );
 }
 function jr_mt_prep_query_keyword( $keyword ) {
 	return jr_mt_prep_query_value( $keyword );
