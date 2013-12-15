@@ -59,7 +59,14 @@ function jr_mt_chosen() {
 	parse_str( $_SERVER['QUERY_STRING'], $keywords_raw );
 	$keywords = array();
 	foreach ( $keywords_raw as $keyword => $value ) {
-		$keywords[jr_mt_prep_query_keyword( $keyword )] = jr_mt_prep_query_value( $value );
+		if ( is_array( $value ) ) {
+			$kw_prepped = jr_mt_prep_query_keyword( $keyword );
+			foreach ( $value as $arr_key => $arr_value ) {
+				$keywords[$kw_prepped][jr_mt_prep_query_value( $arr_key )] = jr_mt_prep_query_value( $arr_value );
+			}
+		} else {
+			$keywords[jr_mt_prep_query_keyword( $keyword )] = jr_mt_prep_query_value( $value );
+		}
 	}
 	if ( is_admin() ) {
 		//	Admin panel

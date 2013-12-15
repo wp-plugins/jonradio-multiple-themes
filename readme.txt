@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.8
-Stable tag: 4.7.1
+Stable tag: 4.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -199,6 +199,11 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.7.2 =
+* Do not execute select-theme.php on Admin panels, to eliminate error message whenever any plugin is uninstalled
+* Handle URL Query Keyword[]=Value
+* Add Polylang to list of incompatible plugins
+
 = 4.7.1 =
 * Handle PHP without mbstring extension
 
@@ -287,6 +292,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.7.2 =
+Avoid Error Message during Uninstall of other Plugins
 
 = 4.7.1 =
 Avoid mb_ function errors for PHP without mbstring extension

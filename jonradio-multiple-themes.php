@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.7.1
+Version: 4.7.2
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -38,8 +38,10 @@ $jr_mt_file = __FILE__;
 if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 	require_once( plugin_dir_path( __FILE__ ) . 'includes/old-wp.php' );
 } else {
+	/*	Use $plugin_data['Name'] for the array of incompatible plugins
+	*/
 	global $jr_mt_incompat_plugins;
-	$jr_mt_incompat_plugins = array( 'Theme Test Drive', 'BuddyPress' );
+	$jr_mt_incompat_plugins = array( 'Theme Test Drive', 'BuddyPress', 'Polylang' );
 	
 	global $jr_mt_path;
 	$jr_mt_path = plugin_dir_path( __FILE__ );
@@ -196,8 +198,6 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 		update_option( 'jr_mt_settings', $settings );
 	}
 	
-	require_once( jr_mt_path() . 'includes/select-theme.php' );
-	
 	if ( is_admin() ) {
 		//	Admin panel
 		require_once( jr_mt_path() . 'includes/admin.php' );
@@ -207,6 +207,7 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 			$jr_mt_options_cache['stylesheet'] = $settings['current'];
 			$jr_mt_options_cache['template'] = $settings['current'];
 		}
+		require_once( jr_mt_path() . 'includes/select-theme.php' );
 	}
 }
 
