@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 3.8
-Stable tag: 4.7.2
+Tested up to: 3.8.1
+Stable tag: 4.7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -199,6 +199,10 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.7.3 =
+* Add support for dot in URL Queries (keyword or value) by replacing parse_str()
+* Removed subfolder /includes/debug/
+
 = 4.7.2 =
 * Do not execute select-theme.php on Admin panels, to eliminate error message whenever any plugin is uninstalled
 * Handle URL Query Keyword[]=Value
@@ -292,6 +296,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.7.3 =
+Allow dots in URL Queries
 
 = 4.7.2 =
 Avoid Error Message during Uninstall of other Plugins

@@ -383,11 +383,32 @@ function jr_mt_themes_defined() {
 	return array_unique( $themes );
 }
 
+/**
+ * Prepare URL Query Value
+ * 
+ * Sanitize and standardize a URL Query Value for storage in a database.
+ * Does not support ?keyword[]=value, i.e. - $value cannot be an Array. 
+ *
+ * @param    string  $value		URL Query Value to be sanitized and standardized; will fail if array 
+ * @return   string             URL Query Value after being sanitized and standardized
+ */
 function jr_mt_prep_query_value( $value ) {
 	return str_ireplace( '%e2%80%8e', '', jr_mt_strtolower( trim( $value ) ) );
 }
 function jr_mt_prep_query_keyword( $keyword ) {
 	return jr_mt_prep_query_value( $keyword );
+}
+
+function jr_mt_parse_query( $query ) {
+	/*	Written to replace parse_str which converts a dot to an underscore
+	*/
+	$marker = 'jr_mt_dot';
+	parse_str( str_replace( '.', $marker, $query ), $marker_array );
+	$query_array = array();
+	foreach ( $marker_array as $key => $val ) {
+		$query_array[str_replace( $marker, '.', $key )] = str_replace( $marker, '.', $val );
+	}	
+	return $query_array;
 }
 
 ?>

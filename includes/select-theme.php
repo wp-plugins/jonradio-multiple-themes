@@ -56,7 +56,7 @@ function jr_mt_theme( $option ) {
 
 //	Returns FALSE for Current Theme
 function jr_mt_chosen() {	
-	parse_str( $_SERVER['QUERY_STRING'], $keywords_raw );
+	$keywords_raw = jr_mt_parse_query( $_SERVER['QUERY_STRING'] );
 	$keywords = array();
 	foreach ( $keywords_raw as $keyword => $value ) {
 		if ( is_array( $value ) ) {
