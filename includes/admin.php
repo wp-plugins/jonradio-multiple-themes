@@ -794,15 +794,51 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	
-	/*	Data Sanitization needed here -- at least store as lower-case??
+	/*	Make sure reserved characters are not used
+		in URL Query keyword or value fields on Settings page.
+	*/
+	function jr_mt_query_chars( $element, $where ) {
+		foreach (
+			array(
+				'='	 => 'Equals Sign'   ,
+				'?'	 => 'Question Mark' ,
+				'&'	 => 'Ampersand'     ,
+				' '	 => 'Blank'         ,
+				'#'	 => 'Number Sign'   ,
+				'/'	 => 'Slash'         ,
+				'\\' => 'Backslash'     ,
+				'['	 => 'Square Bracket',
+				']'	 => 'Square Bracket',
+			) as $char => $name ) {
+			if ( FALSE !== strpos( $element, $char ) ) {
+				add_settings_error(
+					'jr_mt_settings',
+					'jr_mt_queryerror',
+					'Illegal character used in '
+					. $where
+					. ': '
+					. $name
+					. ' ("' . $char . '") in "'
+					. $element
+					. '"',
+					'error'
+				);
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+	/*	Data Sanitization needed here
 	*/
 	$keyword = jr_mt_prep_query_keyword( $input['add_querykw_keyword'] );
 	if ( !empty( $input['add_querykw_theme'] ) && !empty( $keyword ) ) {
-		/*	If there is an existing entry for the Keyword,
-			then replace it.
-			Otherwise, create a new entry.
-		*/
-		$query[$keyword]['*'] = $input['add_querykw_theme'];
+		if ( jr_mt_query_chars( $keyword, 'Query Keyword' ) ) {
+			/*	If there is an existing entry for the Keyword,
+				then replace it.
+				Otherwise, create a new entry.
+			*/
+			$query[$keyword]['*'] = $input['add_querykw_theme'];
+		}
 	} else {
 		if ( !( empty( $input['add_querykw_theme'] ) && empty( $keyword ) ) ) {
 			add_settings_error(
@@ -819,11 +855,13 @@ function jr_mt_validate_settings( $input ) {
 	$keyword = jr_mt_prep_query_keyword( $input['add_query_keyword'] );
 	$value = jr_mt_prep_query_value( $input['add_query_value'] );
 	if ( !empty( $input['add_query_theme'] ) && !empty( $keyword ) && !empty( $value ) ) {
-		/*	If there is an existing entry for the Keyword and Value pair,
-			then replace it.
-			Otherwise, create a new entry.
-		*/
-		$query[$keyword][$value] = $input['add_query_theme'];
+		if ( jr_mt_query_chars( $keyword, 'Query Keyword' ) && jr_mt_query_chars( $value, 'Query Value' ) ) {
+			/*	If there is an existing entry for the Keyword and Value pair,
+				then replace it.
+				Otherwise, create a new entry.
+			*/
+			$query[$keyword][$value] = $input['add_query_theme'];
+		}
 	} else {
 		if ( !( empty( $input['add_query_theme'] ) && empty( $keyword ) && empty( $value ) ) ) {
 			add_settings_error(

@@ -2,11 +2,13 @@
 //	Exit if .php file accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-
-//	Select the relevant Theme
-
-add_filter( 'pre_option_stylesheet', 'jr_mt_stylesheet' );
-add_filter( 'pre_option_template', 'jr_mt_template' );
+add_action( 'plugins_loaded', 'jr_mt_plugins_loaded' );
+function jr_mt_plugins_loaded() {
+	/*	Select the relevant Theme
+	*/
+	add_filter( 'pre_option_stylesheet', 'jr_mt_stylesheet' );
+	add_filter( 'pre_option_template', 'jr_mt_template' );
+}
 
 function jr_mt_stylesheet() {
 	return jr_mt_theme( 'stylesheet' );

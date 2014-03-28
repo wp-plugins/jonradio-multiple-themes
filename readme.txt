@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 3.8.1
-Stable tag: 4.7.3
+Tested up to: 3.9
+Stable tag: 4.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,7 @@ Think what you could do if you could easily use more than one Theme on your Word
 * Host multiple mini-web sites on your WordPress site, each with a different Theme
 * When a larger version of an image attachment is displayed, for example, when clicking on a gallery image thumbnail, use a different theme to display it, for one or all images attached to a Page or Post
 
-**Use with other Plugins**:  **BuddyPress**, Polylang and Theme Test Drive plugins must all be Deactivated when jonradio Multiple Themes is Activated
+**Use with other Plugins**:  **BuddyPress**, **Polylang** and **Theme Test Drive** plugins must all be Deactivated when jonradio Multiple Themes is Activated
 
 **Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
 
@@ -199,6 +199,10 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.8 =
+* Delay intercept of get_options 'stylesheet' and 'template' until 'plugins_loaded' (NextGen Gallery conflict)
+* Check for illegal characters in Keyword and Value of Query portion of URL in Settings fields
+
 = 4.7.3 =
 * Add support for dot in URL Queries (keyword or value) by replacing parse_str()
 * Removed subfolder /includes/debug/
@@ -296,6 +300,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.8 =
+Compatibility with NextGen Gallery plugin
 
 = 4.7.3 =
 Allow dots in URL Queries
