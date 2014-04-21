@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.9
-Stable tag: 4.8
+Stable tag: 4.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more, or all WordPress Pages, Posts or other 
 
 == Description ==
 
-Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  A Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL"), and a Query Keyword feature allows a Theme to be selected whenever a specified ?keyword= or &keyword= is found in the URL.  A Theme can also be specified for All Pages, All Posts or Everywhere. In turn, even when a Theme is specified for All Pages, All Posts or Everywhere, a different Theme can still be specified for specific Pages or Posts.
+Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  A Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL"), an Asterisk ("*") can be used to match all subdirectories at a specific level in the directory/folder hierarchy, and a Query Keyword feature allows a Theme to be selected whenever a specified ?keyword= or &keyword= is found in the URL.  A Theme can also be specified for All Pages, All Posts or Everywhere. In turn, even when a Theme is specified for All Pages, All Posts or Everywhere, a different Theme can still be specified for specific Pages or Posts.
 
 Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
 
@@ -25,6 +25,8 @@ Think what you could do if you could easily use more than one Theme on your Word
 * Convert to a new Theme a Page or Post at a time
 * Host multiple mini-web sites on your WordPress site, each with a different Theme
 * When a larger version of an image attachment is displayed, for example, when clicking on a gallery image thumbnail, use a different theme to display it, for one or all images attached to a Page or Post
+
+**Use with Paid Themes**:  Some Paid Themes do not work with this plugin.  See the FAQ tab for more information and alternatives.
 
 **Use with other Plugins**:  **BuddyPress**, **Polylang** and **Theme Test Drive** plugins must all be Deactivated when jonradio Multiple Themes is Activated
 
@@ -52,6 +54,12 @@ This section describes how to install the *jonradio Multiple Themes* plugin and 
 
 == Frequently Asked Questions ==
 
+= What if my Themes or other plugins don't seem to be working with the jonradio Multiple Themes plugin? =
+
+Please ask before giving up.  Either by [posting a Support question](http://wordpress.org/support/plugin/jonradio-multiple-themes "Support Forum") or contacting us directly by filling out this [Contact Form (click here)](http://jonradio.com/contact-us/ "Contact Form").
+
+If we cannot solve the problem, please consider using a WordPress Network.  One install of WordPress allows you to have multiple separate Sites ("MultiSite"), each with a different Theme, without using the jonradio Multiple Themes plugin.  The sites can look to the outside world as if they are just one web site by using the Sub-directories option.  For example, Site 1 would be at example.com, and Site 2 could be at example.com/forum.
+
 = What if a Theme has a lot of Options that I need to change frequently? =
 
 You will probably want to make it the WordPress Current Theme defined in the Appearance-Themes admin panel,
@@ -61,7 +69,7 @@ The plugin's Advanced Setting **Select Theme for Everything** can be used to sel
 
 = Will this plugin work with Paid Themes? =
 
-Yes, in most cases.  But we have only tested the few Paid Themes whose authors have provided us with permission to use, without charge, their themes for test purposes.  Elegant, for example, allows us to accept copies of its Themes provided by its customers who require assistance with the jonradio Multiple Themes plugin.  On the other hand, some other Paid Theme authors have simply ignored our requests, despite our stated willingness to sign a non-disclosure agreement.
+Some do, some do not; unfortunately, there are a growing number of newer Paid Themes that incorporate so many WordPress Hooks that it is not feasible for this plugin to handle them all.  But we have only tested the few Paid Themes whose authors have provided us with permission to use, without charge, their themes for test purposes.  Elegant, for example, allows us to accept copies of its Themes provided by its customers who require assistance with the jonradio Multiple Themes plugin.  On the other hand, some other Paid Theme authors have simply ignored our requests, despite our stated willingness to sign a non-disclosure agreement.
 
 We do encourage you to contact us if you run into problems when using the jonradio Multiple Themes plugin with a Paid Theme, as the problem may not be unique to the Paid Theme.
 
@@ -199,6 +207,10 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.9 =
+* Add an Asterisk ("*") to match any Subdirectory at a given level of the File Hierarchy, as another form of the Prefix URL option
+* Reorganize Settings page
+
 = 4.8 =
 * Delay intercept of get_options 'stylesheet' and 'template' until 'plugins_loaded' (NextGen Gallery conflict)
 * Check for illegal characters in Keyword and Value of Query portion of URL in Settings fields
@@ -300,6 +312,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.9 =
+Allow Prefix URLs to match all subdirectories with an Asterisk ("*")
 
 = 4.8 =
 Compatibility with NextGen Gallery plugin

@@ -272,7 +272,7 @@ function jr_mt_settings_page() {
 				. 'plugin-install.php?tab=plugin-information&plugin=' . $jr_mt_plugin_data['slug']
 				. '&section=changelog&TB_iframe=true&width=640&height=768">Click here</a> for more details.</p>';
 		}
-		echo '<form action="options.php" method="POST">';
+		echo '<hr /><form action="options.php" method="POST">';
 		
 		//	Plugin Settings are displayed and entered here:
 		settings_fields( 'jr_mt_settings' );
@@ -313,8 +313,21 @@ add_action( 'admin_init', 'jr_mt_admin_init' );
 function jr_mt_admin_init() {
 	register_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
 	$settings = get_option( 'jr_mt_settings' );
+	if ( !empty( $settings['ids']) || !empty( $settings['query'] ) ) {
+		add_settings_section( 'jr_mt_delete_settings_section', 
+			'Current Theme Selection Entries', 
+			'jr_mt_delete_settings_expl', 
+			'jr_mt_settings_page' 
+		);
+		if ( !empty( $settings['ids'] ) ) {
+			add_settings_field( 'del_entry', 'Page/Post/Prefix Entries:', 'jr_mt_echo_delete_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
+		}
+		if ( !empty( $settings['query'] ) ) {
+			add_settings_field( 'del_query_entry', 'Query Keyword Entries:', 'jr_mt_echo_delete_query_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
+		}
+	}
 	add_settings_section( 'jr_mt_all_settings_section', 
-		'For All Pages, All Posts and/or Site Home', 
+		'<input name="save" type="submit" value="Save Changes" class="button-primary" /></h3><h3>For All Pages, All Posts and/or Site Home', 
 		'jr_mt_all_settings_expl', 
 		'jr_mt_settings_page' 
 	);
@@ -333,13 +346,13 @@ function jr_mt_admin_init() {
 		'jr_mt_all_settings_section' 
 	);
 	add_settings_section( 'jr_mt_single_settings_section', 
-		'For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix', 
+		'For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix, optionally with Asterisk(s)', 
 		'jr_mt_single_settings_expl', 
 		'jr_mt_settings_page'
 	);
+	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_field( 'add_path_id', 'URL of Page, Post, Prefix or other', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
 	add_settings_section( 'jr_mt_querykw_section', 
 		'For A Query Keyword on any Page, Post or other non-Admin page', 
 		'jr_mt_querykw_expl', 
@@ -350,24 +363,11 @@ function jr_mt_admin_init() {
 	add_settings_section( 'jr_mt_query_section', 
 		'For A Query Keyword=Value on any Page, Post or other non-Admin page', 
 		'jr_mt_query_expl', 
-		'jr_mt_settings_page' 
+		'jr_mt_settings_page'
 	);
 	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_value', 'Query Value', 'jr_mt_echo_add_query_value', 'jr_mt_settings_page', 'jr_mt_query_section' );
-	if ( !empty( $settings['ids']) || !empty( $settings['query'] ) ) {
-		add_settings_section( 'jr_mt_delete_settings_section', 
-			'Current Theme Selection Entries', 
-			'jr_mt_delete_settings_expl', 
-			'jr_mt_settings_page' 
-		);
-		if ( !empty( $settings['ids'] ) ) {
-			add_settings_field( 'del_entry', 'Page/Post/Prefix Entries:', 'jr_mt_echo_delete_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
-		}
-		if ( !empty( $settings['query'] ) ) {
-			add_settings_field( 'del_query_entry', 'Query Keyword Entries:', 'jr_mt_echo_delete_query_entry', 'jr_mt_settings_page', 'jr_mt_delete_settings_section' );
-		}
-	}
 	add_settings_section( 'jr_mt_advanced_settings_section', 
 		'Advanced Setting', 
 		'jr_mt_advanced_settings_expl', 
@@ -398,7 +398,8 @@ function jr_mt_delete_settings_expl() {
 	<p>
 	You can delete any of these entries by filling in the check box beside each one
 	and clicking the <b>Save Changes</b> button.
-	To change the Theme for an entry, add the same entry with a different Theme in one of the sections above this one.</p>
+	To change the Theme for an entry, add the same entry with a different Theme in one of the sections below this one.</p>
+	
 	<?php
 }
 
@@ -416,27 +417,30 @@ function jr_mt_echo_delete_entry() {
 		if ( $path_id == '' ) {
 			echo 'Site=<a href="' . get_home_url() . '" target="_blank">Home</a>';
 		} else {
-			if ( $opt_array['type'] == 'prefix' ) {
-				echo 'Prefix=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
-			} else {
-				if ( $opt_array['type'] == 'cat' ) {
+			switch ( $opt_array['type'] ) {
+				case '*':
+					echo 'Prefix*=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
+					break;
+				case 'prefix':
+					echo 'Prefix=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
+					break;
+				case 'cat':
 					echo 'Category=<a href="' . get_home_url() . '/?cat=' . $opt_array['id'] . '" target="_blank">' . get_cat_name( $opt_array['id'] ) . '</a>';
-				} else {
-					if ( $opt_array['type'] == 'archive' ) {
-						echo 'Archive=<a href="' . get_home_url() . '/?m=' . $opt_array['id'] . '" target="_blank">' . $opt_array['id'] . '</a>';
-					} else {
-						$p_array = get_posts( array( 'post_type' => 'any', 'include' => array( $path_id ) ) );
-						if ( empty( $p_array ) ) {
-							if ( $opt_array['type'] == 'admin' ) {
-								echo 'Admin=<a href="' . get_home_url() . '/' . $opt_array['rel_url'] . '" target="_blank">' . "$path_id</a>";
-							} else {
-								echo 'Path=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
-							}
+					break;
+				case 'archive':
+					echo 'Archive=<a href="' . get_home_url() . '/?m=' . $opt_array['id'] . '" target="_blank">' . $opt_array['id'] . '</a>';
+					break;
+				default:
+					$p_array = get_posts( array( 'post_type' => 'any', 'include' => array( $path_id ) ) );
+					if ( empty( $p_array ) ) {
+						if ( $opt_array['type'] == 'admin' ) {
+							echo 'Admin=<a href="' . get_home_url() . '/' . $opt_array['rel_url'] . '" target="_blank">' . "$path_id</a>";
 						} else {
-							echo ucfirst( $p_array[0]->post_type ) . '=<a href="' . get_permalink( $path_id ) . '" target="_blank">' . $p_array[0]->post_title . '</a>';
+							echo 'Path=<a href="' . get_home_url() . "/$path_id" . '" target="_blank">' . "$path_id</a>";
 						}
+					} else {
+						echo ucfirst( $p_array[0]->post_type ) . '=<a href="' . get_permalink( $path_id ) . '" target="_blank">' . $p_array[0]->post_title . '</a>';
 					}
-				}
 			}
 		}
 	}
@@ -525,13 +529,44 @@ function jr_mt_single_settings_expl() {
 	<p>
 	Select a Theme for an individual Page, Post	or
 	any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page.
-	Or for a group of pages which have URLs that all begin with the same characters ("Prefix").
+	Or for a group of pages which have URLs that all begin with the same characters ("Prefix"),
+	optionally specifying an Asterisk ("*") to match all subdirectories at specific levels.
 	</p>
 	<p>
 	Then cut and paste the URL of the desired Page, Post, Prefix or other non-Admin page.
 	And click the <b>Save Changes</b> button to add the entry.
 	</p>
+	There are three types of Entries that you can specify here:
+	<ol>
+	<li>
+	<b>URL</b> - if Visitor URL matches this URL, use this Theme
+	</li>
+	<li>
+	<b>URL Prefix</b> - any Visitor URL that begins with this URL Prefix will use this Theme
+	</li>
+	<li>
+	<b>URL Prefix with Asterisk(s)</b> - URL Prefix that matches any subdirectory where Asterisk ("*") is specified
+	</li>
+	</ol>
+	For the third type, an Asterisk can only be specified to match the entire subdirectory name, not parts of the name:
+	<blockquote>
+	For example, using a Permalink structure that uses dates,
+	where a typical Post might be at URL
+	<code>http://example.com/wp/2014/04/13/daily-thoughts/</code>,
+	a URL Prefix with Asterisk entry of
+	<code>http://example.com/wp/*/04/*/d</code>
+	would match all April Posts with Titles that begin with the letter "d", no matter what year they were posted.
+	</blockquote>
+	</p>
 	<?php	
+}
+
+function jr_mt_echo_add_is_prefix() {
+	?>
+	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="false" checked="checked" /> URL<br/>
+	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="prefix" /> URL Prefix<br/>
+	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="*" /> URL Prefix with Asterisk ("*")
+	<?php
 }
 
 function jr_mt_echo_add_theme() {
@@ -547,12 +582,6 @@ function jr_mt_echo_add_path_id() {
 	URL must begin with
 	<?php
 	echo '<code>' . trim( get_home_url(), '\ /' ) . '/</code>';
-}
-
-function jr_mt_echo_add_is_prefix() {
-	?>
-	<input type="checkbox" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="true" /> Anything that begins with this URL will use this Theme
-	<?php
 }
 
 /**
@@ -716,78 +745,115 @@ function jr_mt_validate_settings( $input ) {
 		if ( !empty( $url ) ) {
 			$validate_url = jr_mt_site_url( $url );
 			if ( $validate_url === TRUE ) {
-				extract( jr_mt_url_to_id( $url ) );
-				if ( isset ( $input['add_is_prefix'] ) && ( $input['add_is_prefix'] == "true" ) ) {
-					if ( parse_url( $url, PHP_URL_QUERY ) === NULL ) {
-						$ids[$rel_url] = array(
+				if ( ( '*' !== $input['add_is_prefix'] ) && ( FALSE !== strpos( $url, '*' ) ) ) {
+					add_settings_error(
+						'jr_mt_settings',
+						'jr_mt_queryerror',
+						'Asterisk ("*") only allowed when "URL Prefix with Asterisk" selected: <code>' . $url . '</code>',
+						'error'
+					);
+				} else {						
+					extract( jr_mt_url_to_id( $url ) );				
+					if ( 'false' === $input['add_is_prefix'] ) {
+						if ( $home ) {
+							add_settings_error(
+								'jr_mt_settings',
+								'jr_mt_homeerror',
+								'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
+								'error'
+							);
+						} else {
+							if ( $type == 'admin' ) {
+								add_settings_error(
+									'jr_mt_settings',
+									'jr_mt_adminerror',
+									'Admin Page URLs are not allowed because no known Themes alter the appearance of Admin pages: <code>' . $url . '</code>',
+									'error'
+								);
+							} else {
+								if ( $id === FALSE ) {
+									$key = $page_url;
+								} else {
+									$key = $id;
+								}
+							}
+						}
+					} else {
+						if ( parse_url( $url, PHP_URL_QUERY ) === NULL ) {
+							if ( '*' === $input['add_is_prefix'] ) {
+								$asterisk_not_alone = FALSE;
+								$no_asterisk = TRUE;
+								$rel_url_dirs = explode( '/', str_replace( '\\', '/', $rel_url ) );
+								foreach ( $rel_url_dirs as $dir ) {
+									if ( $no_asterisk ) {
+										if ( FALSE !== strpos( $dir, '*' ) ) {
+											$no_asterisk = FALSE;
+											if ( '*' !== $dir ) {
+												$asterisk_not_alone = TRUE;
+											}
+										}
+									}
+								}
+								if ( $no_asterisk ) {
+									add_settings_error(
+										'jr_mt_settings',
+										'jr_mt_queryerror',
+										'No Asterisk ("*") specified but "URL Prefix with Asterisk" selected: <code>' . $url . '</code>',
+										'error'
+									);	
+								} else {
+									if ( $asterisk_not_alone ) {
+										add_settings_error(
+											'jr_mt_settings',
+											'jr_mt_queryerror',
+											'An Asterisk ("*") may only replace a full subdirectory name, not just a portion of it: <code>' . $url . '</code>',
+											'error'
+										);	
+									}
+								}
+							}
+						} else {
+							add_settings_error(
+								'jr_mt_settings',
+								'jr_mt_queryerror',
+								'?key=val&key=val Queries are not supported in a URL Prefix: <code>' . $url . '</code>',
+								'error'
+							);
+						}
+						$type = $input['add_is_prefix'];
+						$key = $rel_url;
+					}
+					$errors = get_settings_errors();
+					if ( empty( $errors ) ) {
+						$ids[$key] = array(
 							'theme' => $input['add_theme'],
-							'type' => 'prefix',
+							'type' => $type,
 							'id' => $id,
 							'page_url' => $page_url,
 							'rel_url' => $rel_url,
 							'url' => $url
 							);
-					} else {
-						add_settings_error(
-							'jr_mt_settings',
-							'jr_mt_queryerror',
-							'?key=val&key=val Queries are not supported in a URL Prefix',
-							'error'
-						);		
-					
 					}
-				} else {
-					if ( $home ) {
-						add_settings_error(
-							'jr_mt_settings',
-							'jr_mt_homeerror',
-							'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
-							'error'
-						);
-					} else {
-						if ( $type == 'admin' ) {
+					/*
+					$errors = get_settings_errors();
+					if ( empty( $errors ) ) {
+						//	Here is where to check if URL gives a 404, but it doesn't work, always getting 302, and obliterating Settings Saved message
+						if ( 404 == $respcode = wp_remote_retrieve_response_code( wp_remote_head( $url ) ) ) {
 							add_settings_error(
 								'jr_mt_settings',
-								'jr_mt_adminerror',
-								'Admin Page URLs are not allowed because no known Themes alter the appearance of Admin pages.',
+								'jr_mt_urlerror',
+								"Warning: URL specified ('$url') generated error response $respcode",
 								'error'
 							);
-						} else {
-							if ( $id === FALSE ) {
-								$key = $page_url;
-							} else {
-								$key = $id;
-							}
-							$ids[$key] = array(
-								'theme' => $input['add_theme'],
-								'type' => $type,
-								'id' => $id,
-								'page_url' => $page_url,
-								'rel_url' => $rel_url,
-								'url' => $url
-								);
 						}
 					}
+					*/
 				}
-				/*
-				$errors = get_settings_errors();
-				if ( empty( $errors ) ) {
-					//	Here is where to check if URL gives a 404, but it doesn't work, always getting 302, and obliterating Settings Saved message
-					if ( 404 == $respcode = wp_remote_retrieve_response_code( wp_remote_head( $url ) ) ) {
-						add_settings_error(
-							'jr_mt_settings',
-							'jr_mt_urlerror',
-							"Warning: URL specified ('$url') generated error response $respcode",
-							'error'
-						);
-					}
-				}
-				*/
 			} else {
 				add_settings_error(
 					'jr_mt_settings',
 					'jr_mt_urlerror',
-					"URL specified for Individual page/post: '$url'. $validate_url",
+					'URL specified for Individual page/post: <code>' . $url . '</code>' . $validate_url,
 					'updated'
 				);			
 			}

@@ -143,17 +143,51 @@ function jr_mt_check_all( $type, $rel_url, $ids ) {
 	}
 	//	See if a Prefix entry was found
 	if ( $match_length == 0 ) {
-		if ( $type === FALSE ) {
-			$theme = FALSE;	// Current Theme
-		} else {	
-			$settings = get_option( 'jr_mt_settings' );
-			if ( isset( $settings["all_$type"] ) ) {
-				$theme = $settings["all_$type"];
-			} else {
-				$theme = '';
+		/*	No, so now check for Asterisk
+		*/
+		$current_url = str_replace( '\\', '/', $rel_url );
+		$current_url_dirs = explode( '/', $current_url );
+		$current_url_dirs_count = count( $current_url_dirs );
+		foreach ( $ids as $key => $array ) {
+			if ( '*' === $array['type'] ) {
+				$prefix_url = str_replace( '\\', '/', $array['rel_url'] );
+				$prefix_url_dirs = explode( '/', $prefix_url );
+				/*	Current URL must have at least as many subdirectory levels
+					specified as Prefix Entry being tested, or it cannot match
+				*/
+				if ( $current_url_dirs_count >= count( $prefix_url_dirs ) ) {
+					foreach ( $prefix_url_dirs as $element => $dir ) {
+						/*	Anywhere there is an Asterisk in Entry,
+							Make the Current URL match at that point (subdirectory level)
+						*/
+						if ( '*' === $dir ) {
+							$current_url_dirs[$element] = '*';
+						}
+					}
+					$this_length = strlen( $prefix_url );
+					if ( $prefix_url === substr( implode( '/', $current_url_dirs ), 0, $this_length ) ) {
+						//	Need to find longest match if there are multiple prefix matches.
+						if ( $this_length > $match_length ) {
+							$theme = $array['theme'];
+							$match_length = $this_length;
+						}
+					}
+				}
 			}
-			if ( empty( $theme ) ) {
+		}
+		if ( $match_length == 0 ) {
+			if ( $type === FALSE ) {
 				$theme = FALSE;	// Current Theme
+			} else {	
+				$settings = get_option( 'jr_mt_settings' );
+				if ( isset( $settings["all_$type"] ) ) {
+					$theme = $settings["all_$type"];
+				} else {
+					$theme = '';
+				}
+				if ( empty( $theme ) ) {
+					$theme = FALSE;	// Current Theme
+				}
 			}
 		}
 	}
