@@ -43,7 +43,6 @@ function jr_mt_settings_page() {
 	$jr_mt_plugins_cache = get_plugins();
 	add_thickbox();
 	echo '<div class="wrap">';
-	screen_icon( 'plugins' );
 	echo '<h2>' . $jr_mt_plugin_data['Name'] . '</h2>';
 	
 	//	Required because it is only called automatically for Admin Pages in the Settings section
@@ -87,7 +86,8 @@ function jr_mt_settings_page() {
 				echo '<h3>Warning</h3><p>Here is the problem:<ul><li> &raquo; This Plugin (' . $jr_mt_plugin_data['Name'] 
 					. ') has not been tested with the version of WordPress you are currently running: ' . $current_wp_version
 					. '.</li></ul></p>'
-					. '<p>The plugin will probably still work with your newer version of WordPress, but you need to be aware of the issue.</p>';
+					. '<p>The plugin has been tested with Version ' . $directory->tested . ' of WordPress and '
+					. 'will probably still work with your newer version of WordPress, but you need to be aware of the issue.</p>';
 			} else {
 				if ( version_compare( $jr_mt_plugin_data['Version'], $directory->version, '=' ) ) {
 					/*	The latest version of the Plugin has been installed, 
@@ -233,12 +233,13 @@ function jr_mt_settings_page() {
 		<ul>
 		<li> &raquo; All Pages</li>
 		<li> &raquo; All Posts</li>
-		<li> &raquo; Everything (see Advanced Settings below)</li> 
+		<li> &raquo; Everything (Advanced Settings)</li> 
 		<li> &raquo; The Site Home</li>
 		<li> &raquo; A Specific Page</li>
 		<li> &raquo; A Specific Post</li>
 		<li> &raquo; Any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page</li>
 		<li> &raquo; A Specific Query Keyword, or Keyword/Value pair, in any URL (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
+		<li> &raquo; All non-Admin pages after a Specific Query Keyword/Value pair is specified in any URL (Advanced Settings)</li>
 		</ul>
 		</p>
 		<h3>Important Notes</h3>
@@ -368,8 +369,9 @@ function jr_mt_admin_init() {
 	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_value', 'Query Value', 'jr_mt_echo_add_query_value', 'jr_mt_settings_page', 'jr_mt_query_section' );
+	add_settings_field( 'add_query_remember', 'Sticky?', 'jr_mt_echo_add_query_remember', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_section( 'jr_mt_advanced_settings_section', 
-		'Advanced Setting', 
+		'Advanced Settings', 
 		'jr_mt_advanced_settings_expl', 
 		'jr_mt_settings_page' 
 	);
@@ -474,6 +476,9 @@ function jr_mt_echo_delete_query_entry() {
 				echo "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_delkwval' value='$value' size='"
 				. jr_mt_strlen( $value )
 				. "' /></b></code>";
+			}
+			if ( isset( $settings['remember']['query'][$keyword][$value] ) ) {
+				echo ' <b><u>STICKY</u></b> <small>(see <b>Advanced Settings</b> section for explanation)</small>';
 			}
 		}
 	}
@@ -665,6 +670,10 @@ function jr_mt_echo_add_query_value() {
 		. '='
 		. '<input id="add_query_value" name="jr_mt_settings[add_query_value]" type="text" size="20" maxlength="64" value="" /></code>';
 }
+function jr_mt_echo_add_query_remember() {
+	echo '<input type="checkbox" id="add_query_remember" name="jr_mt_settings[add_query_remember]" value="TRUE" />'
+		. ' Theme <i>sticks to</i> to all WordPress webpages after Visitor views a URL with this <code>keyword=value</code> (<b>Advanced Setting</b>, please read below)'; 
+}
 
 /**
  * Section text for Section6
@@ -681,7 +690,23 @@ function jr_mt_advanced_settings_expl() {
 	so please be careful.
 	</p>
 	<p>
-	<b>Theme for Everything</b> simplifies the use of a Theme with Admin panel settings that you need to change frequently,
+	<b>Sticky?</b>
+	This setting
+	(just above)
+	allows the associated <code>keyword=value</code> to
+	set the Theme not just for the current WordPress non-Admin webpage,
+	but be remembered by the Visitor's browser
+	and the same Theme to be used for all future WordPress non-Admin webpages
+	viewed by the same Visitor
+	(same visitor computer/same visitor username on that computer/same browser)
+	until another Remembered query <code>keyword=value</code> URL is encountered.
+	Note: A Cookie is used for this purpose. If the visitor's browser refuses Cookies,
+	this setting will not work and no error messages will be displayed.
+	</p>
+	<p>
+	<b>Theme for Everything</b>
+	(just below)
+	simplifies the use of a Theme with Admin panel settings that you need to change frequently,
 	when the Theme is only going to be used on one or more Pages or Posts.
 	The Theme can be set as the WordPress Current Theme through the Appearance-Themes admin panel,
 	and set for specific Pages or Posts using this plugin's settings (above),
@@ -705,6 +730,7 @@ function jr_mt_validate_settings( $input ) {
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
 	$query = $settings['query'];
+	$remember = $settings['remember'];
 	if ( isset ( $input['del_entry'] ) ) {
 		foreach ( $input['del_entry'] as $del_entry ) {
 			unset( $ids[$del_entry] );
@@ -713,10 +739,16 @@ function jr_mt_validate_settings( $input ) {
 	if ( isset ( $input['del_query_entry'] ) ) {
 		global $jr_mt_kwvalsep;
 		foreach ( $input['del_query_entry'] as $del_entry ) {
-			$entry = explode( $jr_mt_kwvalsep, $del_entry );
-			unset( $query[$entry[0]][$entry[1]] );
-			if ( empty( $query[$entry[0]] ) ) {
-				unset( $query[$entry[0]] );
+			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $del_entry );
+			unset( $query[$keyword][$value] );
+			if ( empty( $query[$keyword] ) ) {
+				unset( $query[$keyword] );
+			}
+			/*	unset() does nothing if a variable or array element does not exist.
+			*/
+			unset( $remember['query'][$keyword][$value] );
+			if ( empty( $remember['query'][$keyword] ) ) {
+				unset( $remember['query'][$keyword] );
 			}
 		}
 	}
@@ -927,6 +959,9 @@ function jr_mt_validate_settings( $input ) {
 				Otherwise, create a new entry.
 			*/
 			$query[$keyword][$value] = $input['add_query_theme'];
+			if ( isset( $input['add_query_remember'] ) ) {
+				$remember['query'][$keyword][$value] = TRUE;
+			}
 		}
 	} else {
 		if ( !( empty( $input['add_query_theme'] ) && empty( $keyword ) && empty( $value ) ) ) {
@@ -950,6 +985,7 @@ function jr_mt_validate_settings( $input ) {
 	}
 	$valid['ids'] = $ids;
 	$valid['query'] = $query;
+	$valid['remember'] = $remember;
 	return $valid;
 }
 

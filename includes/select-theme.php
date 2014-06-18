@@ -10,6 +10,23 @@ function jr_mt_plugins_loaded() {
 	add_filter( 'pre_option_template', 'jr_mt_template' );
 }
 
+add_action( 'wp_loaded', 'jr_mt_wp_loaded', 999 );
+function jr_mt_wp_loaded() {
+	/*	Purpose of this hook is to output any required Cookie before it is too late
+		(after the <html> or any other HTML is generated).
+		There is no performance impact because this effectively pre-caches values
+		for use later.
+	*/
+	global $jr_mt_cache;
+	if ( $jr_mt_cache === FALSE ) {
+		$settings = get_option( 'jr_mt_settings' );
+		if ( !empty( $settings['remember']['query'] ) ) {
+			jr_mt_template();
+		}
+	}
+	DEFINE( 'JR_MT_TOO_LATE_FOR_COOKIES', TRUE );
+}
+
 function jr_mt_stylesheet() {
 	return jr_mt_theme( 'stylesheet' );
 }
@@ -58,21 +75,11 @@ function jr_mt_theme( $option ) {
 
 //	Returns FALSE for Current Theme
 function jr_mt_chosen() {	
-	$keywords_raw = jr_mt_parse_query( $_SERVER['QUERY_STRING'] );
-	$keywords = array();
-	foreach ( $keywords_raw as $keyword => $value ) {
-		if ( is_array( $value ) ) {
-			$kw_prepped = jr_mt_prep_query_keyword( $keyword );
-			foreach ( $value as $arr_key => $arr_value ) {
-				$keywords[$kw_prepped][jr_mt_prep_query_value( $arr_key )] = jr_mt_prep_query_value( $arr_value );
-			}
-		} else {
-			$keywords[jr_mt_prep_query_keyword( $keyword )] = jr_mt_prep_query_value( $value );
-		}
-	}
+	$settings = get_option( 'jr_mt_settings' );
 	if ( is_admin() ) {
 		//	Admin panel
 		//	return P2 theme if p2ajax= is present; current theme otherwise
+		$keywords = jr_mt_kw( 'QUERY_STRING' );
 		if ( isset( $keywords['p2ajax'] ) && array_key_exists( 'p2', wp_get_themes() ) ) {
 			$theme = 'p2';
 		} else {
@@ -81,18 +88,59 @@ function jr_mt_chosen() {
 	} else {
 		/*	Non-Admin page, i.e. - Public Site, etc.
 		
-			Begin by checking for any Query keywords specified by the Admin in Settings
+			Begin by checking for any Query keywords specified by the Admin in Settings,
+			complicated by the fact that Remember entries take precedence.
 		*/
-		$settings = get_option( 'jr_mt_settings' );
-		$settings_query = $settings['query'];
-		foreach ( $keywords as $keyword => $value ) {
-			if ( isset( $settings_query[$keyword] ) ) {
-				if ( isset( $settings_query[$keyword][$value] ) ) {
-					return $settings_query[$keyword][$value];
-				} else {
-					if ( isset( $settings_query[$keyword]['*'] ) ) {
-						return $settings_query[$keyword]['*'];
+		if ( empty( $settings['query'] ) ) {
+		} else {
+			$settings_query = $settings['query'];
+			$keywords = jr_mt_kw( 'QUERY_STRING' );
+			foreach ( $keywords as $keyword => $value ) {
+				if ( isset( $settings_query[$keyword] ) ) {
+					if ( isset( $settings_query[$keyword][$value] ) ) {
+						if ( isset( $settings['remember']['query'][$keyword][$value] ) ) {
+							/*	Replace Existing or Create New (if no existing) Cookie
+								to remember what Theme to use on this Browser on this Visitor Computer.
+								Return Theme after.
+							*/
+							jr_mt_cookie( 'put', "$keyword=$value" );
+							return $settings_query[$keyword][$value];
+						}
+						$query_entry = $settings_query[$keyword][$value];
+						/*	Stop looking
+						*/
+						break;
+					} else {
+						if ( isset( $settings_query[$keyword]['*'] ) ) {
+							$query_entry = $settings_query[$keyword]['*'];
+							/*	Stop looking
+							*/
+							break;
+						}
 					}
+				}
+			}
+		}
+
+		if ( empty( $settings['remember']['query'] ) ) {
+			/*	Delete any Cookie that might exist
+			*/
+			jr_mt_cookie( 'del' );
+			if ( isset( $query_entry ) ) {
+				return $query_entry;
+			}
+		} else {
+			/*	Check for a Cookie (safe to do here because we exit immediately after cookie creation above)
+				If it exists, make sure both a ['remember']['query'] and ['query'] setting still exists for it
+				(i.e. - the Keyword=Value specified in the Cookie).
+				If so, return the Theme Name; if not, delete the Cookie.
+			*/
+			if ( FALSE !== ( $cookie_value = jr_mt_cookie( 'get' ) ) ) {
+				list( $keyword, $value ) = explode( '=', $cookie_value );
+				if ( isset( $settings['remember']['query'][$keyword][$value] ) && isset( $settings['query'][$keyword][$value] ) ) {
+					return $settings['query'][$keyword][$value];
+				} else {
+					jr_mt_cookie( 'del' );
 				}
 			}
 		}
@@ -122,6 +170,62 @@ function jr_mt_chosen() {
 		}
 	}
 	return $theme;
+}
+
+/*	All Cookie Handling occurs here.
+	$action - 'get', 'put', 'del'
+*/
+function jr_mt_cookie( $action, $cookie_value = '' ) {
+	$cookie_name = 'jr-mt-remember-query';
+	if ( 'get' === $action ) {
+		if ( isset( $_COOKIE[ $cookie_name ] ) ) {
+			return $_COOKIE[ $cookie_name ];
+		} else {
+			return FALSE;
+		}
+	} else {
+		if ( defined( 'JR_MT_TOO_LATE_FOR_COOKIES' ) ) {
+			return FALSE;
+		}
+		/*	Determine Path off Domain to WordPress Address, not Site Address, for Cookie Path value.
+			Which, confusingly enough, is site_url().
+		*/
+		$cookie_path = parse_url( site_url(), PHP_URL_PATH ) . '/';
+		switch ( $action ) {
+			case 'put':
+				if ( empty( $cookie_value ) ) {
+					return FALSE;
+				} else {
+					return setcookie( $cookie_name, $cookie_value, strtotime( '+1 year' ), $cookie_path, $_SERVER['SERVER_NAME'] );
+				}
+				break;
+			case 'del':
+				/*	Don't clutter up output to browser with a Cookie Delete request if a Cookie does not exist.
+				*/
+				if ( isset( $_COOKIE[ $cookie_name ] ) ) {
+					return setcookie( $cookie_name, '', strtotime( '-2 days' ), $cookie_path, $_SERVER['SERVER_NAME'] );
+				}
+				break;
+		}
+	}
+}
+
+/*	Returns Keyword=Value array based on $_SERVER variable requested.
+*/
+function jr_mt_kw( $server ) {
+	$keywords_raw = jr_mt_parse_query( $_SERVER[ $server ] );
+	$keywords = array();
+	foreach ( $keywords_raw as $keyword => $value ) {
+		if ( is_array( $value ) ) {
+			$kw_prepped = jr_mt_prep_query_keyword( $keyword );
+			foreach ( $value as $arr_key => $arr_value ) {
+				$keywords[$kw_prepped][jr_mt_prep_query_value( $arr_key )] = jr_mt_prep_query_value( $arr_value );
+			}
+		} else {
+			$keywords[jr_mt_prep_query_keyword( $keyword )] = jr_mt_prep_query_value( $value );
+		}
+	}
+	return $keywords;
 }
 
 //	Returns FALSE for Current Theme

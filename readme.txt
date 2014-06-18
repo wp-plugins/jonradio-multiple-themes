@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 3.9
-Stable tag: 4.9
+Tested up to: 3.9.1
+Stable tag: 4.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ Think what you could do if you could easily use more than one Theme on your Word
 
 To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
 
-To select any URL on the site that contains a specified Query Keyword ("?keyword=" or "&keyword=") or Query Keyword=Value combination ("?keyword=value" or "&keyword=value"), a "Query Keyword" entry can be created.
+To select any URL on the site that contains a specified Query Keyword ("?keyword=" or "&keyword=") or Query Keyword=Value combination ("?keyword=value" or "&keyword=value"), a "Query Keyword" entry can be created.  A Sticky option can be set to make all subsequent non-Admin pages viewed by the same Visitor display using the same Theme, but it does require the Visitor's browser to accept Cookies.
 
 Normally, if a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.  The plugin has an Advanced Setting "Select Theme for Everything" that can be used to define a default Theme for the plugin to use instead of the WordPress Current Theme.  This is useful for a Theme that has many frequently-used options that are much easier to access when it is the WordPress Current Theme, but there is another Theme to be used everywhere except for a few select Pages or Posts.
 
@@ -207,6 +207,10 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.10 =
+* Add a Sticky option (Advanced Setting) for URL Queries (keyword=value) that will select the same Theme for all subsequent pages viewed by the same Visitor
+* Enhance performance by eliminating processing related to each Type of Setting when no Setting entries of that Type exist
+
 = 4.9 =
 * Add an Asterisk ("*") to match any Subdirectory at a given level of the File Hierarchy, as another form of the Prefix URL option
 * Reorganize Settings page
@@ -312,6 +316,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.10 =
+Performance improvements and add Sticky Queries
 
 = 4.9 =
 Allow Prefix URLs to match all subdirectories with an Asterisk ("*")
