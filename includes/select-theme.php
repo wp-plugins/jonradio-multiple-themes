@@ -1,6 +1,14 @@
 <?php
-//	Exit if .php file accessed directly
-if ( !defined( 'ABSPATH' ) ) exit;
+/*	Exit if .php file accessed directly
+*/
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/*	Define Constants:
+	the URL keyword to use when Cookie is present
+*/
+DEFINE( 'JR_MT_COOKIE_KEYWORD', '_jr_mt_theme' );
 
 add_action( 'plugins_loaded', 'jr_mt_plugins_loaded' );
 function jr_mt_plugins_loaded() {
@@ -122,6 +130,8 @@ function jr_mt_chosen() {
 			}
 		}
 
+		$full_url = parse_url( home_url(), PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+		
 		if ( empty( $settings['remember']['query'] ) ) {
 			/*	Delete any Cookie that might exist
 			*/
@@ -133,19 +143,29 @@ function jr_mt_chosen() {
 			/*	Check for a Cookie (safe to do here because we exit immediately after cookie creation above)
 				If it exists, make sure both a ['remember']['query'] and ['query'] setting still exists for it
 				(i.e. - the Keyword=Value specified in the Cookie).
-				If so, return the Theme Name; if not, delete the Cookie.
+				If so, use Redirection to add the Theme Name to the URL;
+				if not, delete the Cookie.
 			*/
 			if ( FALSE !== ( $cookie_value = jr_mt_cookie( 'get' ) ) ) {
 				list( $keyword, $value ) = explode( '=', $cookie_value );
 				if ( isset( $settings['remember']['query'][$keyword][$value] ) && isset( $settings['query'][$keyword][$value] ) ) {
-					return $settings['query'][$keyword][$value];
+					if ( array_key_exists( JR_MT_COOKIE_KEYWORD, jr_mt_kw( 'QUERY_STRING' ) ) ) {
+						return $settings['query'][$keyword][$value];
+					} else {
+						/*	Use str_rot13() to hide Theme value "for appearances sake".
+							Browser caching can display occasional wrong values for the special keyword,
+							but it always works properly, displaying the correct Theme.
+						*/
+						wp_redirect( add_query_arg( JR_MT_COOKIE_KEYWORD, str_rot13( $settings['query'][$keyword][$value] ), $full_url ), 301 );
+						exit;
+					}
 				} else {
 					jr_mt_cookie( 'del' );
 				}
 			}
 		}
 		
-		extract( jr_mt_url_to_id( rawurldecode(  parse_url( home_url(), PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ) ) );	
+		extract( jr_mt_url_to_id( rawurldecode(  $full_url ) ) );	
 		if ( ( 'livesearch' === $type ) && ( FALSE !== $livesearch_theme = jr_mt_livesearch_theme() ) ) {
 			return $livesearch_theme;
 		}

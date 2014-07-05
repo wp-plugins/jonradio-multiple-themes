@@ -207,6 +207,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.10.1 =
+* Sticky:  add a unique Query to URL so that Caching plugins will cache separate copies for each Theme used on a particular page
+
 = 4.10 =
 * Add a Sticky option (Advanced Setting) for URL Queries (keyword=value) that will select the same Theme for all subsequent pages viewed by the same Visitor
 * Enhance performance by eliminating processing related to each Type of Setting when no Setting entries of that Type exist
@@ -316,6 +319,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.10.1 =
+Make Sticky work with Caching plugins
 
 = 4.10 =
 Performance improvements and add Sticky Queries

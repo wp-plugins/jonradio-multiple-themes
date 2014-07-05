@@ -699,7 +699,7 @@ function jr_mt_advanced_settings_expl() {
 	and the same Theme to be used for all future WordPress non-Admin webpages
 	viewed by the same Visitor
 	(same visitor computer/same visitor username on that computer/same browser)
-	until another Remembered query <code>keyword=value</code> URL is encountered.
+	until another Sticky query <code>keyword=value</code> URL is encountered.
 	Note: A Cookie is used for this purpose. If the visitor's browser refuses Cookies,
 	this setting will not work and no error messages will be displayed.
 	</p>
