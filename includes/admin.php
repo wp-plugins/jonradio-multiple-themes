@@ -253,9 +253,9 @@ function jr_mt_settings_page() {
 		if ( trim( $settings['current'] ) ) {
 			echo " But it is being overridden in Advanced Settings (see below), which set the plugin's default Theme to <b>";
 			echo wp_get_theme( $settings['current'] )->Name;
-			echo '</b>. You will not normally need to specify this default Theme in any of the other Settings on this page, though you will need to specify the WordPress Current Theme wherever you want it appear. Or, if you specify a different Theme for All Pages, All Posts or Everything, and wish to use the default Theme for one or more specific Pages, Posts or other non-Admin pages.';
+			echo '</b>. You will not normally need to specify this default Theme in any of the other Settings on this page, though you will need to specify the WordPress Current Theme wherever you want it appear. Or, if you specify, in the Advanced Settings section, a different Theme for All Pages, All Posts or Everything, and wish to use the default Theme for one or more specific Pages, Posts or other non-Admin pages.';
 		} else {
-			echo ' You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify a different Theme for All Pages, All Posts or Everything, and wish to use the Current Theme for one or more specific Pages, Posts or other non-Admin pages.';
+			echo ' You will not normally need to specify it in any of the Settings on this page. The only exception would be if you specify, in the Advanced Settings section, a different Theme for All Pages, All Posts or Everything, and wish to use the Current Theme for one or more specific Pages, Posts or other non-Admin pages.';
 		}
 		echo '</p>';
 		if ( $jr_mt_plugin_data['read readme'] ) {
@@ -278,13 +278,13 @@ function jr_mt_settings_page() {
 		//	Plugin Settings are displayed and entered here:
 		settings_fields( 'jr_mt_settings' );
 		do_settings_sections( 'jr_mt_settings_page' );
-		echo '<p><input name="save" type="submit" value="Save Changes" class="button-primary" /></p></form>';
+		echo '<p><input name="save" type="submit" value="Save All Changes" class="button-primary" /></p></form>';
 	}
 
 	echo '<hr /><h3>System Information</h3><p>You are currently running:<ul>';
 	echo "<li> &raquo; The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>";
-	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is " . rtrim( jr_mt_path(), '/' ) . '</li>';
-	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is " . plugins_url() . "/{$jr_mt_plugin_data['slug']}</li>";
+	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is <code>" . rtrim( jr_mt_path(), '/' ) . '</code></li>';
+	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is <code>" . plugins_url() . "/{$jr_mt_plugin_data['slug']}</code></li>";
 	echo "<li> &raquo; WordPress Version $current_wp_version</li>";
 	echo '<li> &nbsp; &raquo;&raquo; WordPress language is set to ' , get_bloginfo( 'language' ) . '</li>';
 	echo '<li> &raquo; ' . php_uname( 's' ) . ' operating system, Release/Version ' . php_uname( 'r' ) . ' / ' . php_uname( 'v' ) . '</li>';
@@ -328,7 +328,7 @@ function jr_mt_admin_init() {
 		}
 	}
 	add_settings_section( 'jr_mt_all_settings_section', 
-		'<input name="save" type="submit" value="Save Changes" class="button-primary" /></h3><h3>For All Pages, All Posts and/or Site Home', 
+		'<input name="save" type="submit" value="Save All Changes" class="button-primary" /></h3><h3>For All Pages, All Posts and/or Site Home', 
 		'jr_mt_all_settings_expl', 
 		'jr_mt_settings_page' 
 	);
@@ -369,17 +369,23 @@ function jr_mt_admin_init() {
 	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_value', 'Query Value', 'jr_mt_echo_add_query_value', 'jr_mt_settings_page', 'jr_mt_query_section' );
-	add_settings_field( 'add_query_remember', 'Sticky?', 'jr_mt_echo_add_query_remember', 'jr_mt_settings_page', 'jr_mt_query_section' );
-	add_settings_section( 'jr_mt_advanced_settings_section', 
-		'Advanced Settings', 
-		'jr_mt_advanced_settings_expl', 
+	add_settings_section( 'jr_mt_sticky_section', 
+		'<input name="save" type="submit" value="Save All Changes" class="button-primary" /></h3><h2>Advanced Settings</h2><p><b>Warning:</b> As the name of this section implies, Advanced Settings should be fully understood or they may surprise you with unintended consequences, so please be careful.</p><h3>Sticky and Override', 
+		'jr_mt_sticky_expl', 
 		'jr_mt_settings_page' 
+	);
+	add_settings_field( 'query_present', 'When to add Sticky Query to a URL', 'jr_mt_echo_query_present', 'jr_mt_settings_page', 'jr_mt_sticky_section' );
+	add_settings_field( 'sticky_query', 'Keyword=Value Entries:', 'jr_mt_echo_sticky_query_entry', 'jr_mt_settings_page', 'jr_mt_sticky_section' );
+	add_settings_section( 'jr_mt_everything_section',
+		'Theme for Everything',
+		'jr_mt_everything_expl', 
+		'jr_mt_settings_page'
 	);
 	add_settings_field( 'current', 
 		'Select Theme for Everything, to Override WordPress Current Theme (<b>' . wp_get_theme()->Name . '</b>)', 
 		'jr_mt_echo_current', 
 		'jr_mt_settings_page', 
-		'jr_mt_advanced_settings_section' 
+		'jr_mt_everything_section' 
 	);
 }
 
@@ -476,9 +482,6 @@ function jr_mt_echo_delete_query_entry() {
 				echo "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_delkwval' value='$value' size='"
 				. jr_mt_strlen( $value )
 				. "' /></b></code>";
-			}
-			if ( isset( $settings['remember']['query'][$keyword][$value] ) ) {
-				echo ' <b><u>STICKY</u></b> <small>(see <b>Advanced Settings</b> section for explanation)</small>';
 			}
 		}
 	}
@@ -670,10 +673,6 @@ function jr_mt_echo_add_query_value() {
 		. '='
 		. '<input id="add_query_value" name="jr_mt_settings[add_query_value]" type="text" size="20" maxlength="64" value="" /></code>';
 }
-function jr_mt_echo_add_query_remember() {
-	echo '<input type="checkbox" id="add_query_remember" name="jr_mt_settings[add_query_remember]" value="TRUE" />'
-		. ' Theme <i>sticks to</i> to all WordPress webpages after Visitor views a URL with this <code>keyword=value</code> (<b>Advanced Setting</b>, please read below)'; 
-}
 
 /**
  * Section text for Section6
@@ -681,31 +680,142 @@ function jr_mt_echo_add_query_remember() {
  * Display an explanation of this Section
  *
  */
-function jr_mt_advanced_settings_expl() {
+function jr_mt_sticky_expl() {
 	?>
 	<p>
-	<b>Warning:</b>
-	As the name of the section implies, Advanced Settings
-	may surprise you with unintended consequences,
-	so please be careful.
+	If one of the
+	<b>
+	Keyword=Value Entries
+	</b>
+	shown below
+	(if any)
+	is present in the URL of a WordPress non-Admin webpage on the current WordPress Site
+	and that Entry is:
+	<ol>
+	<li>
+	<b>Sticky</b>,
+	then the specified Theme will continue to be displayed for subsequent
+	WordPress non-Admin webpages
+	viewed by the same Visitor
+	until an Override entry is encountered by the same Visitor.
+	</li>
+	<li>
+	<b>Override</b>,
+	then the specified Theme will be displayed,
+	effectively ending any previous Sticky Theme that was being displayed
+	for the same Visitor.
+	</li>
+	</ol>
+	<b>
+	Note
+	</b>
+	that,
+	as explained in the
+	Query Keyword=Value
+	section above,
+	Query Keyword=Value already takes precedence over all other Theme selection entries,
+	even without the Override checkbox selected.
+	Override is only intended to cancel a Sticky entry
+	and display the specified Theme on the current WordPress non-Admin webpage.
 	</p>
 	<p>
-	<b>Sticky?</b>
-	This setting
-	(just above)
-	allows the associated <code>keyword=value</code> to
-	set the Theme not just for the current WordPress non-Admin webpage,
-	but be remembered by the Visitor's browser
-	and the same Theme to be used for all future WordPress non-Admin webpages
-	viewed by the same Visitor
-	(same visitor computer/same visitor username on that computer/same browser)
-	until another Sticky query <code>keyword=value</code> URL is encountered.
-	Note: A Cookie is used for this purpose. If the visitor's browser refuses Cookies,
+	Implementation Notes:
+	<ol>
+	<li>
+	The term "Same Visitor",
+	used above,
+	refers to a single combination of
+	computer, browser and possibly computer user name,
+	if the visitor's computer has multiple accounts or user names.
+	A computer could be a smartphone, tablet, laptop, desktop or other Internet access device used by the Visitor.
+	</li>
+	<li>
+	When Sticky is active for a given Visitor,
+	the associated Query Keyword=Value is added to the
+	URL of links displayed on the current WordPress non-Admin webpage.
+	With the following exceptions:
+	<ul>
+	<li>
+	a)
+	Only links pointing to non-Admin webpages of the current WordPress Site are altered.
+	</li>
+	<li>
+	b)
+	The 
+	"When to add Sticky Query to a URL"
+	setting below also controls when a Sticky Keyword=Value is added to a URL.
+	</li>
+	</ul>
+	<li>
+	Cookies are used for Sticky entries. If the visitor's browser refuses Cookies,
 	this setting will not work and no error messages will be displayed.
+	</li>
+	</ol>
 	</p>
+	<?php
+}
+
+function jr_mt_echo_query_present() {
+	$settings = get_option( 'jr_mt_settings' );
+	/*
+		FALSE if Setting "Append if no question mark ("?") found in URL", or
+		TRUE if Setting "Append if no Override keyword=value found in URL"
+	*/
+	echo '<input type="radio" id="query_present" name="jr_mt_settings[query_present]" value="false" ';
+	checked( $settings['query_present'], FALSE );
+	echo ' /> Append if no question mark ("?") found in URL<br/><input type="radio" id="query_present" name="jr_mt_settings[query_present]" value="true" ';
+	checked( $settings['query_present'] );
+	echo ' /> Append if no Override <code>keyword=value</code> found in URL';
+}
+
+function jr_mt_echo_sticky_query_entry() {
+	global $jr_mt_kwvalsep;
+	$settings = get_option( 'jr_mt_settings' );
+	$three_dots = '&#133;';
+	$first = TRUE;
+	if ( !empty( $settings['query'] ) ) {
+		foreach ( $settings['query'] as $keyword => $value_array ) {
+			foreach ( $value_array as $value => $theme ) {
+				if ( '*' !== $value ) {
+					if ( $first ) {
+						$first = FALSE;
+					} else {
+						echo '<br />';
+					}
+					echo 'Sticky <input type="checkbox" id="sticky_query_entry" name="jr_mt_settings[sticky_query_entry][]" value="'
+						. "$keyword$jr_mt_kwvalsep$value"
+						. '" ';
+					checked( isset( $settings['remember']['query'][$keyword][$value] ) );
+					echo ' /> &nbsp; Override <input type="checkbox" id="override_query_entry" name="jr_mt_settings[override_query_entry][]" value="'
+						. "$keyword$jr_mt_kwvalsep$value"
+						. '" ';
+					checked( isset( $settings['override']['query'][$keyword][$value] ) );
+					echo ' /> &nbsp; Theme='
+						. wp_get_theme( $theme )->Name . '; '
+						. 'Query='
+						. '<code>'
+						. trim( get_home_url(), '\ /' ) 
+						. "/</code>$three_dots<code>/?"
+						. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_stkw' value='$keyword' size='"
+						. jr_mt_strlen( $keyword )
+						. "' /></b>"
+						. '='
+						. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_stkwval' value='$value' size='"
+						. jr_mt_strlen( $value )
+						. "' /></b></code>";
+				}
+			}
+		}
+	}
+	if ( $first ) {
+		echo 'None';
+	}
+}
+
+function jr_mt_everything_expl() {
+	?>
 	<p>
 	<b>Theme for Everything</b>
-	(just below)
 	simplifies the use of a Theme with Admin panel settings that you need to change frequently,
 	when the Theme is only going to be used on one or more Pages or Posts.
 	The Theme can be set as the WordPress Current Theme through the Appearance-Themes admin panel,
@@ -722,6 +832,7 @@ function jr_mt_echo_current() {
 }
 
 function jr_mt_validate_settings( $input ) {
+	global $jr_mt_kwvalsep;
 	$valid = array();
 	foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $thing ) {
 		$valid[$thing] = $input[$thing];
@@ -730,14 +841,28 @@ function jr_mt_validate_settings( $input ) {
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
 	$query = $settings['query'];
-	$remember = $settings['remember'];
+	$remember = array();
+	if ( isset( $input['sticky_query_entry'] ) ) {
+		foreach	( $input['sticky_query_entry'] as $query_entry ) {
+			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
+			$remember['query'][$keyword][$value] = TRUE;
+		}
+	}
+
+	$override = array();
+	if ( isset( $input['override_query_entry'] ) ) {
+		foreach	( $input['override_query_entry'] as $query_entry ) {
+			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
+			$override['query'][$keyword][$value] = TRUE;
+		}
+	}
+	
 	if ( isset ( $input['del_entry'] ) ) {
 		foreach ( $input['del_entry'] as $del_entry ) {
 			unset( $ids[$del_entry] );
 		}
 	}
 	if ( isset ( $input['del_query_entry'] ) ) {
-		global $jr_mt_kwvalsep;
 		foreach ( $input['del_query_entry'] as $del_entry ) {
 			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $del_entry );
 			unset( $query[$keyword][$value] );
@@ -749,6 +874,10 @@ function jr_mt_validate_settings( $input ) {
 			unset( $remember['query'][$keyword][$value] );
 			if ( empty( $remember['query'][$keyword] ) ) {
 				unset( $remember['query'][$keyword] );
+			}
+			unset( $override['query'][$keyword][$value] );
+			if ( empty( $override['query'][$keyword] ) ) {
+				unset( $override['query'][$keyword] );
 			}
 		}
 	}
@@ -959,9 +1088,6 @@ function jr_mt_validate_settings( $input ) {
 				Otherwise, create a new entry.
 			*/
 			$query[$keyword][$value] = $input['add_query_theme'];
-			if ( isset( $input['add_query_remember'] ) ) {
-				$remember['query'][$keyword][$value] = TRUE;
-			}
 		}
 	} else {
 		if ( !( empty( $input['add_query_theme'] ) && empty( $keyword ) && empty( $value ) ) ) {
@@ -971,6 +1097,14 @@ function jr_mt_validate_settings( $input ) {
 				'Query Keyword, Value and Theme must all be specified to add an Individual Query entry',
 				'error'
 			);
+		}
+	}
+	
+	if ( 'true' === $input['query_present'] ) {
+		$valid['query_present'] = TRUE;
+	} else {
+		if ( 'false' === $input['query_present'] ) {
+			$valid['query_present'] = FALSE;
 		}
 	}
 	
@@ -986,6 +1120,7 @@ function jr_mt_validate_settings( $input ) {
 	$valid['ids'] = $ids;
 	$valid['query'] = $query;
 	$valid['remember'] = $remember;
+	$valid['override'] = $override;
 	return $valid;
 }
 

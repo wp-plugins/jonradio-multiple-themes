@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 3.9.1
-Stable tag: 4.10.1
+Stable tag: 4.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -207,6 +207,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.11 =
+* Complete Rewrite of Sticky logic, adding additional Settings, including Override
+
 = 4.10.1 =
 * Sticky:  add a unique Query to URL so that Caching plugins will cache separate copies for each Theme used on a particular page
 
@@ -319,6 +322,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.11 =
+Complete rewrite of Sticky logic
 
 = 4.10.1 =
 Make Sticky work with Caching plugins

@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.10.1
+Version: 4.11
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -28,7 +28,9 @@ License: GPLv2
 
 /*	Exit if .php file accessed directly
 */
-if ( !defined( 'ABSPATH' ) ) exit;
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 global $jr_mt_file;
 $jr_mt_file = __FILE__;
@@ -109,13 +111,15 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 	$settings = get_option( 'jr_mt_settings' );
 	if ( empty( $settings ) ) {
 		$settings = array(
-			'all_pages' => '',
-			'all_posts' => '',
-			'site_home' => '',
-			'current'   => '',
-			'query'     => array(),
-			'remember'  => array( 'query' => array() ),
-			'ids'       => array()
+			'all_pages'     => '',
+			'all_posts'     => '',
+			'site_home'     => '',
+			'current'       => '',
+			'query'         => array(),
+			'remember'      => array( 'query' => array() ),
+			'override'      => array( 'query' => array() ),
+			'query_present' => FALSE,
+			'ids'           => array()
 		);
 		/*	Add if Settings don't exist, re-initialize if they were empty.
 		*/
@@ -199,6 +203,10 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 				}
 			}
 			$settings['query'] = $query;
+		}
+		if ( version_compare( $old_version, '4.11', '<' ) ) {
+			$settings['override'] = $settings['remember'];
+			$settings['query_present'] = FALSE;
 		}
 		
 		$settings['ids'] = $ids;
