@@ -841,7 +841,7 @@ function jr_mt_validate_settings( $input ) {
 	$settings = get_option( 'jr_mt_settings' );
 	$ids = $settings['ids'];
 	$query = $settings['query'];
-	$remember = array();
+	$remember = array( 'query' => array() );
 	if ( isset( $input['sticky_query_entry'] ) ) {
 		foreach	( $input['sticky_query_entry'] as $query_entry ) {
 			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
@@ -849,7 +849,7 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 
-	$override = array();
+	$override = array( 'query' => array() );
 	if ( isset( $input['override_query_entry'] ) ) {
 		foreach	( $input['override_query_entry'] as $query_entry ) {
 			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );

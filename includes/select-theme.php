@@ -360,47 +360,6 @@ function jr_mt_cookie( $lang, $action, $cookie_value = '' ) {
 		}
 	}
 }
-			
-
-						
-			
-			
-
-			
-			
-			
-
-
-function jr_mt_code_to_resolve() {	
-		
-		if ( empty( $settings['remember']['query'] ) ) {
-			/*	Delete any Cookie that might exist
-			*/
-			jr_mt_cookie( 'js', 'del' );
-			if ( isset( $query_entry ) ) {
-				return $query_entry;
-			}
-		} else {
-			/*	Check for a Cookie (safe to do here because we exit immediately after cookie creation above)
-				If it exists, make sure both a ['remember']['query'] and ['query'] setting still exists for it
-				(i.e. - the Keyword=Value specified in the Cookie).
-				If so, select the specified Theme;
-				if not, delete the Cookie.
-			*/
-			if ( FALSE !== ( $cookie_value = jr_mt_cookie( 'js', 'get' ) ) ) {
-				list( $keyword, $value ) = explode( '=', $cookie_value );
-				if ( isset( $settings['remember']['query'][$keyword][$value] ) && isset( $settings['query'][$keyword][$value] ) ) {
-					return $settings['query'][$keyword][$value];
-				} else {
-					jr_mt_cookie( 'js', 'del' );
-				}
-			}
-		}
-}
-		
-
-
-
 
 /**	Build Query Array
 
