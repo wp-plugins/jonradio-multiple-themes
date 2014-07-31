@@ -32,6 +32,10 @@
 		- WordPress /wp-admin/ URL
 	These values are not available for the Cookie, because WordPress must be
 	loaded before these values are available.
+	
+	Whether pre-processed in PHP when passed, or within this JavaScript,
+	all comparisons are effectively case-insensitive, by converting
+	all values to lower-case.
 */
 window.onload =
 	function ( ) {
@@ -106,7 +110,7 @@ window.onload =
 												for ( j = 0, hrefQueriesLength = hrefQueries.length; j < hrefQueriesLength; j++ ) {
 													/*	Don't append Sticky query if an Override query is present in URL
 													*/
-													if ( -1 !== overrideQueries.indexOf( hrefQueries[ j ] ) ) {
+													if ( -1 !== overrideQueries.indexOf( hrefQueries[ j ].toLowerCase() ) ) {
 														/*	Override query already in URL.
 														*/
 														addQuery = '';

@@ -85,7 +85,7 @@ function jr_mt_chosen() {
 	if ( is_admin() ) {
 		//	Admin panel
 		//	return P2 theme if p2ajax= is present; current theme otherwise
-		$keywords = jr_mt_kw( 'QUERY_STRING' );
+		$keywords = jr_mt_query_array();
 		if ( isset( $keywords['p2ajax'] ) && array_key_exists( 'p2', wp_get_themes() ) ) {
 			$theme = 'p2';
 		} else {
@@ -364,41 +364,37 @@ function jr_mt_cookie( $lang, $action, $cookie_value = '' ) {
 /**	Build Query Array
 
 	$array[keyword] = array( value, value, ... )
+	Sets both keyword and value to lower-case as
+	that is how they are stored in Settings.
+	
+	Supports only & separator, not proposed semi-colon separator.
+	
+	Handles duplicate keywords in all four of these forms:
+	kw=val1&kw=val2 kw[]=val1&kw[]=val2 kw=val1&kw=val1 kw[]=val1&kw[]=val1
+	but nothing else, e.g. - kw=val1,val2 is not valid;
+	it returns "val1,val2" as the Value.
+	Also handles kw1&kw2
+	
+	Tests of parse_str() in PHP 5.5.9 proved that semi-colon and comma
+	are not supported.  But, neither is kw=val1,kw=val2 which is why
+	this function is written without the use of parse_str.
 */
 function jr_mt_query_array() {
-	$query = explode( '&', $_SERVER['QUERY_STRING'] );
+	/*	Remove array entry indicators ("[]") as we properly handle duplicate keywords,
+		and covert to lower-case for comparison purposes.
+	*/
 	$queries = array();
-	foreach ( $query as $pair ) {
-		$kwval = explode( '=', $pair );
-		$keyword = $kwval[0];
-		if ( isset( $kwval[1] ) ) {
-			$value = $kwval[1];
-		} else {
-			$value = '';
-		}
-		if ( '' !== $keyword ) {
-			$queries[ $keyword ][] = $value;
+	if ( !empty( $_SERVER['QUERY_STRING'] ) ) {
+		$query = explode( '&', jr_mt_strtolower( str_replace( '[]', '', $_SERVER['QUERY_STRING'] ) ) );
+		foreach ( $query as $kwval ) {
+			$query_entry = explode( '=', $kwval );
+			if ( !isset( $query_entry[1] ) ) {
+				$query_entry[1] = '';
+			}
+			$queries[ $query_entry[0] ][] = $query_entry[1];
 		}
 	}
 	return $queries;
-}
-
-/*	Returns Keyword=Value array based on $_SERVER variable requested.
-*/
-function jr_mt_kw( $server ) {
-	$keywords_raw = jr_mt_parse_query( $_SERVER[ $server ] );
-	$keywords = array();
-	foreach ( $keywords_raw as $keyword => $value ) {
-		if ( is_array( $value ) ) {
-			$kw_prepped = jr_mt_prep_query_keyword( $keyword );
-			foreach ( $value as $arr_key => $arr_value ) {
-				$keywords[$kw_prepped][jr_mt_prep_query_value( $arr_key )] = jr_mt_prep_query_value( $arr_value );
-			}
-		} else {
-			$keywords[jr_mt_prep_query_keyword( $keyword )] = jr_mt_prep_query_value( $value );
-		}
-	}
-	return $keywords;
 }
 
 //	Returns FALSE for Current Theme

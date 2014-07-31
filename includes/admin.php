@@ -264,7 +264,12 @@ function jr_mt_settings_page() {
 					. $current_wp_version . '</p>';
 			}
 		} else {
-			echo '<p>Compatibility checks could not be done because the plugin was unable to read its readme.txt file, likely a user/permissions hosting issue.</p>';
+			echo '<p>Compatibility checks could not be done because the plugin was unable to read its readme.txt file.  Likely cause: ';
+			if ( is_readable( jr_mt_path() . 'readme.txt' ) ) {
+				echo 'the readme.txt file is probably corrupted; you may wish to try re-installing the plugin from the WordPress plugin directory.</p>';
+			} else {
+				echo 'the ownership and access permissions of readme.txt do not allow the WordPress user ID to read the file.</p>';
+			}
 		}
 		if ( jr_mt_plugin_update_available() ) {
 			echo '<p>A new version of this Plugin (' . $jr_mt_plugin_data['Name'] . ') is available from the WordPress Repository.'
@@ -281,17 +286,30 @@ function jr_mt_settings_page() {
 		echo '<p><input name="save" type="submit" value="Save All Changes" class="button-primary" /></p></form>';
 	}
 
-	echo '<hr /><h3>System Information</h3><p>You are currently running:<ul>';
+	echo '<hr /><h3>System Information</h3>';
+	$posix = function_exists( 'posix_uname' );
+	echo '<p>You are currently running:<ul>';
 	echo "<li> &raquo; The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>";
 	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is <code>" . rtrim( jr_mt_path(), '/' ) . '</code></li>';
 	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is <code>" . plugins_url() . "/{$jr_mt_plugin_data['slug']}</code></li>";
 	echo "<li> &raquo; WordPress Version $current_wp_version</li>";
 	echo '<li> &nbsp; &raquo;&raquo; WordPress language is set to ' , get_bloginfo( 'language' ) . '</li>';
 	echo '<li> &raquo; ' . php_uname( 's' ) . ' operating system, Release/Version ' . php_uname( 'r' ) . ' / ' . php_uname( 'v' ) . '</li>';
+	if ( $posix ) {
+		$array = posix_getpwuid( posix_getuid() );
+		$user = $array['name'];
+		echo "<li> &raquo; Real operating system User ID that runs WordPress is $user</li>";
+		$array = posix_getpwuid( posix_geteuid() );
+		$user = $array['name'];
+		echo "<li> &raquo; Effective operating system User ID that runs WordPress is $user</li>";
+	}
 	echo '<li> &raquo; ' . php_uname( 'm' ) . ' computer hardware</li>';
 	echo '<li> &raquo; Host name ' . php_uname( 'n' ) . '</li>';
 	echo '<li> &raquo; php Version ' . phpversion() . '</li>';
 	echo '<li> &nbsp; &raquo;&raquo; php memory_limit ' . ini_get('memory_limit') . '</li>';
+	if ( !$posix ) {
+		echo '<li> &nbsp; &raquo;&raquo; POSIX functions are not available</li>';
+	}
 	echo '<li> &raquo; Zend engine Version ' . zend_version() . '</li>';
 	echo '<li> &raquo; Web Server software is ' . getenv( 'SERVER_SOFTWARE' ) . '</li>';
 	if ( function_exists( 'apache_get_version' ) && ( FALSE !== $apache = apache_get_version() ) ) {
@@ -301,6 +319,59 @@ function jr_mt_settings_page() {
 	echo '<li> &raquo; MySQL Version ' . $wpdb->get_var( 'SELECT VERSION();', 0, 0 ) . '</li>';
 
 	echo '</ul></p>';
+	
+	$paths = array(
+		'/..',
+		'/',
+		'/wp-content/',
+		'/wp-content/plugins/',
+		'/wp-content/plugins/' . dirname( jr_mt_plugin_basename() ),
+		'/wp-content/plugins/' . dirname( jr_mt_plugin_basename() ) . '/readme.txt'
+	);
+	echo '<h3>File Permissions</h3><p>All of the Paths shown below are relative to the WordPress Site Path <code>'
+		. ABSPATH
+		. '</code><br />The first is the Parent Directory <code>'
+		. dirname( ABSPATH )
+		. '/</code> and the second is the WordPress Site Path itself.</p><table class="widefat"><thead><tr><th>Path</th><th>Type</th><th>Read</th><th>Write</th>';
+	if ( $posix ) {
+		echo '<th>Owner</th><th>Group</th>';
+	}
+	echo '</tr></thead><tbody>';
+	foreach ( $paths as $path ) {
+		$full_path = ABSPATH . substr( $path, 1 );
+		if ( is_dir( $full_path ) ) {
+			$type = 'Directory';
+		} else {
+			$type = 'File';
+		}
+		if ( is_readable( $full_path ) ) {
+			$read = 'Yes';
+		} else {
+			$read = 'No';
+		}
+		if ( is_writeable( $full_path ) ) {
+			$write = 'Yes';
+		} else {
+			$write = 'No';
+		}
+		if ( $posix ) {
+			if ( FALSE === ( $uid = fileowner( $full_path ) ) ) {
+				$user = '-';
+				$group = '-';
+			} else {
+				$array = posix_getpwuid( $uid );
+				$user = $array['name'];
+				$array = posix_getgrgid( filegroup( $full_path ) );
+				$group = $array['name'];
+			}
+		}
+		echo "<tr><td>$path</td><td>$type</td><td>$read</td><td>$write</td>";
+		if ( $posix ) {
+			echo "<td>$user</td><td>$group</td>";
+		}
+		echo '<tr>';
+	}
+	echo '</tbody></table>';
 }
 
 add_action( 'admin_init', 'jr_mt_admin_init' );
@@ -616,7 +687,8 @@ function jr_mt_querykw_expl() {
 	For example, 
 	<?php
 	echo '<code>' . trim( get_home_url(), '\ /' ) . '?firstname=dorothy</code>'
-		. ' would use the Theme specified for the <code>firstname</code> keyword, not the Theme specified for Site Home.</p>';
+		. ' would use the Theme specified for the <code>firstname</code> keyword, not the Theme specified for Site Home.'
+		. ' Query matching is case-insensitive, so all Keywords entered are stored in lower-case.</p>';
 }
 function jr_mt_echo_add_querykw_theme() {
 	jr_mt_themes_field( 'add_querykw_theme', '', 'jr_mt_settings', FALSE );
@@ -656,7 +728,8 @@ function jr_mt_query_expl() {
 	<?php
 	echo '<code>' . trim( get_home_url(), '\ /' ) . '?firstname=dorothy</code>'
 		. ' would use the Theme specified for the <code>firstname=dorothy</code> keyword=value pair,'
-		. ' not the Theme specified for Site Home nor even the Theme specified for the Keyword <code>firstname</code>.</p>';
+		. ' not the Theme specified for Site Home nor even the Theme specified for the Keyword <code>firstname</code>.'
+		. ' Query matching is case-insensitive, so all Keywords and Values entered are stored in lower-case.</p>';
 }
 function jr_mt_echo_add_query_theme() {
 	jr_mt_themes_field( 'add_query_theme', '', 'jr_mt_settings', FALSE );
@@ -845,6 +918,10 @@ function jr_mt_validate_settings( $input ) {
 	if ( isset( $input['sticky_query_entry'] ) ) {
 		foreach	( $input['sticky_query_entry'] as $query_entry ) {
 			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
+			/*	Data Sanitization not required as
+				Keyword and Value are not entered by a human,
+				but extracted from previously-generated HTML.
+			*/
 			$remember['query'][$keyword][$value] = TRUE;
 		}
 	}
@@ -853,6 +930,10 @@ function jr_mt_validate_settings( $input ) {
 	if ( isset( $input['override_query_entry'] ) ) {
 		foreach	( $input['override_query_entry'] as $query_entry ) {
 			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
+			/*	Data Sanitization not required as
+				Keyword and Value are not entered by a human,
+				but extracted from previously-generated HTML.
+			*/
 			$override['query'][$keyword][$value] = TRUE;
 		}
 	}
@@ -865,6 +946,10 @@ function jr_mt_validate_settings( $input ) {
 	if ( isset ( $input['del_query_entry'] ) ) {
 		foreach ( $input['del_query_entry'] as $del_entry ) {
 			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $del_entry );
+			/*	Data Sanitization not required as
+				Keyword and Value are not entered by a human,
+				but extracted from previously-generated HTML.
+			*/
 			unset( $query[$keyword][$value] );
 			if ( empty( $query[$keyword] ) ) {
 				unset( $query[$keyword] );

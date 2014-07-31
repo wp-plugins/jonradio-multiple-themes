@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
-Stable tag: 4.11.1
+Stable tag: 4.11.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -207,6 +207,11 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.11.2 =
+* Made all Query comparisons (URL match Setting) case insensitive
+* Eliminate Connection Info prompt from Settings page that occurred for certain User Permissions
+* Add File Permissions table to Settings
+
 = 4.11.1 =
 * Correct foreach() error
 
@@ -325,6 +330,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.11.2 =
+Standardize to case insensitive Query comparisons and eliminate Connection Info prompt on Settings page
 
 = 4.11.1 =
 Fix foreach() error
