@@ -128,7 +128,7 @@ function jr_mt_chosen() {
 								$query_found[] = array( $query_settings_keyword, $query_settings_value );
 							}
 						}
-						if ( in_array( '*', $queries[ $query_settings_keyword ] ) ) {
+						if ( isset( $value_array['*'] ) ) {
 							$keyword_found[] = $query_settings_keyword;
 						}
 					}

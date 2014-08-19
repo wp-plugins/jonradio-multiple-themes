@@ -266,14 +266,27 @@ function jr_mt_themes_defined() {
 	$themes = array();
 	$settings = get_option( 'jr_mt_settings' );
 	foreach ( $settings as $key => $value ) {
-		if ( 'ids' == $key ) {
-			foreach ( $value as $id => $arr ) {
-				$themes[] = $arr['theme'];
-			}
-		} else {
-			if ( !empty( $value ) ) {
-				$themes[] = $value;
-			}
+		switch ( $key ) {
+			case 'ids':
+				foreach ( $value as $id => $arr ) {
+					$themes[] = $arr['theme'];
+				}
+				break;
+			case 'query':
+				foreach ( $value as $keyword => $arr1 ) {
+					foreach ( $arr1 as $value => $theme ) {
+						$themes[] = $theme;
+					}
+				}
+				break;
+			case 'all_pages':
+			case 'all_posts':
+			case 'site_home':
+			case 'current':
+				if ( !empty( $value ) ) {
+					$themes[] = $value;
+				}
+				break;
 		}
 	}
 	return array_unique( $themes );

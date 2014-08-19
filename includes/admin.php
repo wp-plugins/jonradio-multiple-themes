@@ -48,7 +48,9 @@ function jr_mt_settings_page() {
 	//	Required because it is only called automatically for Admin Pages in the Settings section
 	settings_errors( 'jr_mt_settings' );
 	
-	$theme = wp_get_theme()->Name;
+	$theme_obj = wp_get_theme();
+	$theme = $theme_obj->Name;
+	$theme_version = $theme_obj->Version;
 	global $jr_mt_options_cache;
 
 	$current_wp_version = get_bloginfo( 'version' );
@@ -248,7 +250,7 @@ function jr_mt_settings_page() {
 			echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
 		}
 		echo '<p>';
-		echo "The Current Theme, defined to WordPress in Appearance-Themes admin panel, is <b>$theme</b>.";
+		echo "The Active Theme, defined to WordPress in Appearance-Themes admin panel, is <b>$theme</b>.";
 		$settings = get_option( 'jr_mt_settings' );
 		if ( trim( $settings['current'] ) ) {
 			echo " But it is being overridden in Advanced Settings (see below), which set the plugin's default Theme to <b>";
@@ -278,6 +280,7 @@ function jr_mt_settings_page() {
 				. 'plugin-install.php?tab=plugin-information&plugin=' . $jr_mt_plugin_data['slug']
 				. '&section=changelog&TB_iframe=true&width=640&height=768">Click here</a> for more details.</p>';
 		}
+		echo '<p>Need more help? Please scroll to the very bottom of this Settings page for more information.</p>';
 		echo '<hr /><form action="options.php" method="POST">';
 		
 		//	Plugin Settings are displayed and entered here:
@@ -292,6 +295,16 @@ function jr_mt_settings_page() {
 	echo "<li> &raquo; The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>";
 	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is <code>" . rtrim( jr_mt_path(), '/' ) . '</code></li>';
 	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is <code>" . plugins_url() . "/{$jr_mt_plugin_data['slug']}</code></li>";
+	echo "<li> &raquo; The Active Theme is $theme Version $theme_version</li>";
+	echo "<li> &nbsp; &raquo;&raquo; The Path to the Active Theme's stylesheet directory is <code>" . get_stylesheet_directory() . '</code></li>';
+	echo "<li> &nbsp; &raquo;&raquo; The Path to the Active Theme's template directory is <code>" . get_template_directory() . '</code></li>';
+	$permalink = get_option( 'permalink_structure' );
+	if ( empty( $permalink ) ) {
+		$permalink = 'Default (Query <code>/?p=123</code>)';
+	} else {
+		$permalink = "<code>$permalink</code>";
+	}
+	echo "<li> &raquo; The current Permalink Structure is $permalink";
 	echo "<li> &raquo; WordPress Version $current_wp_version</li>";
 	echo '<li> &nbsp; &raquo;&raquo; WordPress language is set to ' , get_bloginfo( 'language' ) . '</li>';
 	echo '<li> &raquo; ' . php_uname( 's' ) . ' operating system, Release/Version ' . php_uname( 'r' ) . ' / ' . php_uname( 'v' ) . '</li>';
@@ -372,6 +385,36 @@ function jr_mt_settings_page() {
 		echo '<tr>';
 	}
 	echo '</tbody></table>';
+	?>
+	<h3>
+	Need Help?
+	</h3>
+	<p>
+	Need help with this plugin?
+	Check the Description, FAQ, Installation and Support tabs
+	in the <a href="http://wordpress.org/plugins/jonradio-multiple-themes/">WordPress Directory entry for this plugin</a>.
+	Space does not allow the kind of detailed information here on the Settings page
+	that is provided and kept up to date on the <a href="http://wordpress.org/plugins/jonradio-multiple-themes/faq/">FAQ tab</a>.
+	Please be sure to check it out if you have any unanswered questions.
+	</p>
+	<p>
+	For information on other jonradio plugins,
+	including Contact and Donation information,
+	<a href="http://jonradio.com/plugins/">click here</a>.
+	</p>
+	<h3>
+	Want to Help?
+	</h3>
+	<p>
+	As well as <a href="http://jonradio.com/plugins/">Donations</a>,
+	you can also help by 
+	<a href="http://wordpress.org/support/view/plugin-reviews/jonradio-multiple-themes">Reviewing this plugin</a> 
+	for the WordPress Plugin Directory,
+	and telling other people that it works for your particular combination of Plugin version and WordPress version
+	in the Compability section of the
+	<a href="http://wordpress.org/plugins/jonradio-multiple-themes/">WordPress Directory entry for this plugin</a>.
+	</p>
+	<?php
 }
 
 add_action( 'admin_init', 'jr_mt_admin_init' );
@@ -637,12 +680,33 @@ function jr_mt_single_settings_expl() {
 	would match all April Posts with Titles that begin with the letter "d", no matter what year they were posted.
 	</blockquote>
 	</p>
+	<p>
+	<b>
+	Hint</b>:
+	if the "URL" option does not properly select the desired theme, try the "URL Prefix" option using the same URL.
+	Some Themes and Plugins request information on the current theme before WordPress is fully setup,
+	and this plugin currently relies on WordPress' url_to_postid() function,
+	which delivers incorrect results before WordPress is fully setup,
+	preventing this plugin from properly matching a URL entry.
+	This plugin uses an alternate matching function when URL Prefix is selected.
+	A future version of this plugin will correct this problem.
+	</p>
 	<?php	
 }
 
 function jr_mt_echo_add_is_prefix() {
+	global $jr_mt_plugins_cache;
+	echo '<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="false" checked="checked" /> URL';
+	if ( isset( $jr_mt_plugins_cache['woocommerce/woocommerce.php'] ) ) {
+		$permalink = get_option( 'permalink_structure' );
+		if ( !empty( $permalink ) ) {
+			/*	Not relevant for the default Permalink Structure of /?p=5
+			*/
+			echo ' - do not use this option for WooCommerce Product pages; use one of URL Prefix options below';
+		}
+	}
 	?>
-	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="false" checked="checked" /> URL<br/>
+	<br/>
 	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="prefix" /> URL Prefix<br/>
 	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="*" /> URL Prefix with Asterisk ("*")
 	<?php
@@ -754,6 +818,16 @@ function jr_mt_echo_add_query_value() {
  *
  */
 function jr_mt_sticky_expl() {
+	/* "Membership System V2" is a paid plugin that blocks (our sticky) Cookies
+	*/
+	global $jr_mt_plugins_cache;
+	foreach ( $jr_mt_plugins_cache as $rel_path => $plugin_data ) {
+		if ( 0 === strncasecmp( 'memberium', $rel_path, 9 ) ) {
+			echo '<b><u>IMPORTANT</u></b>: The Sticky feature of this plugin does not work with the <b>Membership System V2</b> plugin, which blocks the required Cookies.  At least one plugin from memberium.com appears to have been installed: '
+				. $plugin_data['Name'];
+			break;
+		}
+	}
 	?>
 	<p>
 	If one of the
@@ -1002,12 +1076,21 @@ function jr_mt_validate_settings( $input ) {
 					extract( jr_mt_url_to_id( $url ) );				
 					if ( 'false' === $input['add_is_prefix'] ) {
 						if ( $home ) {
-							add_settings_error(
-								'jr_mt_settings',
-								'jr_mt_homeerror',
-								'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
-								'error'
-							);
+							if ( FALSE === strpos( $url, '?' ) ) {
+								add_settings_error(
+									'jr_mt_settings',
+									'jr_mt_homeerror',
+									'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
+									'error'
+								);
+							} else {
+								add_settings_error(
+									'jr_mt_settings',
+									'jr_mt_queryerror',
+									'Queries ("/?...") cannot be specified in a URL entry.',
+									'error'
+								);
+							}
 						} else {
 							if ( $type == 'admin' ) {
 								add_settings_error(
@@ -1017,6 +1100,14 @@ function jr_mt_validate_settings( $input ) {
 									'error'
 								);
 							} else {
+								if ( FALSE !== strpos( $url, '?' ) ) {
+									add_settings_error(
+										'jr_mt_settings',
+										'jr_mt_querywarn',
+										'Warning:  Queries ("/?...") cannot be specified in a URL entry, and have been removed.<br />Settings modified and Saved',
+										'updated'
+									);
+								}
 								if ( $id === FALSE ) {
 									$key = $page_url;
 								} else {
@@ -1069,8 +1160,20 @@ function jr_mt_validate_settings( $input ) {
 						$type = $input['add_is_prefix'];
 						$key = $rel_url;
 					}
-					$errors = get_settings_errors();
-					if ( empty( $errors ) ) {
+
+					function jr_mt_settings_errors() {
+						$errors = get_settings_errors();
+						if ( !empty( $errors ) ) {
+							foreach ( $errors as $error_array ) {
+								if ( 'error' === $error_array['type'] ) {
+									return TRUE;
+								}
+							}
+						}
+						return FALSE;
+					}
+
+					if ( !jr_mt_settings_errors() ) {
 						$ids[$key] = array(
 							'theme' => $input['add_theme'],
 							'type' => $type,

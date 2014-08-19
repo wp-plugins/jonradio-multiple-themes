@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.11.2
+Version: 4.12
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -109,6 +109,33 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 	}
 	
 	$settings = get_option( 'jr_mt_settings' );
+	/*	Settings structure:
+		code - get_option( 'jr_mt_settings' )
+		['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
+		['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
+		['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
+		['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
+		['query']
+			[keyword]
+				[value] or ['*'] => folder in Themes directory containing theme to use
+		['remember']
+			['query']
+				[keyword]
+					[value] => TRUE
+		['override']
+			['query']
+				[keyword]
+					[value] => TRUE
+		['query_present'] => TRUE or FALSE
+		['ids']
+			[id] - zero length string or WordPress ID of Page, Post, etc.
+				['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
+				['theme'] => folder in Themes directory containing theme to use
+				['id'] => FALSE or WordPress ID of Page, Post, etc.
+				['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
+				['rel_url'] => URL relative to WordPress home
+				['url'] => original full URL, from Settings page entry by user	
+	*/
 	if ( empty( $settings ) ) {
 		$settings = array(
 			'all_pages'     => '',
@@ -232,22 +259,6 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 		require_once( jr_mt_path() . 'includes/select-theme.php' );
 	}
 }
-
-/*	Settings structure:
-	code - get_option( 'jr_mt_settings' )
-	['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
-	['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
-	['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
-	['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
-	['ids']
-		[id] - zero length string or WordPress ID of Page, Post, etc.
-			['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
-			['theme'] => folder in Themes directory containing theme to use
-			['id'] => FALSE or WordPress ID of Page, Post, etc.
-			['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
-			['rel_url'] => URL relative to WordPress home
-			['url'] => original full URL, from Settings page entry by user	
-*/
 
 /*
 Research Notes:

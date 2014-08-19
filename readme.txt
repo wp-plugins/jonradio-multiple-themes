@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
-Stable tag: 4.11.2
+Stable tag: 4.12
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -207,6 +207,14 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Changelog ==
 
+= 4.12 =
+* Fix Query Keyword=anything; theme selection was not matching
+* Fix Array to String Warning on some Search plugins by rewriting jt_mt_themes_defined() which creates list of Themes referenced in plugin Settings
+* Add More Diagnostic Information to Settings page
+* Suggest "URL Prefix" setting when "URL" setting does not work, especially for WooCommerce
+* Detect Memberium plugins and explain that Sticky will not work with Membership System V2 because it blocks Cookies
+* Add Warning and change one confusing Error Message when Query is incorrectly included in URL of Page/Post entry
+
 = 4.11.2 =
 * Made all Query comparisons (URL match Setting) case insensitive
 * Eliminate Connection Info prompt from Settings page that occurred for certain User Permissions
@@ -330,6 +338,9 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 4.12 =
+Fix Keyword-only Query Theme selection
 
 = 4.11.2 =
 Standardize to case insensitive Query comparisons and eliminate Connection Info prompt on Settings page
