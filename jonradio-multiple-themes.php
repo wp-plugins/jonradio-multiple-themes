@@ -2,8 +2,8 @@
 /*
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
-Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 4.12
+Description: Select different Themes for one or more WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
+Version: 5.0
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -32,112 +32,65 @@ if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-global $jr_mt_file;
-$jr_mt_file = __FILE__;
+/*	For Hooks, when it needs to run first or last.
+*/
+DEFINE( 'JR_MT_RUN_FIRST', 1 );
+DEFINE( 'JR_MT_RUN_SECOND', JR_MT_RUN_FIRST + 1 );
+DEFINE( 'JR_MT_RUN_LAST', 999 );
+
+DEFINE( 'JR_MT_WP_GET_THEMES_ACTION', 'plugins_loaded' );
+
+DEFINE( 'JR_MT_FILE', __FILE__ );
 
 /*	Catch old unsupported version of WordPress before any damage can be done.
 */
 if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
-	require_once( plugin_dir_path( __FILE__ ) . 'includes/old-wp.php' );
+	require_once( plugin_dir_path( JR_MT_FILE ) . 'includes/old-wp.php' );
 } else {
 	/*	Use $plugin_data['Name'] for the array of incompatible plugins
 	*/
 	global $jr_mt_incompat_plugins;
-	$jr_mt_incompat_plugins = array( 'Theme Test Drive', 'BuddyPress', 'Polylang' );
+	$jr_mt_incompat_plugins = array( 'Theme Test Drive' );  // removed for V5: 'BuddyPress', 'Polylang'
 	
-	global $jr_mt_path;
-	$jr_mt_path = plugin_dir_path( __FILE__ );
-	/**
-	* Return Plugin's full directory path with trailing slash
-	* 
-	* Local XAMPP install might return:
-	*	C:\xampp\htdocs\wpbeta\wp-content\plugins\jonradio-multiple-themes/
-	*
+	require_once( plugin_dir_path( JR_MT_FILE ) . 'includes/functions.php' );
+	
+	/*	Check for missing Settings and set them to defaults.
+		On first use, this means initializing all Settings to their defaults.
 	*/
-	function jr_mt_path() {
-		global $jr_mt_path;
-		return $jr_mt_path;
-	}
-	
-	global $jr_mt_plugin_basename;
-	$jr_mt_plugin_basename = plugin_basename( __FILE__ );
-	/**
-	* Return Plugin's Basename
-	* 
-	* For this plugin, it would be:
-	*	jonradio-multiple-themes/jonradio-multiple-themes.php
-	*
-	*/
-	function jr_mt_plugin_basename() {
-		global $jr_mt_plugin_basename;
-		return $jr_mt_plugin_basename;
-	}
-	
-	if ( !function_exists( 'get_plugin_data' ) ) {
-		require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-	}
-	
-	global $jr_mt_plugin_data;
-	$jr_mt_plugin_data = get_plugin_data( __FILE__ );
-	$jr_mt_plugin_data['slug'] = basename( dirname( __FILE__ ) );
-	
-	global $jr_mt_options_cache;
-	$all_options = wp_load_alloptions();
-	$jr_mt_options_cache['stylesheet'] = $all_options['stylesheet'];
-	$jr_mt_options_cache['template'] = $all_options['template'];
-	
-	/*	Detect initial activation or a change in plugin's Version number
-
-		Sometimes special processing is required when the plugin is updated to a new version of the plugin.
-		Also used in place of standard activation and new site creation exits provided by WordPress.
-		Once that is complete, update the Version number in the plugin's Network-wide settings.
-	*/
-
-	if ( ( FALSE === ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) ) 
-		|| empty( $internal_settings['version'] ) )
-		{
-		/*	Plugin is either:
-			- updated from a version so old that Version was not yet stored in the plugin's settings, or
-			- first use after install:
-				- first time ever installed, or
-				- installed previously and properly uninstalled (data deleted)
-		*/
-
-		$old_version = '0.1';
-	} else {
-		$old_version = $internal_settings['version'];
-	}
-	
-	$settings = get_option( 'jr_mt_settings' );
-	/*	Settings structure:
-		code - get_option( 'jr_mt_settings' )
-		['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
-		['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
-		['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
-		['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
-		['query']
-			[keyword]
-				[value] or ['*'] => folder in Themes directory containing theme to use
-		['remember']
-			['query']
-				[keyword]
-					[value] => TRUE
-		['override']
-			['query']
-				[keyword]
-					[value] => TRUE
-		['query_present'] => TRUE or FALSE
-		['ids']
-			[id] - zero length string or WordPress ID of Page, Post, etc.
-				['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
-				['theme'] => folder in Themes directory containing theme to use
-				['id'] => FALSE or WordPress ID of Page, Post, etc.
-				['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
-				['rel_url'] => URL relative to WordPress home
-				['url'] => original full URL, from Settings page entry by user	
-	*/
-	if ( empty( $settings ) ) {
-		$settings = array(
+	jr_mt_missing_settings( 'jr_mt_settings',
+		array(
+			/*	Settings structure:
+				code - get_option( 'jr_mt_settings' )
+				['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
+				['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
+				['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
+				['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
+				['query']
+					[keyword]
+						[value] or ['*'] => folder in Themes directory containing theme to use
+				['remember']
+					['query']
+						[keyword]
+							[value] => TRUE
+				['override']
+					['query']
+						[keyword]
+							[value] => TRUE
+				['query_present'] => TRUE or FALSE
+				['url'], ['url_prefix'] and ['url_asterisk']
+					['url'] => URL
+					['prep'] => URL array created by jr_mt_prep_url()
+					['theme'] => folder in Themes directory containing theme to use
+				Prior to Version 5.0:
+				['ids']
+					[id] - zero length string or WordPress ID of Page, Post, etc.
+						['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
+						['theme'] => folder in Themes directory containing theme to use
+						['id'] => FALSE or WordPress ID of Page, Post, etc.
+						['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
+						['rel_url'] => URL relative to WordPress home
+						['url'] => original full URL, from Settings page entry by user	
+			*/
 			'all_pages'     => '',
 			'all_posts'     => '',
 			'site_home'     => '',
@@ -146,117 +99,86 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 			'remember'      => array( 'query' => array() ),
 			'override'      => array( 'query' => array() ),
 			'query_present' => FALSE,
-			'ids'           => array()
-		);
-		/*	Add if Settings don't exist, re-initialize if they were empty.
-		*/
-		update_option( 'jr_mt_settings', $settings );
-		/*	New install on this site, very old version or corrupt settings
+			'url'           => array(),
+			'url_prefix'    => array(),
+			'url_asterisk'  => array()
+		)
+	);
+	
+	/*	Detect initial activation or a change in plugin's Version number
+
+		Sometimes special processing is required when the plugin is updated to a new version of the plugin.
+		Also used in place of standard activation and new site creation exits provided by WordPress.
+		Once that is complete, update the Version number in the plugin's Network-wide settings.
+	*/
+	if ( FALSE === ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) ) {
+		/*	New install or Plugin was deleted previously, erasing all its Settings
 		*/
 		$old_version = $jr_mt_plugin_data['Version'];
-	}
-	
-	require_once( jr_mt_path() . 'includes/functions.php' );
-	
-	if ( version_compare( $old_version, $jr_mt_plugin_data['Version'], '!=' ) ) {
-		if ( !isset( $settings['remember'] ) ) {
-			$settings['remember'] = array( 'query' => array() );
-		}
-		
-		if ( isset( $settings['ids'] ) && is_array( $settings['ids'] ) ) {
-			$ids = $settings['ids'];
+		$version_change = TRUE;
+		$update_version_setting = FALSE;
+	} else {
+		if ( empty( $internal_settings['version'] ) ) {
+			/*	Internal Settings are corrupt, or extremely old.
+			*/
+			$old_version = '0';
+			$version_change = TRUE;
+			$update_version_setting = TRUE;
 		} else {
-			$ids = array();
+			$old_version = $internal_settings['version'];
+			$version_change = version_compare( $old_version, $jr_mt_plugin_data['Version'], '!=' );
+			$update_version_setting = $version_change;
 		}
-		
-		/*	Create, if internal settings do not exist; update if they do exist
-		*/
-		$internal_settings['version'] = $jr_mt_plugin_data['Version'];
-		update_option( 'jr_mt_internal_settings', $internal_settings );
-
+	}
+	/*	Create and initialize any or all internal settings that do not exist.
+	*/
+	jr_mt_missing_settings( 'jr_mt_internal_settings',
+		array(
+			'version'   => $jr_mt_plugin_data['Version'],
+			'permalink' => get_option( 'permalink_structure' )
+		)
+	);
+	
+	if ( $version_change ) {		
 		/*	Handle all Settings changes made in old plugin versions
 		*/
-		if ( version_compare( $old_version, '2.1', '<' ) ) {
-			unset( $settings['all_admin'] );
-			//	Check for Site Home entry, remove it and set Site Home field
-			//	And remove all Admin entries (no longer supported)
-			if ( isset( $ids[''] ) ) {
-				$settings['site_home'] = $ids['']['theme'];
-				unset( $ids[''] );
-			} else {
-				$settings['site_home'] = '';
-			}
-			foreach ( $ids as $key => $arr ) {
-				if ( $arr['type'] == 'admin' ) {
-					unset( $ids[$key] );
-				}
+		if ( version_compare( $old_version, '5.0', '<' ) ) {
+			$settings = get_option( 'jr_mt_settings' );
+			if ( !empty( $settings['ids'] ) ) {
+				/*	Convert 'ids' array to 'urls' array in Settings jr_mt_settings
+				
+					Signal that a conversion is required.
+				*/
+				$internal_settings = get_option( 'jr_mt_internal_settings' );
+				$internal_settings['ids'] = TRUE;
+				update_option( 'jr_mt_internal_settings', $internal_settings );				
 			}
 		}
-		if ( version_compare( $old_version, '3.0', '<' ) ) {
-			foreach ( $ids as $key => $arr ) {
-				if ( strcasecmp( 'http', substr( $arr['rel_url'], 0, 4 ) ) == 0 ) {
-					unset( $ids[$key] );
-				}
-			}
-		}
-		if ( version_compare( $old_version, '4.1', '<' ) ) {
-			/*	Replace %hex with real character to support languages like Chinese
-			*/
-			foreach ( $ids as $key => $arr ) {
-				$newkey = rawurldecode( $key );
-				$newarr = $arr;
-				unset( $ids[$key] );
-				$newarr['page_url'] = rawurldecode( $newarr['page_url'] );
-				$newarr['rel_url'] = rawurldecode( $newarr['rel_url'] );
-				$newarr['url'] = rawurldecode( $newarr['url'] );
-				$ids[$newkey] = $newarr;
-			}
-		}
-		if ( version_compare( $old_version, '4.1.2', '<' ) ) {
-			//	Add new Current Theme override option
-			$settings['current'] = '';
-		}
-		if ( version_compare( $old_version, '4.6', '<' ) ) {
-			//	Add new Query Keyword override option
-			$settings['query'] = array();
-		}
-		if ( version_compare( $old_version, '4.7', '<' ) ) {
-			/*	Change the format of the Query array
-			*/
-			$query = array();
-			foreach ( $settings['query'] as $number => $keyword_array ) {
-				foreach ( $keyword_array as $keyword => $theme ) {
-					$query[ jr_mt_prep_query_keyword( $keyword ) ]['*'] = $theme;
-				}
-			}
-			$settings['query'] = $query;
-		}
-		if ( version_compare( $old_version, '4.11', '<' ) ) {
-			$settings['override'] = $settings['remember'];
-			$settings['query_present'] = FALSE;
-		}
-		if ( version_compare( $old_version, '4.11.1', '<' ) ) {
-			foreach ( array( 'override', 'remember' ) as $what ) {
-				if ( empty( $settings[ $what ] ) ) {
-					$settings[ $what ] = array( 'query' => array() );
-				}
-			}
-		}
-		
-		$settings['ids'] = $ids;
-		update_option( 'jr_mt_settings', $settings );
+	}
+
+	/*	Only Update if I have to.
+	*/
+	if ( $update_version_setting ) {
+		$internal_settings = get_option( 'jr_mt_internal_settings' );
+		$internal_settings['version'] = $jr_mt_plugin_data['Version'];
+		update_option( 'jr_mt_internal_settings', $internal_settings );
+	}
+
+	/*	Do the Version 5.0 Upgrade, if required.
+	*/
+	$internal_settings = get_option( 'jr_mt_internal_settings' );
+	if ( isset( $internal_settings['ids'] ) ) {
+		require_once( jr_mt_path() . 'includes/upgradev5.php' );
 	}
 	
+	/*	p2 runs in Admin, so must also execute this code in Admin, too.
+	*/
+	require_once( jr_mt_path() . 'includes/select-theme.php' );
+	
 	if ( is_admin() ) {
+		require_once( jr_mt_path() . 'includes/admin-functions.php' );
 		//	Admin panel
 		require_once( jr_mt_path() . 'includes/admin.php' );
-	} else {
-		//	Setting of Blank uses WordPress Current Theme value
-		if ( trim( $settings['current'] ) ) {
-			$jr_mt_options_cache['stylesheet'] = $settings['current'];
-			$jr_mt_options_cache['template'] = $settings['current'];
-		}
-		require_once( jr_mt_path() . 'includes/select-theme.php' );
 	}
 }
 

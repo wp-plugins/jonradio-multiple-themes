@@ -4,43 +4,40 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
-Stable tag: 4.12
+Stable tag: 5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
+Select different Themes for one or more WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
 
 == Description ==
 
-Allows the Administrator to specify which Theme will be used on specific Pages, Posts, other non-Admin pages (such as Category or Archive pages) or Site Home.  A Prefix feature allows a Theme to be selected based on the initial characters of its URL ("Prefix URL"), an Asterisk ("*") can be used to match all subdirectories at a specific level in the directory/folder hierarchy, and a Query Keyword feature allows a Theme to be selected whenever a specified ?keyword= or &keyword= is found in the URL.  A Theme can also be specified for All Pages, All Posts or Everywhere. In turn, even when a Theme is specified for All Pages, All Posts or Everywhere, a different Theme can still be specified for specific Pages or Posts.
+**Version 5 was a major rewrite that now supports nearly all plugins and themes, including BuddyPress.**  In the unlikely situation that such a massive change introduces unforeseen issues for your site, it is possible to downgrade to Version 4.12 until the issue is resolved.
 
-Think what you could do if you could easily use more than one Theme on your WordPress web site or blog:
+Settings provide many different ways to Select which Theme should appear where on your WordPress web site:
 
-* Divide your site into Sections, each with its own unique look
-* Style individual Pages, Posts, or other elements (Site Home, Category main page, Archive main page) with a different Theme
-* Select a unique Theme for all Pages, Posts, Attachments, Category pages or Archive pages
-* Make slight variations to a Theme, using Child Themes, for one or more Pages, Posts or other elements (Site Home, Category main page, Archive main page)
-* Supports Multiple Stylesheets for Accessibility and other purposes (create one Child Theme for each Stylesheet)
-* Test a new Theme on one or more Pages or Posts
-* Convert to a new Theme a Page or Post at a time
-* Host multiple mini-web sites on your WordPress site, each with a different Theme
-* When a larger version of an image attachment is displayed, for example, when clicking on a gallery image thumbnail, use a different theme to display it, for one or all images attached to a Page or Post
+* Just for Site Home
+* By URL (Version 5 adds support for Query keyword=value as part of a unique URL);
+* By Prefix URL, matching all URLs that begin with the same characters ("Prefix URL");
+* By Wildcard Prefix URL with one or more Asterisks ("*") representing arbritrary subdirectories in the URL;
+* By Query Keyword found in any URL, not matter what the Value;
+* By Query keyword=value found in any URL;
+* By Sticky Query keyword=value that sets the Theme for a given Visitor until an Override Query keyword=value is found in a future URL (Advanced Setting requiring the Visitor's browser to accept Cookies; incompatible with certain plugins that block Cookies);
+* Everywhere (Advanced Setting that overrides the WordPress Active Theme);
+* All Pages (Advanced Setting that works with most, but not all, Themes and Plugins);
+* All Posts (Advanced Setting that works with most, but not all, Themes and Plugins).
 
-**Use with Paid Themes**:  Some Paid Themes do not work with this plugin.  See the FAQ tab for more information and alternatives.
+None of the Themes in the WordPress Theme Directory alter the appearance of the WordPress Admin panels.  As a result, this plugin does not allow Theme Selection entries to specify URLs for WordPress Admin panels.
 
-**Use with other Plugins**:  **BuddyPress**, **Polylang** and **Theme Test Drive** plugins must all be Deactivated when jonradio Multiple Themes is Activated
+**Use with Paid Themes**:  On-going full scale testing of Themes by this plugin's author is only possible if the Theme is found in the WordPress Theme Directory.  Although (Version 5 of) this plugin should now work with all Themes, any problems encountered while using Paid Themes will be difficult to diagnose.  As described in the FAQ tab, a WordPress Network (Multisite) is an alternative to this plugin, as a way to create a single web site with more than one Theme.
 
-**Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  See the FAQ (Frequently-Asked Questions) tab for important information on changing Options on Themes other than the Current Theme.
+A similar situation exists with Paid Plugins.
 
-To select all Pages, Posts, Archives, Categories, etc. that begin with the same partial URL, a "Prefix URL" can be specified by selecting the Prefix checkbox when creating an entry on the Settings page for the jonradio Multiple Themes plugin.  Restriction:  the Prefix URL cannot contain all or part of a Query, which is the portion of a URL that begins with a question mark ("?").  Although the Prefix cannot contain a Query, URLs containing a Query will be matched by the Prefix.
+**Use with Plugins that Cache**:  You may find that you have to flush the Cache whenever you change Settings in the *jonradio Multiple Themes* plugin. Some Caching plugins only cache for visitors who are not logged in as users, so be sure to log out before testing the results of your *jonradio Multiple Themes* settings.
 
-To select any URL on the site that contains a specified Query Keyword ("?keyword=" or "&keyword=") or Query Keyword=Value combination ("?keyword=value" or "&keyword=value"), a "Query Keyword" entry can be created.  A Sticky option can be set to make all subsequent non-Admin pages viewed by the same Visitor display using the same Theme, but it does require the Visitor's browser to accept Cookies.
+**Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  After installing and activating the plugin, see the plugin's Settings page and click on the **Theme Options** tab for important information on changing Options for Themes other than the Active Theme.
 
-Normally, if a Theme is not specified for a Page, Post, Site Home or other WordPress-displayed web page, such as Category or Archive display, the **Current Theme** specified in **Appearance-Themes** on the Admin panels will be used.  The plugin has an Advanced Setting "Select Theme for Everything" that can be used to define a default Theme for the plugin to use instead of the WordPress Current Theme.  This is useful for a Theme that has many frequently-used options that are much easier to access when it is the WordPress Current Theme, but there is another Theme to be used everywhere except for a few select Pages or Posts.
-
-When selecting a Theme for Site Home or all or specific Pages, Posts or other non-Admin pages, the Theme must be shown in the list of Available Themes on the Appearance-Themes Admin panel. If necessary, install the Theme.  In a WordPress Network (AKA Multisite), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
-
-I hesitate to use the term **Theme Switcher** to describe this plugin, because the term has so many meanings.  The jonradio Multiple Themes plugin does **not** alter the standard WordPress options that define what Theme is used on your WordPress site.  Instead, it dynamically (and selectively) overrides that choice.  Technical details aside, what this means is that deactivating or deleting the jonradio Multiple Themes plugin will instantly revert to the WordPress Current Theme that you have defined through the standard WordPress Appearance-Themes Admin panel.
+**How it Works**:  The plugin does not change the Active Theme defined to WordPress in the Appearances-Themes Admin panel.  Instead, it dynamically (and selectively) overrides that setting.  Which means that simply deactivating (or deleting) this plugin will restore the way that Themes were displayed prior to installing this plugin.  However, in some situations, it is possible to inadvertently alter Theme Options for the Active Theme when using either of the Methods described on the plugin's Setting page Theme Options tab.
 
 == Installation ==
 
@@ -48,9 +45,9 @@ This section describes how to install the *jonradio Multiple Themes* plugin and 
 
 1. Use **Add Plugin** within the WordPress Admin panel to download and install this *jonradio Multiple Themes* plugin from the WordPress.org plugin repository (preferred method).  Or download and unzip this plugin, then upload the `/jonradio-multiple-themes/` directory to your WordPress web site's `/wp-content/plugins/` directory.
 1. Activate the *jonradio Multiple Themes* plugin through the **Installed Plugins** Admin panel in WordPress.  If you have a WordPress Network ("Multisite"), you can either **Network Activate** this plugin through the **Installed Plugins** Network Admin panel, or Activate it individually on the sites where you wish to use it.  Activating on individual sites within a Network avoids some of the confusion created by WordPress' hiding of Network Activated plugins on the Plugin menu of individual sites.  Alternatively, to avoid this confusion, you can install the *jonradio Reveal Network Activated Plugins* plugin.
-1. Be sure that all Themes you plan to use have been installed and are listed under Available Themes on the WordPress Appearance-Themes Admin panel. In a WordPress Network ("Multisite"), Themes must be **Network Enabled** before they will appear as Available Themes on individual sites' Appearance-Themes panel.
-1. Select Themes to be used on the plugin's **Multiple Themes plugin** Settings page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this Settings page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page of the Admin panel.
-1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme *other than* the Current Theme, see the FAQ (Frequently-Asked Questions) tab for important information.
+1. Be sure that all Themes you plan to use have been installed.
+1. Select Themes to be used on the Settings or Advanced Settings tab of the plugin's **Multiple Themes plugin** Settings page in the WordPress Admin panels, which is found in both the **Appearance** and **Settings** sections.  You can also get to this Settings page by clicking on the **Settings** link for this plugin on the **Installed Plugins** page of the Admin panel.
+1. If you need to change Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.) for any Theme *other than* the Active Theme, see the plugin's Settings page and click on the **Theme Options** tab for important information.
 
 == Frequently Asked Questions ==
 
@@ -60,16 +57,9 @@ Please ask before giving up.  Either by [posting a Support question](http://word
 
 If we cannot solve the problem, please consider using a WordPress Network.  One install of WordPress allows you to have multiple separate Sites ("MultiSite"), each with a different Theme, without using the jonradio Multiple Themes plugin.  The sites can look to the outside world as if they are just one web site by using the Sub-directories option.  For example, Site 1 would be at example.com, and Site 2 could be at example.com/forum.
 
-= What if a Theme has a lot of Options that I need to change frequently? =
-
-You will probably want to make it the WordPress Current Theme defined in the Appearance-Themes admin panel,
-so that you will have instant access to the Theme's many Options, especially if the Theme has its own Section(s) of the Admin panel menu.
-
-The plugin's Advanced Setting **Select Theme for Everything** can be used to select another Theme to be used everywhere except for the specific Page(s) or Post(s) where you wish the WordPress Current Theme to appear.
-
 = Will this plugin work with Paid Themes? =
 
-Some do, some do not; unfortunately, there are a growing number of newer Paid Themes that incorporate so many WordPress Hooks that it is not feasible for this plugin to handle them all.  But we have only tested the few Paid Themes whose authors have provided us with permission to use, without charge, their themes for test purposes.  Elegant, for example, allows us to accept copies of its Themes provided by its customers who require assistance with the jonradio Multiple Themes plugin.  On the other hand, some other Paid Theme authors have simply ignored our requests, despite our stated willingness to sign a non-disclosure agreement.
+With the massive rewrite of Theme Selection logic in Version 5 of this plugin, it should now work with all Paid Themes and Plugins.  But we have only tested the few Paid Themes whose authors have provided us with permission to use, without charge, their themes for test purposes.  Elegant, for example, allows us to accept copies of its Themes provided by its customers who require assistance with the jonradio Multiple Themes plugin.  On the other hand, some other Paid Theme authors have simply ignored our requests, despite our stated willingness to sign a non-disclosure agreement.
 
 We do encourage you to contact us if you run into problems when using the jonradio Multiple Themes plugin with a Paid Theme, as the problem may not be unique to the Paid Theme.
 
@@ -77,70 +67,11 @@ To state the obvious, the cost of purchasing a license for all Paid Themes for t
 
 = How do I change the Theme Options (Widgets, Sidebars, Menus, Background, Header, etc.) used for each Theme? =
 
-**NOTE**:  See the next FAQ for information on Templates.
-
-For the Current Theme, nothing changes when using the jonradio Multiple Themes plugin.  Options for the Current Theme, including Widgets, Sidebars, Menus, Background, Header and other Customizations supported by the Theme, can be modified in the Admin panel using the Appearance menu items on the left sidebar and the Customize link displayed beside the Current Theme on the Manage Themes tab of Appearance-Themes.
-
-It is more difficult to modify Options for Active Themes that are *not* the Current Theme.  We hope to build this functionality into the jonradio Multiple Themes plugin in a future Version, but it is not clear just how practical that is, so the best that can be said is:  Maybe.
-
-For now, there are two approaches.  Except for Widgets, the first approach is the most likely to give you success.  Menus, on the other hand, really work well with the first approach, and are severely restricted with the second method.
-
-**WARNING**:  So far, we have not received any reports of, nor have we tested, using both Method #1 and #2 on the same WordPress site.  Use Caution if you plan to do so, as we cannot predict the results. 
-
-**Method #1:**
-
-Set the Theme Options with Live Preview.
-
-Note:  Widgets cannot be placed using this Method.
-
-1. Go to Appearance-Themes-Live Preview in the Admin panels.
-1. Use the right sidebar to modify the Theme Options.  Note that "Navigation" will not appear until a Custom Menu has been defined in Appearance-Menus.  Navigation-Primary Navigation is where you would set the custom menu to be used for the Theme you are currently previewing.
-1. Click the Save & Activate button.
-1. Go immediately to Appearance-Themes to reactivate the Current Theme.
-
-**Method #2:**
-
-Use the Theme Test Drive plugin.
-
-Note:  this approach only allows Menus to be set for one Theme.  Using this method to assign one or more menus to a Theme will unassign menus for all other Themes.
-
-The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Options to be set "as if" it were the Current Theme.
-
-1. Deactivate jonradio Multiple Themes 
-1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
-1. Activate the Theme Test Drive plugin
-1. Go to Appearance-Theme Test Drive 
-1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
-1. Push the Enable Theme Drive button at the bottom 
-1. Go to the WordPress Admin panel's Appearance menu (left sidebar) 
-1. Make your changes to the Theme Options, including Widgets, Sidebars, Menus (see note above about Menus), Background, Header and other Customizations for this alternate Theme (which will appear as if it were the Current Theme)
-1. If you have more than one alternate Theme with Options you wish to change, repeat Steps 4-8 for each alternate Theme 
-1. Deactivate the Theme Test Drive plugin 
-1. Activate jonradio Multiple Themes
-1. Changes to the Options for the Current Theme can now be made normally, just as you would without either plugin
-1. Both the alternate and Current Themes should now display all Theme options properly when selected through the jonradio Multiple Themes plugin
+For the Active Theme, nothing changes when using the jonradio Multiple Themes plugin.  For other Themes, selected using this plugin, changing Theme Options is explained, in detail, on the Theme Options tab of the plugin's Settings page.
 
 = How do I change the Template for a specific Page or Post? =
 
-For the Current Theme, nothing changes when using the jonradio Multiple Themes plugin.  Select an alternate Template from the drop-down list in the Template field of the Page Attributes section of the Add New Page, Edit Page, Add New Post or Edit Post page of the Admin panels.  Or the Template field in Quick Edit.
-
-It is more difficult to change Templates for Pages or Posts defined with the jonradio Multiple Themes plugin to use Active Themes that are *not* the Current Theme.  We hope to build this functionality into the jonradio Multiple Themes plugin in a future Version.
-
-Use the Theme Test Drive plugin.  The jonradio Multiple Themes plugin (i.e. - this plugin) must be Deactivated, and the Theme Test Drive plugin installed and activated, so that each Theme can be selected with the Theme Test Drive plugin, allowing the Theme's Template to be set for each Page or Post using that Theme "as if" it were the Current Theme.
-
-1. Deactivate jonradio Multiple Themes 
-1. Install the Theme Test Drive plugin found at http://wordpress.org/extend/plugins/theme-test-drive/
-1. Activate the Theme Test Drive plugin
-1. Go to Appearance-Theme Test Drive 
-1. In the Usage section, select an alternate Theme you will be using with jonradio Multiple Themes 
-1. Push the Enable Theme Drive button at the bottom 
-1. Go to the WordPress Admin panel's Page or Post menu (left sidebar) 
-1. Make your changes to the Template field of each Page and/or Post that has been selected for this alternate Theme AND requires a non-default Template 
-1. If you have more than one alternate Theme with Templates you wish to change, repeat Steps 4-8 for each alternate Theme 
-1. Deactivate the Theme Test Drive plugin 
-1. Activate jonradio Multiple Themes
-1. Changes to the Templates for Pages and Posts using the Current Theme can now be made normally, just as you would without either plugin
-1. Both the alternate and Current Themes should now display all Templates properly when selected through the jonradio Multiple Themes plugin
+For the Current Theme, nothing changes when using the jonradio Multiple Themes plugin.  For a Page or Post where another Theme is displayed, as selected by this plugin's Settings, specifying the Template to be used is explained, in detail, on the Theme Options tab of the plugin's Settings page.
 
 = How do I select a Theme for a Category of Posts? =
 
@@ -191,24 +122,38 @@ Thanks to Elegant for allowing us to test copies of any of their Themes provided
 
 = What happens when I change Permalinks? =
 
-For entries you have created for individual Pages and Posts with the jonradio Multiple Themes plugin, you can subsequently change your Permalink structure or you can change the Permalink of a Page or Post, without having to change the plugin's entry.  However, for other pages, such as Categories or Archives, you will have to delete your old entries and create new ones with the jonradio Multiple Themes plugin.
+Although it depends on what kind of change you make to your Permalink structure, you should expect to have to replace (delete and add) all of the plugin's Settings that specify a URL.
 
 = I added a new entry but why doesn't it appear in the list of entries? =
 
-If you add an entry that already exists, it merely replaces the previous entry.
+You should have seen an explanatory error message after hitting the Save Changes button.
 
 = How can I change the Theme for an entry? =
 
-Simply add the entry again, with the new Theme.  It will replace the previous entry.
+You will need to delete the entry and add it again, with the new Theme specified.
 
 == Screenshots ==
 
-1. Plugin's Admin Page
+1. Plugin's Settings page
 
 == Changelog ==
 
-= 4.12 =
-* Fix Query Keyword=anything; theme selection was not matching
+= 5.0 =
+* Major rewrite of the Theme Selection logic
+* Tabs added to the Settings page, for easier navigation
+* Greatly expanded compatibility with other Plugins and Themes
+* Allow ?keyword=value&keyword=value Queries in URL, URL Prefix and URL Prefix with Asterisk ("*") Theme Selection entries
+* Accurate Theme Selection even for plugins and themes that request Stylesheet or Template information before WordPress is fully loaded
+* Tabs for the Setting page written in JavaScript for instant switching between tabs and preservation of input data, e.g. - switch between Settings and Advanced Settings tabs without having to retype your changes when you switch back
+* Theme Selection entries, if any, displayed in the order in which they are processed, to clarify which Theme will be displayed for any given URL
+* Complete How-To details on Theme Option and Template selection right on the Settings page, replacing the FAQs	in the WordPress Plugin Directory
+* Automatic deletion of Theme Selection entries for Themes that have been deleted
+* Enhanced performance with tighter code, and less of it, on the public side of your WordPress site
+* Changing Permalinks invalidates more Theme Selection settings than in previous versions
+* Changing the Theme for an Entry requires Deletion of the old Entry before or after adding the same Entry with the new Theme specified
+* The new Theme Selection logic, based on URL Matching rather than Page, Post, Attachment, Category and Archive IDs, requires a conversion of some Settings from prior versions of the plugin. This conversion to the new format occurs automatically the first time that Version 5 runs. Old format settings are retained, transparently without being displayed on the Settings page, to allow downgrading to Version 4 from Version 5.
+
+= 4.11.3 =
 * Fix Array to String Warning on some Search plugins by rewriting jt_mt_themes_defined() which creates list of Themes referenced in plugin Settings
 * Add More Diagnostic Information to Settings page
 * Suggest "URL Prefix" setting when "URL" setting does not work, especially for WooCommerce
@@ -339,8 +284,8 @@ Simply add the entry again, with the new Theme.  It will replace the previous en
 
 == Upgrade Notice ==
 
-= 4.12 =
-Fix Keyword-only Query Theme selection
+= 5.0 =
+Greatly expanded compatibility with other Plugins and Themes
 
 = 4.11.2 =
 Standardize to case insensitive Query comparisons and eliminate Connection Info prompt on Settings page
