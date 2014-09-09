@@ -15,6 +15,28 @@ add_filter( 'pre_option_template', 'jr_mt_template' );
 
 if ( !is_admin() ) {	
 	/*	Hooks below shown in order of execution */
+	
+	/*	Only do this if All Posts or All Pages setting is present.
+	*/
+	if ( jr_mt_all_posts_pages() ) {
+		/*	'setup_theme' is the earliest Action that I could find where url_to_postid( $url )
+			is valid.  get_post() works by then, too.
+		*/
+		add_action( 'setup_theme', 'jr_mt_page_conditional', JR_MT_RUN_FIRST );
+		function jr_mt_page_conditional() {		
+			/*	In case any requests for Theme came before this hook,
+				make sure that Theme Selection is repeated the next time
+				it is needed.
+				Because url_to_postid() and possibly get_post() don't work until now.
+				
+				Note:  in PHP, you cannot directly unset a global variable,
+				hence the cryptic code below.
+			*/
+			unset( $GLOBALS['jr_mt_theme'] );
+			DEFINE( 'JR_MT_PAGE_CONDITIONAL', TRUE );
+		}
+	}
+	
 	add_action( 'wp_loaded', 'jr_mt_wp_loaded', JR_MT_RUN_LAST );
 	function jr_mt_wp_loaded() {
 		/*	Purpose of this hook is to output any required Cookie before it is too late
@@ -32,28 +54,6 @@ if ( !is_admin() ) {
 		}
 
 		DEFINE( 'JR_MT_TOO_LATE_FOR_COOKIES', TRUE );
-	}
-	
-	/*	'parse_query' is the earliest Action that I could find where is_page()
-		is valid.
-		Unfortunately, it can run several times.
-	*/
-	add_action( 'parse_query', 'jr_mt_page_conditional', JR_MT_RUN_FIRST );
-	function jr_mt_page_conditional() {
-		/*	Only run it once
-		*/
-		remove_action( 'parse_query', 'jr_mt_page_conditional', JR_MT_RUN_FIRST );
-		
-		/*	In case any requests for Theme came before this hook,
-			make sure that Theme Selection is repeated the next time
-			it is needed.
-			Because is_page() and is_single don't work until now.
-			
-			Note:  in PHP, you cannot directly unset a global variable,
-			hence the cryptic code below.
-		*/
-		unset( $GLOBALS['jr_mt_theme'] );
-		DEFINE( 'JR_MT_PAGE_CONDITIONAL', TRUE );
 	}
 }
 
@@ -252,7 +252,7 @@ function jr_mt_chosen() {
 	*/
 	
 	$home_url = home_url();
-	$prep_url = jr_mt_prep_url( parse_url( $home_url, PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
+	$prep_url = jr_mt_prep_url( $current_url = parse_url( $home_url, PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
 	foreach ( $settings['url'] as $settings_array ) {
 		if ( jr_mt_same_url( $settings_array['prep'], $prep_url ) ) {
 			return $settings_array['theme'];
@@ -286,32 +286,41 @@ function jr_mt_chosen() {
 	/*	All Pages and All Posts settings are checked second to last, 
 		just before Everything Else.
 		
-		is_single() and is_page() only work after JR_MT_PAGE_CONDITIONAL is set.
+		url_to_postid() only works after JR_MT_PAGE_CONDITIONAL is set.
 		But alternate means can be used with default Permalinks.
+		
+		First, see if any All Pages or All Posts setting exists.
 	*/
-	if ( defined( 'JR_MT_PAGE_CONDITIONAL' ) ) {
-		if ( '' !== $settings['all_posts'] ) {
-			if ( is_single() ) {
-				return $settings['all_posts'];
-			} else {
-				if ( '' !== $settings['all_pages'] ) {
-					if ( is_page() ) {
-						return $settings['all_pages'];
+	if ( jr_mt_all_posts_pages() ) {
+		if ( defined( 'JR_MT_PAGE_CONDITIONAL' ) ) {
+			if ( 0 !== ( $id = url_to_postid( $current_url ) ) ) {
+				if ( NULL !== ( $post = get_post( $id ) ) ) {
+					$type = $post->post_type;
+					if ( 'post' === $type ) {
+						if ( '' !== $settings['all_posts'] ) {
+							return $settings['all_posts'];
+						}
+					} else {
+						if ( 'page' === $type ) {
+							if ( '' !== $settings['all_pages'] ) {
+								return $settings['all_pages'];
+							}
+						}
 					}
 				}
 			}
-		}
-	} else {
-		$permalink = get_option( 'permalink_structure' );
-		if ( empty( $permalink ) ) {
-			if ( '' !== $settings['all_posts'] ) {
-				if ( isset( $queries['p'] ) ) {
-					return $settings['all_posts'];
-				} else {
-					if ( '' !== $settings['all_pages'] ) {
-						if ( isset( $queries['page_id'] ) ) {
-							return $settings['all_pages'];
-						}
+		} else {
+			$permalink = get_option( 'permalink_structure' );
+			if ( empty( $permalink ) ) {
+				if ( '' !== $settings['all_posts'] ) {
+					if ( isset( $queries['p'] ) ) {
+						return $settings['all_posts'];
+					}
+				}
+				
+				if ( '' !== $settings['all_pages'] ) {
+					if ( isset( $queries['page_id'] ) ) {
+						return $settings['all_pages'];
 					}
 				}
 			}
@@ -487,6 +496,11 @@ function jr_mt_query_array() {
 		}
 	}
 	return $queries;
+}
+
+function jr_mt_all_posts_pages() {
+	$settings = get_option( 'jr_mt_settings' );
+	return ! ( ( '' === $settings['all_posts'] ) && ( '' === $settings['all_pages'] ) );
 }
 
 ?>

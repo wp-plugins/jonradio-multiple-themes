@@ -1359,7 +1359,7 @@ function jr_mt_all_settings_expl() {
 	because they may not work with every other plugin, theme or permalinks setting.
 	This plugin is only able to determine whether what is about to be displayed at the current URL
 	is a Page or Post
-	until WordPress is fully loaded;
+	after all other Plugins have been loaded;
 	the one exception to this is the Default setting for Permalinks,
 	when <code>?p=</code> and <code>?page_id=</code> are used.
 	</p>
@@ -1368,7 +1368,8 @@ function jr_mt_all_settings_expl() {
 	<i>
 	too early,
 	</i>
-	before WordPress is fully loaded and this plugin is able to determine if it is on a Page or Post.
+	while they are being loaded,
+	which is before this plugin is able to determine if it is on a Page or Post.
 	For this reason,
 	using either of these settings may not work properly for all other plugins and themes.
 	As a result,

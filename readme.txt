@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
-Stable tag: 5.0
+Stable tag: 5.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 1. Plugin's Settings page
 
 == Changelog ==
+
+= 5.0.1 =
+* Fix All Pages and All Posts by complete rewrite of Theme Selection logic for those Advanced Settings
 
 = 5.0 =
 * Major rewrite of the Theme Selection logic
@@ -283,6 +286,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 5.0.1 =
+Correct All Pages and All Posts (Advanced) Setting bug
 
 = 5.0 =
 Greatly expanded compatibility with other Plugins and Themes
