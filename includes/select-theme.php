@@ -18,7 +18,7 @@ if ( !is_admin() ) {
 	
 	/*	Only do this if All Posts or All Pages setting is present.
 	*/
-	if ( jr_mt_all_posts_pages() ) {
+	if ( get_option( 'permalink_structure' ) && jr_mt_all_posts_pages() ) {
 		/*	'setup_theme' is the earliest Action that I could find where url_to_postid( $url )
 			is valid.  get_post() works by then, too.
 		*/
@@ -462,45 +462,17 @@ function jr_mt_cookie( $lang, $action, $cookie_value = '' ) {
 	}
 }
 
-/**	Build Query Array
-
-	$array[keyword] = array( value, value, ... )
-	Sets both keyword and value to lower-case as
-	that is how they are stored in Settings.
-	
-	Supports only & separator, not proposed semi-colon separator.
-	
-	Handles duplicate keywords in all four of these forms:
-	kw=val1&kw=val2 kw[]=val1&kw[]=val2 kw=val1&kw=val1 kw[]=val1&kw[]=val1
-	but nothing else, e.g. - kw=val1,val2 is not valid;
-	it returns "val1,val2" as the Value.
-	Also handles kw1&kw2
-	
-	Tests of parse_str() in PHP 5.5.9 proved that semi-colon and comma
-	are not supported.  But, neither is kw=val1,kw=val2 which is why
-	this function is written without the use of parse_str.
-*/
-function jr_mt_query_array() {
-	/*	Remove array entry indicators ("[]") as we properly handle duplicate keywords,
-		and covert to lower-case for comparison purposes.
-	*/
-	$queries = array();
-	if ( !empty( $_SERVER['QUERY_STRING'] ) ) {
-		$query = explode( '&', jr_mt_strtolower( str_replace( '[]', '', $_SERVER['QUERY_STRING'] ) ) );
-		foreach ( $query as $kwval ) {
-			$query_entry = explode( '=', $kwval );
-			if ( !isset( $query_entry[1] ) ) {
-				$query_entry[1] = '';
-			}
-			$queries[ $query_entry[0] ][] = $query_entry[1];
-		}
-	}
-	return $queries;
-}
-
+/**	Will the url_to_postid() function be required?
+ *	
+ *	Only if:
+ *		- Pretty Permalinks are being used, AND
+ *		- ( All Posts setting is set, OR
+ *		- All Pages setting is set )
+ * @return   bool	if add_action is required
+ */
 function jr_mt_all_posts_pages() {
 	$settings = get_option( 'jr_mt_settings' );
-	return ! ( ( '' === $settings['all_posts'] ) && ( '' === $settings['all_pages'] ) );
+	return ( $settings['all_posts'] || $settings['all_pages'] );	
 }
 
 ?>

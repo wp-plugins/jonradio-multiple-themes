@@ -623,9 +623,9 @@ function jr_mt_settings_page() {
 	</div>
 	<div id="jr-mt-settings5" style="display: none;">
 	<p>
-	It is possible to downgrade from Version 5 to Version 4.12,
-	which is included with this plugin,
-	in <code>/wp-content/plugins/jonradio-multiple-themes/downgrade/jonradio-multiple-themes.4.12.zip</code>.
+	It is possible to downgrade from Version 5 to Version 4.12.
+	<a href="http://downloads.wordpress.org/plugin/jonradio-multiple-themes.4.12.zip">Click here</a>
+	to download Version 4.12.
 	</p>
 	<h3>
 	What's New in Version 5?
@@ -727,7 +727,7 @@ function jr_mt_settings_page() {
 	<a target="_blank" href="http://wordpress.org/support/plugin/jonradio-multiple-themes">Support</a>
 	tabs
 	in the <a target="_blank" href="http://wordpress.org/plugins/jonradio-multiple-themes/">WordPress Directory entry for this plugin</a>.
-	All of this information is based on the many support questions jonradio has answered both on-line and via e-mail since this plugin was first released in 2012.
+	All of this information is based on the many support questions that jonradio has answered both on-line and via e-mail since this plugin was first released in 2012.
 	</p>
 	<p>
 	Please be sure to check them all out if you have any unanswered questions.

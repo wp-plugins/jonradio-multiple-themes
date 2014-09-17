@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
-Stable tag: 5.0.1
+Stable tag: 5.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more WordPress Pages, Posts or other non-Admi
 
 == Description ==
 
-**Version 5 was a major rewrite that now supports nearly all plugins and themes, including BuddyPress.**  In the unlikely situation that such a massive change introduces unforeseen issues for your site, it is possible to downgrade to Version 4.12 until the issue is resolved.
+**Version 5 was a major rewrite that now supports nearly all plugins and themes, including BuddyPress.**  In the unlikely situation that such a massive change introduces unforeseen issues for your site, it is possible to downgrade to Version 4.12 until the issue is resolved. [Click here](http://downloads.wordpress.org/plugin/jonradio-multiple-themes.4.12.zip "Downgrade") to download Version 4.12.
 
 Settings provide many different ways to Select which Theme should appear where on your WordPress web site:
 
@@ -137,6 +137,10 @@ You will need to delete the entry and add it again, with the new Theme specified
 1. Plugin's Settings page
 
 == Changelog ==
+
+= 5.0.2 =
+* Remove /downgrade/ directory in case it caused the reported PCLZIP_ERR_BAD_FORMAT errors
+
 
 = 5.0.1 =
 * Fix All Pages and All Posts by complete rewrite of Theme Selection logic for those Advanced Settings
@@ -286,6 +290,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 5.0.2 =
+Remove /downgrade/ directory that may have caused PCLZIP_ERR_BAD_FORMAT errors on some web hosts
 
 = 5.0.1 =
 Correct All Pages and All Posts (Advanced) Setting bug
