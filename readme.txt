@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
-Stable tag: 5.0.2
+Stable tag: 5.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,9 +138,11 @@ You will need to delete the entry and add it again, with the new Theme specified
 
 == Changelog ==
 
+= 5.0.3 =
+* Remove Cleanup code for Settings for non-existent Themes, as it conflicts with delete/reinstall theme version upgrades, and certain caching plugins
+
 = 5.0.2 =
 * Remove /downgrade/ directory in case it caused the reported PCLZIP_ERR_BAD_FORMAT errors
-
 
 = 5.0.1 =
 * Fix All Pages and All Posts by complete rewrite of Theme Selection logic for those Advanced Settings
@@ -290,6 +292,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 5.0.3 =
+Remove cleanup of non-existent themes specified in Settings
 
 = 5.0.2 =
 Remove /downgrade/ directory that may have caused PCLZIP_ERR_BAD_FORMAT errors on some web hosts

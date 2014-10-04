@@ -10,6 +10,11 @@ function jr_mt_theme_entry( $type, $theme = '', $display1 = NULL, $display2 = NU
 	$three_dots = '&#133;';
 	$before = '<li>Delete <input type="checkbox" id="del_entry" name="jr_mt_settings[del_entry][]" value="';
 	$after = '" /> &nbsp; ';
+	/*	Fortunately, wp_get_theme() creates an Object if $theme does not exist,
+		complete with a Name entry that matches the folder name.
+		
+		TODO:	flag the situation of a non-existent Theme (i.e. - was deleted after entry was created)
+	*/
 	$theme_equals = 'Theme=' . wp_get_theme( $theme )->Name . '; ';
 	switch ( $type ) {
 		case 'Query':
@@ -86,9 +91,10 @@ function jr_mt_theme_entry( $type, $theme = '', $display1 = NULL, $display2 = NU
 				. $theme_equals
 				. $display1;
 			if ( 'site_home' === $type ) {
-				echo ' (<code>' . home_url() . '</code>)';
+				echo ' (<code>' . home_url() . '</code>) setting';
+			} else {
+				echo ' setting (see Advanced Settings tab)';
 			}
-			echo ' setting (see Advanced Settings tab)';
 			break;
 	}
 	echo '</li>';

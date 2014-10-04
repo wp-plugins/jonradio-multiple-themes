@@ -39,12 +39,6 @@ function jr_mt_admin_hook() {
 	global $jr_mt_plugin_data;
 	add_theme_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
 	add_options_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
-	/*	Cleanup Settings before using them.
-		Presently, this just checks for Themes that are no longer installed,
-		but are referenced in the Settings.
-		Settings referencing such Themes are deleted.
-	*/
-	require_once( jr_mt_path() . 'includes/settings-cleanup.php' );
 }
 
 global $jr_mt_kwvalsep;
@@ -755,7 +749,10 @@ function jr_mt_settings_page() {
 	in the Compability section of the
 	<a target="_blank" href="http://wordpress.org/plugins/jonradio-multiple-themes/">WordPress Directory entry for this plugin</a>.
 	</p>
+	</div>
 	<?php
+	/*	</div> ends the <div class="wrap"> at the beginning
+	*/
 }
 
 add_action( 'admin_init', 'jr_mt_admin_init' );

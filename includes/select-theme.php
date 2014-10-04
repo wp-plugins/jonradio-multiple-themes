@@ -86,12 +86,18 @@ function jr_mt_theme( $option ) {
 		$theme = jr_mt_chosen();
 		$jr_mt_all_themes = jr_mt_all_themes();
 		/*	Check to be sure that Theme is still installed.
-			If not, do a massive cleanup to remove all Settings entries that
-			reference Themes that are no longer installed.
+			If not:
+				return Everywhere theme if set and it exists,
+					otherwise, FALSE to indicate WordPress Active Theme.
 		*/
 		if ( ( FALSE !== $theme ) && ( !isset( $jr_mt_all_themes[ $theme ] ) ) ) {
-			require_once( jr_mt_path() . 'includes/settings-cleanup.php' );
-			$theme = jr_mt_chosen();
+			$settings = get_option( 'jr_mt_settings' );
+			$everything = $settings['current'];
+			if ( ( '' !== $everything ) && ( isset( $jr_mt_all_themes[ $everything ] ) ) ) {
+				$theme = $everything;
+			} else {
+				$theme = FALSE;
+			}
 		}
 		if ( FALSE === $theme ) {
 			//	Get both at once, to save a repeat of this logic later:
