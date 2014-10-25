@@ -134,7 +134,12 @@ You will need to delete the entry and add it again, with the new Theme specified
 
 == Screenshots ==
 
-1. Plugin's Settings page
+1. Top of Settings tab on Plugin's Settings page
+2. Bottom of Settings tab on Plugin's Settings page
+3. Advanced Settings tab on Plugin's Settings page
+4. Theme Options tab on Plugin's Settings page
+5. System Information tab on Plugin's Settings page
+6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
 
