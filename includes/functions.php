@@ -253,44 +253,51 @@ function jr_mt_same_prefix_url( $prefix, $url ) {
 		$url = jr_mt_prep_url( $url );
 	}
 	if ( $url['host'] === $prefix['host'] ) {
-		if ( $url['path'] === $prefix['path'] ) {
-			/*	Host and Path both exactly match for URL and Prefix specified.
-			*/
-			if ( array() === $prefix['query'] ) {
-				$match = TRUE;
-			} else {
-				/*	Now the hard part:  determining a legitimate prefix match for Query
+		if ( $url['port'] === $prefix['port'] ) {
+			if ( $url['path'] === $prefix['path'] ) {
+				/*	Host and Path both exactly match for URL and Prefix specified.
 				*/
-				foreach ( $prefix['query'] as $prefix_keyword => $prefix_value ) {
-					$one_match = FALSE;
-					foreach ( $url['query'] as $url_keyword => $url_value ) {
-						if ( $prefix_keyword === jr_mt_substr( $url_keyword, 0, jr_mt_strlen( $prefix_keyword ) ) ) {
-							if ( $prefix_value === jr_mt_substr( $url_value, 0, jr_mt_strlen( $prefix_value ) ) ) {
-								$one_match = TRUE;
+				if ( array() === $prefix['query'] ) {
+					$match = TRUE;
+				} else {
+					/*	Now the hard part:  determining a legitimate prefix match for Query
+					*/
+					foreach ( $prefix['query'] as $prefix_keyword => $prefix_value ) {
+						$one_match = FALSE;
+						foreach ( $url['query'] as $url_keyword => $url_value ) {
+							if ( $prefix_keyword === jr_mt_substr( $url_keyword, 0, jr_mt_strlen( $prefix_keyword ) ) ) {
+								if ( $prefix_value === jr_mt_substr( $url_value, 0, jr_mt_strlen( $prefix_value ) ) ) {
+									$one_match = TRUE;
+								}
 							}
 						}
+						/*	All Prefix Queries must match.
+						*/
+						if ( FALSE === $one_match ) {
+							return FALSE;
+						}
 					}
-					/*	All Prefix Queries must match.
-					*/
-					if ( FALSE === $one_match ) {
-						return FALSE;
-					}
+					$match = TRUE;
 				}
-				$match = TRUE;
+			} else {
+				/*	Paths must exactly match if Prefix specifies Query
+				*/
+				if ( array() === $prefix['query'] ) {
+					/*	No Query in Prefix, so check Path for Prefix match
+					*/
+					$match = ( $prefix['path'] === jr_mt_substr( $url['path'], 0, jr_mt_strlen( $prefix['path'] ) ) );				
+				} else {
+					$match = FALSE;
+				}
 			}
 		} else {
-			/*	Paths must exactly match if Prefix specifies Query
+			/*	Perhaps unnecessary restriction:
+				If Hosts match, then so much Ports.
 			*/
-			if ( array() === $prefix['query'] ) {
-				/*	No Query in Prefix, so check Path for Prefix match
-				*/
-				$match = ( $prefix['path'] === jr_mt_substr( $url['path'], 0, jr_mt_strlen( $prefix['path'] ) ) );				
-			} else {
-				$match = FALSE;
-			}
+			$match = FALSE;
 		}
 	} else {
-		if ( ( '' === $prefix['path'] ) && ( array() === $prefix['query'] ) ) {
+		if ( ( 0 === $prefix['port'] ) && ( '' === $prefix['path'] ) && ( array() === $prefix['query'] ) ) {
 			/*	No Path or Query in Prefix, so check Host for Prefix match
 			*/
 			$match = ( $prefix['host'] === jr_mt_substr( $url['host'], 0, jr_mt_strlen( $prefix['host'] ) ) );
@@ -325,12 +332,12 @@ function jr_mt_same_prefix_url_asterisk( $prefix, $url ) {
  * Standardize a URL into an array of values that can be accurately compared with another
  * 
  * Preps URL, by removing any UTF Left-to-right Mark (LRM), usually found as a suffix, 
- * translating the URL to lower-case, removing prefix http[s]//:[www.], 
+ * translating the URL to lower-case, removing prefix http[s]//:, 
  * any embedded index.php and any trailing slash or #bookmark,
  * and breaks up ?keyword=value queries into array elements.
  *
  * Structure/Elements of Array returned:
- *	[host] - domain.com - www. is removed, but all other subdomains are included
+ *	[host] - domain.com - all subdomains, including www., are included
  *	[path] - dir/file.ext
  *	[query] - any Queries (e.g. - "?kw=val&kw2=val2") broken up as follows:
  *		[$keyword] => $value with preceding equals sign, only if equals sign was present
@@ -368,13 +375,13 @@ function jr_mt_prep_url( $url ) {
 	$parse_array = parse_url( jr_mt_strtolower( $url_clean ) );
 	/*	Get rid of URL components that do not matter to us in our comparison of URLs
 	*/
-	foreach ( array( 'scheme', 'port', 'user', 'pass', 'fragment' ) as $component ) {
-		unset ( $parse_array[$component] );
+	foreach ( array( 'scheme', 'user', 'pass', 'fragment' ) as $component ) {
+		unset ( $parse_array[ $component ] );
 	}
-	/*	Remove www. from host
+	/*	Remove standard HTTP Port 80 and HTTPS Port 443, if present.
 	*/
-	if ( 'www.' === substr( $parse_array['host'], 0, 4 ) ) {
-		$parse_array['host'] = substr( $parse_array['host'], 4 );
+	if ( ( !isset( $parse_array['port'] ) ) || ( 80 === $parse_array['port'] ) || ( 443 === $parse_array['port'] ) ) {
+		$parse_array['port'] = 0;
 	}
 	if ( isset( $parse_array['path'] ) ) {
 		/*	Remove any index.php occurences in path, since these can be spurious in IIS
@@ -383,7 +390,7 @@ function jr_mt_prep_url( $url ) {
 		$parse_array['path'] = str_replace( 'index.php', '', $parse_array['path'] );
 		/*	Remove leading and trailing slashes from path
 		*/
-		$parse_array['path'] = trim( $parse_array['path'], "/\\" );
+		$parse_array['path'] = rtrim( $parse_array['path'], "/\\" );
 	} else {
 		$parse_array['path'] = '';
 	}
@@ -445,6 +452,227 @@ function jr_mt_query_array() {
 		}
 	}
 	return $queries;
+}
+
+/*	Check for numeric IP Addresse, both IPv4 and IPv6
+*/
+function jr_mt_is_ip( $domain_name ) {
+	if ( FALSE !== strpos( $domain_name, ':' ) ) {
+		/*	IPv6
+		*/
+		$return = TRUE;
+	} else {
+		if ( 4 === count( $ip_array = explode( '.', $domain_name ) ) ) {
+			foreach ( $ip_array as $ip ) {
+				if ( ctype_digit( $ip ) ) {
+					/*	IPv4: maximum = 255
+					*/
+					if ( $ip > 255 ) {
+						$return = FALSE;
+						break;
+					}
+				} else {
+					$return = FALSE;
+					break;
+				}
+			}
+			$return = !isset( $return );
+		} else {
+			$return = FALSE;
+		}
+	}
+	return $return;
+}
+
+/*	Initialize the Aliases array in the Settings.
+	
+	First entry will be the Site Address (URL) field value from WordPress General Settings.
+	Most of the time, Create an Alias of that URL,
+	based on adding or removing www. in the domain name.
+	Including Subdomains, which do not normally have www. defined
+	as an Alias, but you never know!
+	But not for numeric IP addresses, or localhost.
+	
+	Returns an array containing one or two arrays, each in this format:
+		['url'] => URL
+		['prep'] => URL array created by jr_mt_prep_url()
+		['home'] => TRUE if this is Site Address (URL) field value from WordPress General Settings,
+			which is stored here to determine when the WordPress General Setting is changed.
+*/	
+function jr_mt_init_aliases() {
+	$return = array(
+				array(
+					'url'  => JR_MT_HOME_URL,
+					'prep' => jr_mt_prep_url( JR_MT_HOME_URL ),
+					'home' => TRUE
+					)
+				);
+
+	if ( FALSE !== ( $url_parsed = parse_url( JR_MT_HOME_URL ) ) ) {
+		$host = $url_parsed['host'];
+		if ( 0 !== strcasecmp( $host, 'localhost' ) ) {
+			/*	Check for numeric IP Addresse, both IPv4 and IPv6
+			*/
+			if ( !jr_mt_is_ip( $host ) ) {
+				if ( 0 === strncasecmp( $host, 'www.', 4 ) ) {
+					$url_parsed['host'] = jr_mt_substr( $host, 4 );
+				} else {
+					$url_parsed['host'] = 'www.' . $host;
+				}
+				$url = jr_mt_unparse_url( $url_parsed );
+				$return[] = array(
+					'url'  => $url,
+					'prep' => jr_mt_prep_url( $url ),
+					'home' => FALSE
+					);
+			}
+		}
+	}
+	return $return;
+}
+
+function jr_mt_unparse_url( $parse_array ) {
+	if ( function_exists( 'http_build_url' ) ) {
+		$url = http_build_url( '', $parse_array );
+	} else {
+		/*	From: https://github.com/jakeasmith/http_build_url
+			Version: 0.1.3
+			Version created about July 2014, retrieved November 4, 2014
+		*/
+		$url = $parse_array['scheme'] . '://';
+
+		if ( isset( $parse_array['user'] ) ) {
+			$url .= $parse_array['user'];
+
+			if ( isset( $parse_array['pass'] ) ) {
+				$url .= ':' . $parse_array['pass'];
+			}
+
+			$url .= '@';
+		}
+
+		if ( isset( $parse_array['host'] ) ) {
+			$url .= $parse_array['host'];
+		}
+
+		if ( isset( $parse_array['port'] ) ) {
+			$url .= ':' . $parse_array['port'];
+		}
+
+		if ( !empty( $parse_array['path'] ) ) {
+			$url .= $parse_array['path'];
+		}
+
+		if ( isset( $parse_array['query'] ) ) {
+			$url .= '?' . $parse_array['query'];
+		}
+
+		if ( isset( $parse_array['fragment'] ) ) {
+			$url .= '#' . $parse_array['fragment'];
+		}
+	}
+	return $url;
+}
+
+/*	Given a URL and a list of Site Aliases,
+	either as strings or in "prep format" (arrays),
+	return either:
+	- (string) the first Site Alias that matches;
+	- (string) the relative URL, relative to the Site Alias; and
+	- (array) the relative URL in "prep format"
+	OR
+	- FALSE on failure.
+*/
+function jr_mt_make_relative( $url, $aliases ) {
+	if ( is_string( $url ) ) {
+		$url = jr_mt_prep_url( $url );
+	}
+	$return = FALSE;
+	foreach ( $aliases as $alias ) {
+		if ( jr_mt_same_prefix_url( $alias, $url ) ) {
+			$return = array(
+				'alias' => $alias,
+				'rel_url' => $rel_url,
+				'rel_url_prep' => $rel_url_prep
+			);
+			break;
+		}
+	}
+	return $return;
+}
+
+/*	Which Site Alias is the "Best Match"?
+
+	We already know that more than one Site Alias matches
+	all of the current URL for the full length of the Site Alias.
+	For example, if example.com and example.com/wp both matched,
+	example.com/wp would be the "best" match, in the sense of longest match.
+	
+	$alias_array - in settings['alias'] format
+	$matches - array of keys to $alias_array, of matching Aliases
+	return - key of best match
+*/
+function jr_mt_best_match_alias( $alias_array, $matches ) {
+	/*	For each component, if they differ,
+		Best is determined as follows, in the following order:
+		Host - longest string is Best
+		Port - non-zero is Best
+		Path - longest string is Best.
+	*/
+	$best = $matches;
+	$max = -1;
+	foreach ( $best as $key ) {
+		$len = strlen( $alias_array[ $key ]['prep']['host'] );
+		if ( $len > $max ) {
+			$max = $len;
+		}
+	}
+	foreach ( $best as $index => $key ) {
+		if ( $max > strlen( $alias_array[ $key ]['prep']['host'] ) ) {
+			unset ( $best[ $index ] );
+		}
+	}
+	foreach ( $best as $key ) {
+		if ( 0 !== $alias_array[ $key ]['prep']['port'] ) {
+			foreach ( $best as $index => $key ) {
+				if ( 0 === $alias_array[ $key ]['prep']['port'] ) {
+					unset( $best[ $index ] );
+				}
+			}
+			break;
+		}
+	}
+	$max = -1;
+	foreach ( $best as $key ) {
+		if ( empty( $alias_array[ $key ]['prep']['path'] ) ) {
+			$len = 0;
+		} else {
+			$len = strlen( $alias_array[ $key ]['prep']['path'] );
+		}
+		if ( $len > $max ) {
+			$max = $len;
+		}
+	}
+	foreach ( $best as $index => $key ) {
+		if ( empty( $alias_array[ $key ]['prep']['path'] ) ) {
+			$len = 0;
+		} else {
+			$len = strlen( $alias_array[ $key ]['prep']['path'] );
+		}
+		if ( $max > $len ) {
+			unset ( $best[ $index ] );
+		}
+	}			
+	/*	If there is more than one Site Alias left
+		in the $best array, then it should mean
+		there are duplicate entries,
+		but that makes no sense.
+		So, just return the first one in the array.
+		
+		reset() returns the first array element,
+		not the key.
+	*/
+	return reset( $best );
 }
 
 ?>

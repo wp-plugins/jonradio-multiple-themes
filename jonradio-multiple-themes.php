@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 5.0.3
+Version: 6.0
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -32,6 +32,9 @@ if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+DEFINE( 'JR_MT_HOME_URL', home_url() );
+DEFINE( 'JR_MT_FILE', __FILE__ );
+
 /*	For Hooks, when it needs to run first or last.
 */
 DEFINE( 'JR_MT_RUN_FIRST', 1 );
@@ -39,8 +42,6 @@ DEFINE( 'JR_MT_RUN_SECOND', JR_MT_RUN_FIRST + 1 );
 DEFINE( 'JR_MT_RUN_LAST', 999 );
 
 DEFINE( 'JR_MT_WP_GET_THEMES_ACTION', 'plugins_loaded' );
-
-DEFINE( 'JR_MT_FILE', __FILE__ );
 
 /*	Catch old unsupported version of WordPress before any damage can be done.
 */
@@ -53,6 +54,33 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 	$jr_mt_incompat_plugins = array( 'Theme Test Drive' );  // removed for V5: 'BuddyPress', 'Polylang'
 	
 	require_once( plugin_dir_path( JR_MT_FILE ) . 'includes/functions.php' );
+	
+	if ( is_admin() ) {
+		/* 	Add Link to the plugin's entry on the Admin "Plugins" Page, for easy access
+			
+			Placed here to avoid the confusion of not displaying it during a Version conversion of Settings
+		*/
+		add_filter( 'plugin_action_links_' . jr_mt_plugin_basename(), 'jr_mt_plugin_action_links', 10, 1 );
+		
+		/**
+		* Creates Settings entry right on the Plugins Page entry.
+		*
+		* Helps the user understand where to go immediately upon Activation of the Plugin
+		* by creating entries on the Plugins page, right beside Deactivate and Edit.
+		*
+		* @param	array	$links	Existing links for our Plugin, supplied by WordPress
+		* @param	string	$file	Name of Plugin currently being processed
+		* @return	string	$links	Updated set of links for our Plugin
+		*/
+		function jr_mt_plugin_action_links( $links ) {
+			/*	The "page=" query string value must be equal to the slug
+				of the Settings admin page.
+			*/
+			array_unshift( $links, '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=jr_mt_settings' . '">Settings</a>' );
+			return $links;
+		}
+	}
+
 	
 	/*	Check for missing Settings and set them to defaults.
 		On first use, this means initializing all Settings to their defaults.
@@ -77,10 +105,22 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 						[keyword]
 							[value] => TRUE
 				['query_present'] => TRUE or FALSE
-				['url'], ['url_prefix'] and ['url_asterisk']
+				['url'], ['url_prefix'] and ['url_asterisk'] - array with each entry:
+					['url'] => URL
+					['prep'][] => array of URL arrays created by jr_mt_prep_url(), with array index matching the array index of ['aliases']
+					['rel_url'] => Relative URL based on Site Address (URL) that admin entered the URL
+					['id'] => Post ID (Page, Post or Attachment), if known and if relevant
+					['id_kw'] => 'page_id', 'p' or 'attachment_id'
+					['theme'] => folder in Themes directory containing theme to use
+				
+				Added in Version 6.0:
+				['aliases'][] - array of Alias URLs that could replace 'home' in URL of this site,
+						with each entry:
 					['url'] => URL
 					['prep'] => URL array created by jr_mt_prep_url()
-					['theme'] => folder in Themes directory containing theme to use
+					['home'] => TRUE if this is Site Address (URL) field value from WordPress General Settings,
+						which is stored here to determine when the WordPress General Setting is changed				
+				
 				Prior to Version 5.0:
 				['ids']
 					[id] - zero length string or WordPress ID of Page, Post, etc.
@@ -91,6 +131,7 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 						['rel_url'] => URL relative to WordPress home
 						['url'] => original full URL, from Settings page entry by user	
 			*/
+			'aliases'       => jr_mt_init_aliases(),
 			'all_pages'     => '',
 			'all_posts'     => '',
 			'site_home'     => '',
@@ -154,6 +195,30 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 				update_option( 'jr_mt_internal_settings', $internal_settings );				
 			}
 		}
+		if ( version_compare( $old_version, '6.0', '<' ) ) {
+			/*	Check if conversion is needed:
+				- see if [url*] are all empty arrays - no conversion required
+				- look for any [url*]['rel_url'] - already converted from pre-V6
+			*/
+			$settings = get_option( 'jr_mt_settings' );
+			if ( is_array( $settings ) ) {
+				foreach ( $settings as $key => $array ) {
+					if ( 'url' === substr( $key, 0, 3 ) ) {
+						if ( !empty( $array ) ) {
+							/*	Convert 'url'* settings to arrays, one for each Site Alias,
+								in Settings jr_mt_settings.
+							
+								Signal that a conversion is required.
+							*/
+							$internal_settings = get_option( 'jr_mt_internal_settings' );
+							$internal_settings['v6conv'] = TRUE;
+							update_option( 'jr_mt_internal_settings', $internal_settings );
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	/*	Only Update if I have to.
@@ -170,18 +235,28 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 	if ( isset( $internal_settings['ids'] ) ) {
 		require_once( jr_mt_path() . 'includes/upgradev5.php' );
 	}
-	
-	/*	p2 runs in Admin, so must also execute this code in Admin, too.
-	*/
-	require_once( jr_mt_path() . 'includes/select-theme.php' );
-	
-	if ( is_admin() ) {
-		require_once( jr_mt_path() . 'includes/admin-functions.php' );
-		//	Admin panel
-		require_once( jr_mt_path() . 'includes/admin.php' );
-	}
-}
 
+	/*	Do the Version 6.0 Upgrade, if required.
+	*/
+	if ( isset( $internal_settings['v6conv'] ) ) {
+		require_once( jr_mt_path() . 'includes/upgradev6.php' );
+	/*	Upgrade doesn't occur until late in the WordPress "cycle",
+		so best not to risk failure on old settings.
+	*/
+	} else {
+	
+		/*	p2 runs in Admin, so must also execute this code in Admin, too.
+		*/
+		require_once( jr_mt_path() . 'includes/select-theme.php' );
+		
+		if ( is_admin() ) {
+			require_once( jr_mt_path() . 'includes/admin-functions.php' );
+			//	Admin panel
+			require_once( jr_mt_path() . 'includes/admin.php' );
+		}
+	}
+}					
+									
 /*
 Research Notes:
 	The first time one of these Filter Hooks fires, pre_option_stylesheet and pre_option_template, only the following functions can be used to help determine "where" you are in the site:

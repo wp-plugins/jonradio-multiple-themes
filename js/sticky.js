@@ -36,6 +36,8 @@
 	Whether pre-processed in PHP when passed, or within this JavaScript,
 	all comparisons are effectively case-insensitive, by converting
 	all values to lower-case.
+	
+	Version 6.0 - this code has not been upgraded to support Site Aliases!
 */
 window.onload =
 	function ( ) {

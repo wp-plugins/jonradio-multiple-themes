@@ -114,8 +114,11 @@ function jr_mt_theme( $option ) {
 	$theme = $jr_mt_theme[$option];
 	return $theme;
 }
-
-//	Returns FALSE for Current Theme
+	
+/**
+ * Returns FALSE for Current Theme
+ * 
+ */
 function jr_mt_chosen() {
 	$settings = get_option( 'jr_mt_settings' );
 	
@@ -255,38 +258,87 @@ function jr_mt_chosen() {
 	}
 	
 	/*	Now look at URL entries: $settings['url'] and ['url_prefix']
+		
+		Version 6.0 Logic Design to maximize performance on high traffic sites without Caching:
+			For current URL, determine Site Alias in use
+				- Best Match - from an array of matching Site Aliases, determine "Best", some measure of Longest
+			Prep current URL for matching
+			Check for match in "URL" plugin entries that have been pre-prepped with this Site Alias
+			Check for match in "URL Prefix" plugin entries that have been pre-prepped with this Site Alias
+			Check for match in "URL Prefix with Asterisk" plugin entries that have been pre-prepped with this Site Alias
 	*/
 	
-	$home_url = home_url();
-	$prep_url = jr_mt_prep_url( $current_url = parse_url( $home_url, PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
+	$prep_url = jr_mt_prep_url( $current_url = parse_url( JR_MT_HOME_URL, PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
+	$match = array();
+	foreach ( $settings['aliases'] as $key => $alias_array ) {
+		if ( jr_mt_same_prefix_url( $alias_array['prep'], $prep_url ) ) {
+			$match[] = $key;
+		}
+	}
+	if ( empty( $match ) ) {
+		/*	Maybe not the best thing to do,
+			but if Site Alias is not defined,
+			always use Current Theme.
+		*/
+		return FALSE;
+	}
+	$site_alias_key = jr_mt_best_match_alias( $settings['aliases'], $match );
 	foreach ( $settings['url'] as $settings_array ) {
-		if ( jr_mt_same_url( $settings_array['prep'], $prep_url ) ) {
+		if ( jr_mt_same_url( $settings_array['prep'][ $site_alias_key ], $prep_url ) ) {
 			return $settings_array['theme'];
 		}
 	}
 	foreach ( $settings['url_prefix'] as $settings_array ) {
-		if ( jr_mt_same_prefix_url( $settings_array['prep'], $prep_url ) ) {
+		if ( jr_mt_same_prefix_url( $settings_array['prep'][ $site_alias_key ], $prep_url ) ) {
 			return $settings_array['theme'];
 		}
 	}
 	foreach ( $settings['url_asterisk'] as $settings_array ) {
-		if ( jr_mt_same_prefix_url_asterisk( $settings_array['prep'], $prep_url ) ) {
+		if ( jr_mt_same_prefix_url_asterisk( $settings_array['prep'][ $site_alias_key ], $prep_url ) ) {
 			return $settings_array['theme'];
 		}
 	}
 
 	/*	Must check for Home near the end as queries override
+	
+		Home is determined in an odd way:
+		(1) Remove all Queries
+		(2) Match against Site Address (URL) specified in Admin General Settings
+		(3) Check if any non-Permalink keywords are present, such as p= or page_id=
+			and cause a non-match if present
 	*/
-	$prep_url_no_query = $prep_url;
-	$prep_url_no_query['query'] = array();
 	if ( '' !== $settings['site_home'] ) {
 		/*	Check for Home Page,
 			with or without Query.
 		*/
 		$prep_url_no_query = $prep_url;
 		$prep_url_no_query['query'] = array();
-		if ( jr_mt_same_url( $home_url, $prep_url_no_query ) ) {
-			return $settings['site_home'];
+		if ( jr_mt_same_url( JR_MT_HOME_URL, $prep_url_no_query ) ) {
+			$home = TRUE;
+			foreach ( $prep_url['query'] as $keyword => $value ) {
+				/*	Check for any non-Permalink Query Keyword
+				*/
+				global $wp;
+				if ( in_array( $keyword, $wp->public_query_vars ) ) {
+					$home = FALSE;
+					break;
+				}
+			}
+			if ( $home ) {
+				return $settings['site_home'];
+			} else {
+				/*	Check for Settings specifying the current Page, Post or Attachment
+					specified with kw=val Query default Permalinks.
+				*/
+				foreach ( $settings['url'] as $settings_array ) {
+					if ( isset( $settings_array['id_kw'] ) 
+						&& ( isset( $prep_url['query'][ $settings_array['id_kw'] ] ) ) 
+						&& ( $prep_url['query'][ $settings_array['id_kw'] ] === $settings_array['id'] )
+					) {
+						return $settings_array['theme'];
+					}
+				}
+			}
 		}
 	}
 	/*	All Pages and All Posts settings are checked second to last, 
@@ -352,6 +404,8 @@ function jr_mt_chosen() {
 	- FALSE if Setting "Append if no question mark ("?") found in URL", or
 		TRUE if Setting "Append if no Override keyword=value found in URL"
 	- an array of all sticky or override queries (empty array if FALSE)
+	
+	Version 6.0 - this code has not been upgraded to support Site Aliases!
 */
 function jr_mt_js_sticky_query( $keyword, $value ) {
 	add_action( 'wp_enqueue_scripts', 'jr_mt_wp_enqueue_scripts' );
@@ -365,7 +419,7 @@ function jr_mt_js_sticky_query( $keyword, $value ) {
 	}
 	function jr_mt_wp_footer() {
 		echo '<div style="display: none;"><div id="jr-mt-home-url" title="'
-			. jr_mt_prep_comp_url( home_url() )
+			. jr_mt_prep_comp_url( JR_MT_HOME_URL )
 			. '"></div><div id="jr-mt-site-admin" title="'
 			. jr_mt_prep_comp_url( admin_url() )
 			. '"></div></div>';
@@ -379,9 +433,9 @@ function jr_mt_js_sticky_query( $keyword, $value ) {
 		Remove any trailing slash(es).
 	*/
 	function jr_mt_prep_comp_url( $url ) {
-		$comp_url = strtolower( substr( $url, 3 + strpos( $url, '://' ) ) );
-		if ( 'www.' === substr( $comp_url, 0, 4 ) ) {
-			$comp_url = substr( $comp_url, 4 );
+		$comp_url = jr_mt_strtolower( jr_mt_substr( $url, 3 + strpos( $url, '://' ) ) );
+		if ( 'www.' === jr_mt_substr( $comp_url, 0, 4 ) ) {
+			$comp_url = jr_mt_substr( $comp_url, 4 );
 		}
 		return rtrim( str_replace( '\\', '/', $comp_url ), '/' );
 	}
@@ -436,7 +490,7 @@ function jr_mt_cookie( $lang, $action, $cookie_value = '' ) {
 		/*	Determine Path off Domain to WordPress Address, not Site Address, for Cookie Path value.
 			Using home_url().
 		*/
-		$cookie_path = parse_url( home_url(), PHP_URL_PATH ) . '/';
+		$cookie_path = parse_url( JR_MT_HOME_URL, PHP_URL_PATH ) . '/';
 		switch ( $action ) {
 			case 'put':
 				if ( empty( $cookie_value ) ) {

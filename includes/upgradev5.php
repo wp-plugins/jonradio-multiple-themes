@@ -43,7 +43,7 @@ function jr_mt_convert_ids() {
 							case 'prefix':
 								/*	URL Prefix
 								*/
-								$url = get_home_url() . "/$key";
+								$url = JR_MT_HOME_URL . "/$key";
 								$settings['url_prefix'][] = array(
 									'url'   => $url,
 									'prep'  => jr_mt_prep_url( $url ),
@@ -53,7 +53,7 @@ function jr_mt_convert_ids() {
 							case '*':
 								/*	URL Prefix with Asterisk
 								*/
-								$url = get_home_url() . "/$key";
+								$url = JR_MT_HOME_URL . "/$key";
 								$settings['url_asterisk'][] = array(
 									'url'   => $url,
 									'prep'  => jr_mt_prep_url( $url ),
@@ -90,7 +90,7 @@ function jr_mt_convert_ids() {
 								if ( FALSE === $ids_array['id'] ) {
 									/*	Exact URL
 									*/
-									$url = get_home_url() . "/$key";
+									$url = JR_MT_HOME_URL . "/$key";
 									$settings['url'][] = array(
 										'url'   => $url,
 										'prep'  => jr_mt_prep_url( $url ),

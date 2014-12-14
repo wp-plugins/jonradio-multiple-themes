@@ -2,27 +2,6 @@
 //	Exit if .php file accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-// Add Link to the plugin's entry on the Admin "Plugins" Page, for easy access
-add_filter( 'plugin_action_links_' . jr_mt_plugin_basename(), 'jr_mt_plugin_action_links', 10, 1 );
-
-/**
- * Creates Settings entry right on the Plugins Page entry.
- *
- * Helps the user understand where to go immediately upon Activation of the Plugin
- * by creating entries on the Plugins page, right beside Deactivate and Edit.
- *
- * @param	array	$links	Existing links for our Plugin, supplied by WordPress
- * @param	string	$file	Name of Plugin currently being processed
- * @return	string	$links	Updated set of links for our Plugin
- */
-function jr_mt_plugin_action_links( $links ) {
-	// The "page=" query string value must be equal to the slug
-	// of the Settings admin page.
-	array_push( $links, '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=jr_mt_settings' . '">Settings</a>' );
-	return $links;
-}
-
-
 //	Admin Page
 
 add_action( 'admin_menu', 'jr_mt_admin_hook' );
@@ -65,8 +44,23 @@ function jr_mt_settings_page() {
 	echo '<div class="wrap">';
 	echo '<h2>' . $jr_mt_plugin_data['Name'] . '</h2>';
 	
-	//	Required because it is only called automatically for Admin Pages in the Settings section
+	/*	Required because it is only called automatically for Admin Pages in the Settings section
+	*/
 	settings_errors( 'jr_mt_settings' );
+	
+	/*	Return to Same Tab where button was pushed.
+	
+		TODO:  This should be converted to use wp_localize_script()
+		as described on page 356 of "Professional WordPress Plugin Development" 2011.
+	*/
+	$name = 'jr_mt_' . get_current_user_id() . '_tab';
+	if ( FALSE === ( $tab = get_transient( $name ) ) ) {
+		$tab = 1;
+	} else {
+		delete_transient( $name );
+	}
+	echo '<script type="text/javascript">window.onload = function() { jrMtTabs('
+		. $tab . ', 6 ); }</script>';
 	
 	$theme_obj = wp_get_theme();
 	$theme = $theme_obj->Name;
@@ -99,21 +93,52 @@ function jr_mt_settings_page() {
 		$settings = get_option( 'jr_mt_settings' );
 		$internal_settings = get_option( 'jr_mt_internal_settings' );
 		?>
+		<style type="text/css">
+		<!--
+		ul.jrmtpoints {	margin-left: 1em;
+						list-style: disc;}
+		-->
+		</style>
 		<h2 class="nav-tab-wrapper">
 		<a href="#" class="nav-tab nav-tab-active" id="jr-mt-tabs1"
-		onClick="jrMtTabs( 1, 5 );">Settings</a><a href="#" class="nav-tab" id="jr-mt-tabs2"
-		onClick="jrMtTabs( 2, 5 );">Advanced Settings</a><a href="#" class="nav-tab" id="jr-mt-tabs3"
-		onClick="jrMtTabs( 3, 5 );">Theme Options</a><a href="#" class="nav-tab" id="jr-mt-tabs4"
-		onClick="jrMtTabs( 4, 5 );">System Information</a><a href="#" class="nav-tab" id="jr-mt-tabs5"
-		onClick="jrMtTabs( 5, 5 );">New in V5</a>
+		onClick="jrMtTabs( 1, 6 );">Settings</a><a href="#" class="nav-tab" id="jr-mt-tabs2"
+		onClick="jrMtTabs( 2, 6 );">Site Aliases</a><a href="#" class="nav-tab" id="jr-mt-tabs3"
+		onClick="jrMtTabs( 3, 6 );">Advanced Settings</a><a href="#" class="nav-tab" id="jr-mt-tabs4"
+		onClick="jrMtTabs( 4, 6 );">Theme Options</a><a href="#" class="nav-tab" id="jr-mt-tabs5"
+		onClick="jrMtTabs( 5, 6 );">System Information</a><a href="#" class="nav-tab" id="jr-mt-tabs6"
+		onClick="jrMtTabs( 6, 6 );">Help</a>
 		</h2>
 		<div id="jr-mt-settings1">
 		<h3>Settings</h3>
 		<p>
 		This is the main Settings tab.
+		You should also review the
+		<a href="#" onClick="jrMtTabs( 2, 6 );">Site Aliases tab</a>:
+		</p>
+		<ul class="jrmtpoints">
+		<li>
+		when first using this plugin,
+		</li>
+		<li>
+		when upgrading to Version 6 of this plugin from a previous version,
+		and 
+		</li>
+		<li>
+		whenever you change the
+		<b>
+		Site Address (URL)
+		</b>
+		defined on the
+		<a href="options-general.php">
+		General Settings</a>
+		Admin panel.
+		</li>
+		</ul>
+		<p>
 		Additional Settings are available on the
-		<a href="#" onClick="jrMtTabs( 2, 5 );">Advanced Settings tab</a>,
-		but they can cause problems,
+		<a href="#" onClick="jrMtTabs( 3, 6 );">Advanced Settings tab</a>,
+		but they can cause problems
+		in certain WordPress configurations,
 		so should be used with care.
 		</p>
 		<h3>Overview</h3>
@@ -132,17 +157,17 @@ function jr_mt_settings_page() {
 		Below,
 		Theme Selection entries can be created
 		where each Entry specifies which of the installed themes shown on the Appearance-Themes Admin panel will be applied to:
-		<ul>
-		<li> &raquo; The Site Home</li>
-		<li> &raquo; An exact URL of any non-Admin page on this WordPress Site</li>
-		<li> &raquo; One or more URLs that begin with the partial URL you specify ("URL Prefix")</li>
-		<li> &raquo; One or more URLs that begin with the wildcard URL you specify ("URL Prefix*")</li>
-		<li> &raquo; Any URL containing a Specific Query Keyword (<code>?keyword</code> or <code>&keyword</code>)</li>
-		<li> &raquo; Any URL containing a Specific Query Keyword/Value pair (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
-		<li> &raquo; For the same site visitor, all non-Admin pages after a <b>Sticky</b> Query Keyword/Value pair is specified in any URL (Advanced Settings tab)</li>
-		<li> &raquo; All Pages (Advanced Settings tab)</li>
-		<li> &raquo; All Posts (Advanced Settings tab)</li>
-		<li> &raquo; Everything else, except what is specified above (Advanced Settings tab)</li>
+		<ul class="jrmtpoints">
+		<li>The Site Home</li>
+		<li>An exact URL of any non-Admin page on this WordPress Site</li>
+		<li>One or more URLs that begin with the partial URL you specify ("URL Prefix")</li>
+		<li>One or more URLs that begin with the wildcard URL you specify ("URL Prefix*")</li>
+		<li>Any URL containing a Specific Query Keyword (<code>?keyword</code> or <code>&keyword</code>)</li>
+		<li>Any URL containing a Specific Query Keyword/Value pair (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
+		<li>For the same site visitor, all non-Admin pages after a <b>Sticky</b> Query Keyword/Value pair is specified in any URL (Advanced Settings tab)</li>
+		<li>All Pages (Advanced Settings tab)</li>
+		<li>All Posts (Advanced Settings tab)</li>
+		<li>Everything else, except what is specified above (Advanced Settings tab)</li>
 		</ul>
 		</p>
 		<h3>Important Notes</h3>
@@ -223,7 +248,10 @@ function jr_mt_settings_page() {
 		</p>
 		<p>
 		Need more help?
-		Please scroll to the bottom of this Settings page for more information.
+		Please click on the
+		<a href="#" onClick="jrMtTabs( 6, 6 );">Help tab</a>
+		above
+		for more information.
 		</p>
 		<hr />
 		<?php
@@ -231,12 +259,12 @@ function jr_mt_settings_page() {
 		//	Plugin Settings are displayed and entered here:
 		settings_fields( 'jr_mt_settings' );
 		do_settings_sections( 'jr_mt_settings_page' );
-		echo '<p><input name="save" type="submit" value="Save All Changes" class="button-primary" /></p></form>';
+		echo '<p><input name="jr_mt_settings[tab3]" type="submit" value="Save All Changes" class="button-primary" /></p></form>';
 	}
 
 	?>
 	</div>
-	<div id="jr-mt-settings3" style="display: none;">
+	<div id="jr-mt-settings4" style="display: none;">
 	<h3>
 	Theme Options and Template Selection
 	</h3>
@@ -513,51 +541,62 @@ function jr_mt_settings_page() {
 	</li>
 	</ol>
 	</div>
-	<div id="jr-mt-settings4" style="display: none;">
+	<div id="jr-mt-settings5" style="display: none;">
 	<h3>
 	System Information
 	</h3>
+	<p>
+	WordPress DEBUG mode is currently turned
 	<?php
+	if ( TRUE === WP_DEBUG ) {
+		echo 'on';
+	} else {
+		echo 'off';
+	}
+	echo ". It is controlled by the <code>define('WP_DEBUG', true);</code> statement near the bottom of <code>"
+		. ABSPATH
+		. 'wp-config.php</code></p>';
 	$posix = function_exists( 'posix_uname' );
-	echo '<p>You are currently running:<ul>';
-	echo "<li> &raquo; The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>";
-	echo "<li> &nbsp; &raquo;&raquo; The Path to the plugin's directory is <code>" . rtrim( jr_mt_path(), '/' ) . '</code></li>';
-	echo "<li> &nbsp; &raquo;&raquo; The URL to the plugin's directory is <code>" . plugins_url() . "/{$jr_mt_plugin_data['slug']}</code></li>";
-	echo "<li> &raquo; The Active Theme is $theme Version $theme_version</li>";
-	echo "<li> &nbsp; &raquo;&raquo; The Path to the Active Theme's stylesheet directory is <code>" . get_stylesheet_directory() . '</code></li>';
-	echo "<li> &nbsp; &raquo;&raquo; The Path to the Active Theme's template directory is <code>" . get_template_directory() . '</code></li>';
+	echo '<p>You are currently running:<ul class="jrmtpoints">'
+		. "<li>The {$jr_mt_plugin_data['Name']} plugin Version {$jr_mt_plugin_data['Version']}</li>"
+		. '<ul class="jrmtpoints">' . "<li>The Path to the plugin's directory is <code>" . rtrim( jr_mt_path(), '/' ) . '</code></li>'
+		. "<li>The URL to the plugin's directory is <code>" . plugins_url() . "/{$jr_mt_plugin_data['slug']}</code></li></ul>"
+		. "<li>The Active Theme is $theme Version $theme_version</li>"
+		. '<ul class="jrmtpoints">'
+		. "<li>The Path to the Active Theme's stylesheet directory is <code>" . get_stylesheet_directory() . '</code></li>'
+		. "<li>The Path to the Active Theme's template directory is <code>" . get_template_directory() . '</code></li></ul>';
 	$permalink = get_option( 'permalink_structure' );
 	if ( empty( $permalink ) ) {
 		$permalink = 'Default (Query <code>/?p=123</code>)';
 	} else {
 		$permalink = "<code>$permalink</code>";
 	}
-	echo "<li> &raquo; The current Permalink Structure is $permalink";
-	echo "<li> &raquo; WordPress Version $current_wp_version</li>";
-	echo '<li> &nbsp; &raquo;&raquo; WordPress language is set to ' , get_bloginfo( 'language' ) . '</li>';
-	echo '<li> &raquo; ' . php_uname( 's' ) . ' operating system, Release/Version ' . php_uname( 'r' ) . ' / ' . php_uname( 'v' ) . '</li>';
+	echo "<li>The current Permalink Structure is $permalink";
+	echo "<li>WordPress Version $current_wp_version</li>";
+	echo '<ul class="jrmtpoints"><li>WordPress language is set to ' , get_bloginfo( 'language' ) . '</li></ul>';
+	echo '<li>' . php_uname( 's' ) . ' operating system, Release/Version ' . php_uname( 'r' ) . ' / ' . php_uname( 'v' ) . '</li>';
 	if ( $posix ) {
 		$array = posix_getpwuid( posix_getuid() );
 		$user = $array['name'];
-		echo "<li> &raquo; Real operating system User ID that runs WordPress is $user</li>";
+		echo "<li>Real operating system User ID that runs WordPress is $user</li>";
 		$array = posix_getpwuid( posix_geteuid() );
 		$user = $array['name'];
-		echo "<li> &raquo; Effective operating system User ID that runs WordPress is $user</li>";
+		echo "<li>Effective operating system User ID that runs WordPress is $user</li>";
 	}
-	echo '<li> &raquo; ' . php_uname( 'm' ) . ' computer hardware</li>';
-	echo '<li> &raquo; Host name ' . php_uname( 'n' ) . '</li>';
-	echo '<li> &raquo; php Version ' . phpversion() . '</li>';
-	echo '<li> &nbsp; &raquo;&raquo; php memory_limit ' . ini_get('memory_limit') . '</li>';
+	echo '<li>' . php_uname( 'm' ) . ' computer hardware</li>';
+	echo '<li>Host name ' . php_uname( 'n' ) . '</li>';
+	echo '<li>php Version ' . phpversion() . '</li>';
+	echo '<ul class="jrmtpoints"><li>php memory_limit ' . ini_get('memory_limit') . '</li>';
 	if ( !$posix ) {
-		echo '<li> &nbsp; &raquo;&raquo; POSIX functions are not available</li>';
+		echo '<li>POSIX functions are not available</li>';
 	}
-	echo '<li> &raquo; Zend engine Version ' . zend_version() . '</li>';
-	echo '<li> &raquo; Web Server software is ' . getenv( 'SERVER_SOFTWARE' ) . '</li>';
+	echo '</ul><li>Zend engine Version ' . zend_version() . '</li>';
+	echo '<li>Web Server software is ' . getenv( 'SERVER_SOFTWARE' ) . '</li>';
 	if ( function_exists( 'apache_get_version' ) && ( FALSE !== $apache = apache_get_version() ) ) {
-		echo "<li> &nbsp; &raquo;&raquo; Apache Version $apache</li>";
+		echo '<ul class="jrmtpoints"><li>Apache Version' . "$apache</li></ul>";
 	}
 	global $wpdb;
-	echo '<li> &raquo; MySQL Version ' . $wpdb->get_var( 'SELECT VERSION();', 0, 0 ) . '</li>';
+	echo '<li>MySQL Version ' . $wpdb->get_var( 'SELECT VERSION();', 0, 0 ) . '</li>';
 
 	echo '</ul></p>';
 	
@@ -571,15 +610,15 @@ function jr_mt_settings_page() {
 	);
 	echo '<h3>File Permissions</h3><p>All of the Paths shown below are relative to the WordPress Site Path <code>'
 		. ABSPATH
-		. '</code><br />The first is the Parent Directory <code>'
+		. '</code><br />The first ("/..") is the Parent Directory <code>'
 		. dirname( ABSPATH )
-		. '/</code> and the second is the WordPress Site Path itself.</p><table class="widefat"><thead><tr><th>Path</th><th>Type</th><th>Read</th><th>Write</th>';
+		. '/</code> and the second ("/") is the WordPress Site Path itself.</p><table class="widefat"><thead><tr><th>Path</th><th>Type</th><th>Read</th><th>Write</th>';
 	if ( $posix ) {
 		echo '<th>Owner</th><th>Group</th>';
 	}
 	echo '</tr></thead><tbody>';
 	foreach ( $paths as $path ) {
-		$full_path = ABSPATH . substr( $path, 1 );
+		$full_path = ABSPATH . jr_mt_substr( $path, 1 );
 		if ( is_dir( $full_path ) ) {
 			$type = 'Directory';
 		} else {
@@ -615,103 +654,69 @@ function jr_mt_settings_page() {
 	echo '</tbody></table>';
 	?>
 	</div>
-	<div id="jr-mt-settings5" style="display: none;">
-	<p>
-	It is possible to downgrade from Version 5 to Version 4.12.
-	<a href="http://downloads.wordpress.org/plugin/jonradio-multiple-themes.4.12.zip">Click here</a>
-	to download Version 4.12.
-	</p>
+	<div id="jr-mt-settings6" style="display: none;">
 	<h3>
-	What's New in Version 5?
+	An Alternative to This Plugin
 	</h3>
 	<p>
-	Version 5.0 of the jonradio Multiple Themes plugin
-	saw a major rewrite of the Theme Selection logic,
-	the first since the plugin was originally written,
-	and the addition of Tabs to the Settings page,
-	for easier navigation.
+	WordPress was not designed with the idea in mind of multiple Themes on a single Site.
+	Which is why this plugin struggles to provide full multi-theme capabilities.
 	</p>
 	<p>
-	Major improvements include:
+	An alternative to this plugin
+	is a
+	<a href="http://codex.wordpress.org/Create_A_Network">WordPress Network</a>,
+	also known as Multisite.
+	Each WordPress Site within a WordPress Network can have a different Theme.
+	WordPress was built to fully support Multiple Themes used in this way.
+	</p>
+	<p>
+	What is less obvious,
+	is that a WordPress Network of Sites
+	can be designed to appear as if it is a single integrated web site.
+	For example,
+	using the Subdirectory option of a WordPress Network:
 	</p>
 	<ol>
 	<li>
-	Greatly expanded compatibility with other Plugins and Themes;
+	Site 1 could be
+	<code>example.com</code>,
+	the web site's home page, 
+	and any other web pages with the same Theme;
 	</li>
 	<li>
-	Allow <code>?keyword=value&keyword=value</code> Queries
-	in URL, URL Prefix and URL Prefix with Asterisk ("*")
-	Theme Selection entries;
+	Site 2 could be
+	<code>example.com/forum</code>,
+	the discussion forum portion of your web site
+	with a different Theme;
 	</li>
 	<li>
-	Accurate Theme Selection even for plugins and themes that request
-	Stylesheet or Template information before WordPress is fully loaded;
+	Site 3 could be 
+	<code>example.com/news</code>
+	for a News section with its own Theme;
+	and
 	</li>
 	<li>
-	Tabs for the Setting page written in JavaScript
-	for instant switching between tabs
-	and preservation of input data,
-	e.g. - switch between Settings and Advanced Settings tabs
-	without having to retype your changes when you switch back;
+	Site 4 could be
+	<code>example.com/store</code>
+	with a fourth Theme for a Store.
 	</li>
-	<li>
-	Plugin's Theme Selection entries, if any,
-	displayed in the order in which they are processed,
-	to clarify which Theme will be displayed for any given URL;
-	</li>
-	<li>
-	Complete How-To details on
-	Theme Option and Template selection
-	right on the Settings page,
-	replacing the FAQs
-	in the WordPress Plugin Directory;
-	</li>
-	<li>
-	Automatic deletion of Theme Selection entries
-	for Themes that have been deleted;
-	</li>
-	<li>
-	Enhanced performance with tighter code,
-	and less of it,
-	on the public side of your WordPress site.
-	</li>	
 	</ol>
 	<p>
-	The only disadvantages of the new Theme Selection methods used in Version 5 are:
+	Admittedly,
+	extra effort will be required to make a WordPress Network look like a single web site,
+	especially if you rely on automatically-created Menus.
+	Menu entries will have to be manually created to point to other Sites within the WordPress Network.
 	</p>
-	<ol>
-	<li>
-	Changing Permalinks invalidates more Theme Selection settings than in previous versions;
-	</li>
-	<li>
-	Changing the Theme for an Entry
-	requires Deletion of the old Entry
-	before or after
-	adding the same Entry
-	with the new Theme specified;
-	</li>
-	<li>
-	The new Theme Selection logic,
-	based on URL Matching rather than Page, Post, Attachment, Category and Archive IDs,
-	requires a conversion of some Settings from prior versions of the plugin.
-	This conversion to the new format occurs automatically
-	the first time that Version 5 runs.
-	Old format settings are retained,
-	transparently without being displayed on the Settings page,
-	to allow downgrading to Version 4 from Version 5.
-	</li>
-	</ol>
-	</div>
-	<hr />
 	<h3>
 	Need Help?
 	</h3>
 	<p>
 	Need help with this plugin?
 	Check the
-	<a href="#" onClick="jrMtTabs( 3, 5 );">Theme Options</a>
+	<a href="#" onClick="jrMtTabs( 4, 6 );">Theme Options</a>
 	and
-	<a href="#" onClick="jrMtTabs( 5, 5 );">New in V5</a>
+	<a href="#" onClick="jrMtTabs( 5, 6 );">System Information</a>
 	tabs above,
 	and the
 	<a target="_blank" href="http://wordpress.org/plugins/jonradio-multiple-themes/">Description</a>, 
@@ -729,8 +734,7 @@ function jr_mt_settings_page() {
 	simply post your question in the
 	<a target="_blank" href="http://wordpress.org/support/plugin/jonradio-multiple-themes">Support Forum</a>
 	or
-	<a target="_blank" href="http://jonradio.com/contact-us/">contact jonradio directly</a>
-	(be sure to mention which plugin your question pertains to).
+	<a target="_blank" href="http://jonradio.com/contact-us/">contact jonradio directly</a>.
 	</p>
 	<p>
 	For information on other jonradio plugins,
@@ -749,6 +753,8 @@ function jr_mt_settings_page() {
 	in the Compability section of the
 	<a target="_blank" href="http://wordpress.org/plugins/jonradio-multiple-themes/">WordPress Directory entry for this plugin</a>.
 	</p>
+	</div>
+	
 	</div>
 	<?php
 	/*	</div> ends the <div class="wrap"> at the beginning
@@ -794,14 +800,14 @@ function jr_mt_admin_init() {
 	);
 	add_settings_field( 
 		'site_home', 
-		'Select Theme for Site Home<br /><code>' . home_url() . '</code>', 
+		'Select Theme for Site Home<br /><code>' . JR_MT_HOME_URL . '</code>', 
 		'jr_mt_echo_site_home', 
 		'jr_mt_settings_page', 
 		'jr_mt_site_home_section' 
 	);
 	add_settings_section(
 		'jr_mt_single_settings_section', 
-		'<input name="save" type="submit" value="Save All Changes" class="button-primary" /></h3><h3>For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix, optionally with Asterisk(s)', 
+		'<input name="jr_mt_settings[tab1]" type="submit" value="Save All Changes" class="button-primary" /></h3><h3>For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix, optionally with Asterisk(s)', 
 		'jr_mt_single_settings_expl', 
 		'jr_mt_settings_page'
 	);
@@ -823,8 +829,43 @@ function jr_mt_admin_init() {
 	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
 	add_settings_field( 'add_query_value', 'Query Value', 'jr_mt_echo_add_query_value', 'jr_mt_settings_page', 'jr_mt_query_section' );
+	add_settings_section( 'jr_mt_aliases_section', 
+		'<input name="jr_mt_settings[tab1]" type="submit" value="Save All Changes" class="button-primary" /></h3></div><div id="jr-mt-settings2" style="display: none;"><h3>Site Aliases used in URLs to Access This WordPress Site', 
+		'jr_mt_aliases_expl', 
+		'jr_mt_settings_page' 
+	);
+	/*	There is always an entry for the Site URL ("Home").
+	*/
+	if ( count( $settings['aliases'] ) > 1 ) {
+		add_settings_section(
+			'jr_mt_delete_aliases_section', 
+			'Current Site Alias Entries', 
+			'jr_mt_delete_aliases_expl', 
+			'jr_mt_settings_page' 
+		);
+		add_settings_field(
+			'del_alias_entry', 
+			'Site Alias Entries:', 
+			'jr_mt_echo_delete_alias_entry', 
+			'jr_mt_settings_page', 
+			'jr_mt_delete_aliases_section'
+		);
+	}
+	add_settings_section(
+		'jr_mt_create_alias_section', 
+		'Create New Site Alias Entry', 
+		'jr_mt_create_alias_expl', 
+		'jr_mt_settings_page' 
+	);
+	add_settings_field( 
+		'add_alias', 
+		'Site Alias', 
+		'jr_mt_echo_add_alias', 
+		'jr_mt_settings_page', 
+		'jr_mt_create_alias_section' 
+	);
 	add_settings_section( 'jr_mt_sticky_section', 
-		'<input name="save" type="submit" value="Save All Changes" class="button-primary" /></h3></div><div id="jr-mt-settings2" style="display: none;"><h3>Advanced Settings</h3><p><b>Warning:</b> As the name of this section implies, Advanced Settings should be fully understood or they may surprise you with unintended consequences, so please be careful.</p><h3>Sticky and Override', 
+		'<input name="jr_mt_settings[tab2]" type="submit" value="Save All Changes" class="button-primary" /></h3></div><div id="jr-mt-settings3" style="display: none;"><h3>Advanced Settings</h3><p><b>Warning:</b> As the name of this section implies, Advanced Settings should be fully understood or they may surprise you with unintended consequences, so please be careful.</p><h3>Sticky and Override', 
 		'jr_mt_sticky_expl', 
 		'jr_mt_settings_page' 
 	);
@@ -851,7 +892,7 @@ function jr_mt_admin_init() {
 		'Posts' => ''
 	);
 	foreach ( array( 'Pages', 'Posts' ) as $thing ) {
-		add_settings_field( 'all_' . strtolower( $thing ), "Select Theme for All $thing" . $suffix[$thing], 'jr_mt_echo_all_things', 'jr_mt_settings_page', 'jr_mt_all_settings_section', 
+		add_settings_field( 'all_' . jr_mt_strtolower( $thing ), "Select Theme for All $thing" . $suffix[$thing], 'jr_mt_echo_all_things', 'jr_mt_settings_page', 'jr_mt_all_settings_section', 
 			array( 'thing' => $thing ) );
 	}
 }
@@ -1058,6 +1099,11 @@ function jr_mt_single_settings_expl() {
 	would match all April Posts with Titles that begin with the letter "d", no matter what year they were posted.
 	</blockquote>
 	</p>
+	</p>
+	Beginning with Version 5.0, <code>keyword=value</code> Queries are now supported in all URLs
+	(on this Settings tab;
+	Site Aliases may not include Queries).
+	</p>
 	<?php	
 }
 
@@ -1076,14 +1122,17 @@ function jr_mt_echo_add_theme() {
 
 function jr_mt_echo_add_path_id() {
 	?>
-	<input id="add_path_id" name="jr_mt_settings[add_path_id]" type="text" size="100" maxlength="256" value="" />
+	<input id="add_path_id" name="jr_mt_settings[add_path_id]" type="text" size="75" maxlength="256" value="" />
 	<br />
+	&nbsp;
 	(cut and paste URL here of Page, Post, Prefix or other)
 	<br />
+	&nbsp;
 	URL must begin with
+	the current
+	<a href="options-general.php">Site Address (URL)</a>:
 	<?php
-	echo '<code>' . home_url() . '/</code>.';
-	echo '<br />Beginning with Version 5.0, <code>keyword=value</code> Queries are now supported in all URLs.';
+	echo '<code>' . JR_MT_HOME_URL . '/</code>.';
 }
 
 /**
@@ -1109,7 +1158,7 @@ function jr_mt_querykw_expl() {
 	that Query Keyword takes precedence over all other types of Theme selection entries.
 	For example, 
 	<?php
-	echo '<code>' . home_url() . '?firstname=dorothy</code>'
+	echo '<code>' . JR_MT_HOME_URL . '?firstname=dorothy</code>'
 		. ' would use the Theme specified for the <code>firstname</code> keyword, not the Theme specified for Site Home.'
 		. ' Query matching is case-insensitive, so all Keywords entered are stored in lower-case.</p>';
 }
@@ -1119,7 +1168,7 @@ function jr_mt_echo_add_querykw_theme() {
 function jr_mt_echo_add_querykw_keyword() {
 	$three_dots = '&#133;';
 	echo '<code>'
-		. home_url() 
+		. JR_MT_HOME_URL 
 		. "/</code>$three_dots<code>/?"
 		. '<input id="add_querykw_keyword" name="jr_mt_settings[add_querykw_keyword]" type="text" size="20" maxlength="64" value="" />=</code>'
 		. $three_dots;
@@ -1149,7 +1198,7 @@ function jr_mt_query_expl() {
 	including a Query Keyword entry for the same Keyword.
 	For example, 
 	<?php
-	echo '<code>' . home_url() . '?firstname=dorothy</code>'
+	echo '<code>' . JR_MT_HOME_URL . '?firstname=dorothy</code>'
 		. ' would use the Theme specified for the <code>firstname=dorothy</code> keyword=value pair,'
 		. ' not the Theme specified for Site Home nor even the Theme specified for the Keyword <code>firstname</code>.'
 		. ' Query matching is case-insensitive, so all Keywords and Values entered are stored in lower-case.</p>';
@@ -1160,7 +1209,7 @@ function jr_mt_echo_add_query_theme() {
 function jr_mt_echo_add_query_keyword() {
 	$three_dots = '&#133;';
 	echo '<code>'
-		. home_url() 
+		. JR_MT_HOME_URL 
 		. "/</code>$three_dots<code>/?"
 		. '<input id="add_query_keyword" name="jr_mt_settings[add_query_keyword]" type="text" size="20" maxlength="64" value="" /></code>';
 }
@@ -1168,6 +1217,144 @@ function jr_mt_echo_add_query_value() {
 	echo '<code>'
 		. '='
 		. '<input id="add_query_value" name="jr_mt_settings[add_query_value]" type="text" size="20" maxlength="64" value="" /></code>';
+}
+
+function jr_mt_aliases_expl() {
+	?>
+	<p>
+	Define any
+	<b>
+	Site Aliases
+	</b>
+	that may be used to access your WordPress website.
+	</p>
+	<p>
+	This plugin uses the value of
+	<b>
+	Site Address (URL)
+	</b>
+	defined on the
+	<a href="options-general.php">
+	General Settings</a>
+	Admin panel
+	to match URLs against the Theme Selection settings.
+	By default, when the plugin is first installed,
+	or the value of Site Address changed,
+	a 
+	<i>
+	www Alias Entry
+	</i>
+	is automatically defined
+	to handle the most common Alias used on WordPress sites:
+	by adding or removing the "www." prefix of the Domain Name.
+	</p>
+	<p>
+	If your WordPress website is accessed by
+	anything other than the Site Address or Site Aliases defined below,
+	this Plugin will always use the WordPress Active Theme defined on the
+	<a href="themes.php">
+	Appearance-Themes</a>
+	Admin panel.
+	</p>
+	<p>
+	Although by no means exhaustive,
+	this list can help you remember where you might have defined Aliases that need to be defined below.
+	</p>
+	<ul class="jrmtpoints">
+	<?php
+	if ( is_multisite() ) {
+		echo '<li><b>Mapped Domain</b>. Plugins such as <a href="https://wordpress.org/plugins/wordpress-mu-domain-mapping/">WordPress MU Domain Mapping</a> allow each Site in a WordPress Network to have its own Domain Name.</li>';
+	}
+	?>
+	<li>
+	<b>IP Address</b>.
+	Most sites can be accessed by an IP address,
+	either the IPv4 format of four numbers separated by dots (168.1.0.1)
+	or the newer IPv6 format of several hexadecimal numbers separated by colons (2001:0DB8:AC10:FE01::).
+	</li>
+	<li>
+	<b>Parked Domain</b>.
+	example.com might have example.club as a Alias defined as a Parked Domain to your web host.
+	</li>
+	<li>
+	<b>ServerAlias</b> or equivalent.
+	Apache allows one or more Domain or Subdomain aliases to be defined with the SeverAlias directive;
+	non-Apache equivalents offer similar capabilities.
+	</li>
+	<li>
+	<b>Redirection</b>.
+	Most domain name registration and web hosting providers also offer a Redirection service.
+	Optionally, Redirection can be Masked (or not) to keep the redirected URL in the browser's address bar.
+	</li>
+	<li>
+	<b>.htaccess RewriteRule</b> or equivalent.
+	Each directory can contain a hidden file named
+	<code>.htaccess</code>.
+	These files may include RewriteRule statements that modify the URL
+	to change the URL of a site
+	as it appears in the Site Visitor's web browser address bar
+	from,
+	for example, 
+	<code>http://example.com/wordpress</code>
+	to
+	<code>http://example.com</code>.
+	</li>
+	</ul>
+	<?php
+}
+
+function jr_mt_delete_aliases_expl() {
+	?>
+	<p>
+	Here you can see, 
+	and are able to delete, 
+	any Site Aliases that have been created in the 
+	Create New Sites Alias Entry section below, 
+	or were created by default by this Plugin
+	for the current Site Address (URL) defined on the 
+	<a href="options-general.php">General Settings</a>
+	Admin panel:
+	<?php
+	echo '<code>' . JR_MT_HOME_URL. '</code></p>';
+}
+
+function jr_mt_echo_delete_alias_entry() {
+	$settings = get_option( 'jr_mt_settings' );
+	echo '<p>In addition to the <a href="options-general.php">Site Address (URL)</a> <code>'
+		. JR_MT_HOME_URL
+		. '</code>, this Plugin will also control Themes for the following Site Aliases:</p><ol>';
+	foreach ( $settings['aliases'] as $array_index => $alias ) {
+		/*	Do not allow the Site URL ("Home") alias to be deleted.
+			In fact, do not even display it.
+		*/
+		if ( !$alias['home'] ) {
+			echo '<li>Delete <input type="checkbox" id="del_alias_entry" name="jr_mt_settings[del_alias_entry][]" value="'
+				. $array_index
+				. '"> <code>'
+				. $alias['url']
+				. '</code></li>';
+		}
+	}
+	echo '</ol>';
+}
+
+function jr_mt_create_alias_expl() {
+	echo '<p>To add another Site Alias, cut and paste its URL below.</p>';
+}
+
+function jr_mt_echo_add_alias() {
+	?>
+	<input id="add_alias" name="jr_mt_settings[add_alias]" type="text" size="75" maxlength="256" value="" />
+	<br />
+	&nbsp;
+	(cut and paste URL of a new Site Alias here)
+	<br />
+	&nbsp;
+	URL must begin with
+	<code>http://</code>
+	or
+	<code>https://</code>
+	<?php
 }
 
 /**
@@ -1309,7 +1496,7 @@ function jr_mt_echo_sticky_query_entry() {
 						. wp_get_theme( $theme )->Name . '; '
 						. 'Query='
 						. '<code>'
-						. home_url() 
+						. JR_MT_HOME_URL 
 						. "/</code>$three_dots<code>/?"
 						. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_stkw' value='$keyword' size='"
 						. jr_mt_strlen( $keyword )
@@ -1343,7 +1530,7 @@ function jr_mt_everything_expl() {
 function jr_mt_echo_current() {
 	$settings = get_option( 'jr_mt_settings' );
 	jr_mt_themes_field( 'current', $settings['current'], 'jr_mt_settings', TRUE );
-	echo '<br />(select blank entry for default: WordPress Active Theme defined in Appearance-Themes, currently <b>' . wp_get_theme()->Name . '</b>)';
+	echo '<br /> &nbsp; (select blank entry for default: WordPress Active Theme defined in Appearance-Themes, currently <b>' . wp_get_theme()->Name . '</b>)';
 }
 
 function jr_mt_all_settings_expl() {
@@ -1396,13 +1583,36 @@ function jr_mt_all_settings_expl() {
 
 function jr_mt_echo_all_things( $thing ) {
 	$settings = get_option( 'jr_mt_settings' );
-	$field = 'all_' . strtolower( $thing['thing'] );
+	$field = 'all_' . jr_mt_strtolower( $thing['thing'] );
 	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings', TRUE );
 }
 
 function jr_mt_validate_settings( $input ) {
 	global $jr_mt_kwvalsep;
 	$valid = array();
+	
+	$prefix_types = array(
+		'false'  => 'url',
+		'prefix' => 'url_prefix',
+		'*'      => 'url_asterisk'
+	);
+	
+	$settings = get_option( 'jr_mt_settings' );
+	$query = $settings['query'];
+	$aliases = $settings['aliases'];
+	
+	/*	Begin by deciding which Tab to display on the plugin's Settings page
+	
+		Default value should never be used if plugin is written correctly.
+	*/
+	$tab = 1;
+	for ( $i = 1; $i <= 6; $i++ ) {
+		if ( isset( $input[ "tab$i" ] ) ) {
+			$tab = $i;
+			break;
+		}
+	}
+	set_transient( 'jr_mt_' . get_current_user_id() . '_tab', $tab, 5 );
 	
 	if ( isset( $input['permalink'] ) ) {
 		$internal_settings = get_option( 'jr_mt_internal_settings' );
@@ -1414,16 +1624,9 @@ function jr_mt_validate_settings( $input ) {
 		$valid[$thing] = $input[$thing];
 	}
 	
-	$settings = get_option( 'jr_mt_settings' );
-	$prefix_types = array(
-		'false'  => 'url',
-		'prefix' => 'url_prefix',
-		'*'      => 'url_asterisk'
-	);
 	foreach ( $prefix_types as $key => $thing ) {
 		$valid[$thing] = $settings[$thing];
 	}
-	$query = $settings['query'];
 	$remember = array( 'query' => array() );
 	if ( isset( $input['sticky_query_entry'] ) ) {
 		foreach	( $input['sticky_query_entry'] as $query_entry ) {
@@ -1469,7 +1672,7 @@ function jr_mt_validate_settings( $input ) {
 			} else {
 				/*	Check for a URL entry
 				*/
-				if ( 'url' === substr( $del_array[0], 0, 3 ) ) {
+				if ( 'url' === jr_mt_substr( $del_array[0], 0, 3 ) ) {
 					foreach ( $valid[ $del_array[0] ] as $i => $entry_array ) {
 						if ( $entry_array['url'] === $del_array[2] ) {
 							/*	Cannot unset $entry_array, even if prefixed by & in foreach
@@ -1489,16 +1692,7 @@ function jr_mt_validate_settings( $input ) {
 	
 	/*	Handle troublesome %E2%80%8E UTF Left-to-right Mark (LRM) suffix first.
 	*/
-	if ( FALSE === stripos( $input['add_path_id'], '%E2%80%8E' ) ) {
-		if ( FALSE === stripos( rawurlencode( $input['add_path_id'] ), '%E2%80%8E' ) ) {
-			$url = $input['add_path_id'];
-		} else {
-			$url = rawurldecode( str_ireplace( '%E2%80%8E', '', rawurlencode( $input['add_path_id'] ) ) );
-		}
-	} else {
-		$url = str_ireplace( '%E2%80%8E', '', $input['add_path_id'] );
-	}
-	$url = rawurldecode( trim( $url ) );
+	$url = jr_mt_sanitize_url( $input['add_path_id'] );
 	
 	if ( ( empty( $input['add_theme'] ) && !empty( $url ) ) || ( !empty( $input['add_theme'] ) && empty( $url ) ) ) {
 		add_settings_error(
@@ -1509,7 +1703,7 @@ function jr_mt_validate_settings( $input ) {
 		);		
 	} else {
 		if ( !empty( $url ) ) {
-			if ( jr_mt_same_prefix_url( home_url(), $url ) ) {
+			if ( jr_mt_same_prefix_url( JR_MT_HOME_URL, $url ) ) {
 				if ( ( '*' !== $input['add_is_prefix'] ) && ( FALSE !== strpos( $url, '*' ) ) ) {
 					add_settings_error(
 						'jr_mt_settings',
@@ -1520,7 +1714,7 @@ function jr_mt_validate_settings( $input ) {
 				} else {									
 					$prep_url = jr_mt_prep_url( $url );
 					if ( 'false' === $input['add_is_prefix'] ) {
-						if ( jr_mt_same_url( $prep_url, home_url() ) ) {
+						if ( jr_mt_same_url( $prep_url, JR_MT_HOME_URL ) ) {
 							add_settings_error(
 								'jr_mt_settings',
 								'jr_mt_homeerror',
@@ -1581,15 +1775,55 @@ function jr_mt_validate_settings( $input ) {
 						return FALSE;
 					}
 
+					/*	If there have been no errors detected,
+						create the new URL setting entry.
+					*/
 					if ( !jr_mt_settings_errors() ) {
 						/*	['url'], ['url_prefix'] or ['url_asterisk']
 						*/
 						$key = $prefix_types[ $input['add_is_prefix'] ];
+						$rel_url = jr_mt_relative_url( $url, JR_MT_HOME_URL );
 						$valid[ $key ][] = array(
 							'url'   => $url,
-							'prep'  => $prep_url,
+							'rel_url' => $rel_url,
 							'theme' => $input['add_theme']
 						);
+						/*	Get index of element just added to array $valid[ $key ]
+						*/
+						end( $valid[ $key ] );
+						$valid_key = key( $valid[ $key ] );
+						/*	Create the URL Prep array for each of the current Site Aliases,
+							including the Current Site URL
+						*/
+						foreach ( $aliases as $index => $alias ) {
+							$valid[ $key ][ $valid_key ]['prep'][] = jr_mt_prep_url( $alias['url'] . '/' . $rel_url );
+						}
+						/*	Only for URL type Setting, not Prefix types.
+						*/
+						if ( 'url' === $key ) {
+							/*	Try and figure out ID and WordPress Query Keyword for Type, if possible and relevant
+							*/
+							if ( ( 0 === ( $id = url_to_postid( $url ) ) ) &&
+								( version_compare( get_bloginfo( 'version' ), '4', '>=' ) ) ) {
+								$id = attachment_url_to_postid( $url );
+							}
+							if ( !empty( $id ) ) {
+								$valid[ $key ][ $valid_key ]['id'] = $id;
+								if ( NULL !== ( $post = get_post( $id ) ) ) {
+									switch ( $post->post_type ) {
+										case 'post':
+											$valid[ $key ][ $valid_key ]['id_kw'] = 'p';
+											break;
+										case 'page':
+											$valid[ $key ][ $valid_key ]['id_kw'] = 'page_id';
+											break;
+										case 'attachment':
+											$valid[ $key ][ $valid_key ]['id_kw'] = 'attachment_id';
+											break;
+									}
+								}
+							}
+						}
 					}
 				}
 			} else {
@@ -1599,7 +1833,7 @@ function jr_mt_validate_settings( $input ) {
 					' URL specified is not part of current WordPress web site: <code>'
 						. $url
 						. '</code>.  URL must begin with <code>'
-						. home_url()
+						. JR_MT_HOME_URL
 						. '</code>.',
 					'updated'
 				);			
@@ -1694,6 +1928,88 @@ function jr_mt_validate_settings( $input ) {
 		}
 	}
 	
+	/*	Handle Alias tab
+	
+		Always handle Delete first, to allow Replacement (Delete then Add)
+	*/
+	if ( isset ( $input['del_alias_entry'] ) ) {
+		foreach ( $input['del_alias_entry'] as $del_alias_entry ) {
+			$int_key = (int) $del_alias_entry;
+			unset( $aliases[ $int_key ] );
+			/*	Now go through all the URL-based Settings,
+				and delete the Prep for the deleted Alias.
+					
+				$int_key is the array integer key of the just-deleted
+				Alias, as that will also be the array key for each of the
+				Settings ['prep'] arrays.
+			*/
+			foreach ( $prefix_types as $form_prefix => $settings_prefix ) {
+				foreach ( $valid[ $settings_prefix ] as $key => $url_entry ) {
+					unset( $valid[ $settings_prefix ][ $key ]['prep'][ $int_key ] );
+				}
+			}
+		}
+	}
+	$alias_url = jr_mt_sanitize_url( $input['add_alias'] );
+	if ( !empty( $alias_url ) ) {
+		/*	URL has been trimmed but Case has not been altered
+		*/
+		if ( ( ( 0 !== substr_compare( $alias_url, 'http://', 0, 7, TRUE ) )
+				&& ( 0 !== substr_compare( $alias_url, 'https://', 0, 8, TRUE ) )
+				)
+			|| ( FALSE === ( $parse_url = parse_url( $alias_url ) ) ) ) {
+			add_settings_error(
+				'jr_mt_settings',
+				'jr_mt_badurlerror',
+				"Alias URL specified is invalid: <code>$url</code>",
+				'error'
+			);			
+		} else {
+			$url_ok = TRUE;
+			foreach ( array( 'user', 'pass', 'query', 'fragment' ) as $component ) {
+				if ( isset( $parse_url[ $component ] ) ) {
+					$url_ok = FALSE;
+					break;
+				}
+			}
+			if ( $url_ok ) {
+				/*	Be sure there is NOT a trailing slash
+				*/
+				$alias_url = rtrim( $alias_url, '/\\' );
+				$aliases[] = array(
+					'url'  => $alias_url,
+					'prep' => jr_mt_prep_url( $alias_url ),
+					'home' => FALSE
+					);
+				/*	Now go through all the URL-based Settings,
+					and add a Prep for the new Alias.
+					
+					First, determine the array integer key of the newly-added
+					Alias, as that will also be the array key for each of the
+					Settings ['prep'] arrays.
+				*/
+				end( $aliases );
+				$prep_key = key( $aliases );
+				
+				foreach ( $prefix_types as $form_prefix => $settings_prefix ) {
+					foreach ( $valid[ $settings_prefix ] as $key => $url_entry ) {
+						$valid[ $settings_prefix ][ $key ]['prep'][ $prep_key ] = jr_mt_prep_url( 
+							$alias_url . '/' . $valid[ $settings_prefix ][ $key ]['rel_url']
+						);
+					}
+				}
+			} else {
+				add_settings_error(
+					'jr_mt_settings',
+					'jr_mt_badurlerror',
+					'Alias URL cannot contain user, password, query ("?") or fragment ("#"): <code>'
+						. "$url</code>",
+					'error'
+				);		
+			}
+		}
+	}
+	
 	$errors = get_settings_errors();
 	if ( empty( $errors ) ) {
 		add_settings_error(
@@ -1706,6 +2022,7 @@ function jr_mt_validate_settings( $input ) {
 	$valid['query'] = $query;
 	$valid['remember'] = $remember;
 	$valid['override'] = $override;
+	$valid['aliases'] = $aliases;
 	return $valid;
 }
 

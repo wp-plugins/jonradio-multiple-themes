@@ -44,7 +44,7 @@ function jr_mt_theme_entry( $type, $theme = '', $display1 = NULL, $display2 = NU
 			}
 			echo 'Query='
 				. '<code>'
-				. home_url() 
+				. JR_MT_HOME_URL 
 				. "/</code>$three_dots<code>/?"
 				. '<b><input type="text" readonly="readonly" disable="disabled" name="jr_mt_delkw" value="'
 				. $display1
@@ -91,7 +91,7 @@ function jr_mt_theme_entry( $type, $theme = '', $display1 = NULL, $display2 = NU
 				. $theme_equals
 				. $display1;
 			if ( 'site_home' === $type ) {
-				echo ' (<code>' . home_url() . '</code>) setting';
+				echo ' (<code>' . JR_MT_HOME_URL . '</code>) setting';
 			} else {
 				echo ' setting (see Advanced Settings tab)';
 			}
@@ -165,6 +165,36 @@ function jr_mt_prep_query_value( $value ) {
 }
 function jr_mt_prep_query_keyword( $keyword ) {
 	return jr_mt_prep_query_value( $keyword );
+}
+
+/**
+ * Sanitize a URL from a Text Form field intended for database storage
+ */
+function jr_mt_sanitize_url( $url ) {
+	/*	Handle troublesome %E2%80%8E UTF Left-to-right Mark (LRM) suffix first.
+	*/
+	if ( FALSE === stripos( $url, '%E2%80%8E' ) ) {
+		if ( FALSE === stripos( rawurlencode( $url ), '%E2%80%8E' ) ) {
+			$clean_url = $url;
+		} else {
+			$clean_url = rawurldecode( str_ireplace( '%E2%80%8E', '', rawurlencode( $url ) ) );
+		}
+	} else {
+		$clean_url = str_ireplace( '%E2%80%8E', '', $url );
+	}
+	$clean_url = rawurldecode( trim( $clean_url ) );
+
+	return $clean_url;
+}
+
+/**
+ * Make URL Relative to Site URL
+ * 
+ */
+function jr_mt_relative_url( $url, $site_url ) {
+	$url_path = parse_url( $url, PHP_URL_PATH );
+	$site_url_path = parse_url( $site_url, PHP_URL_PATH );
+	return trim( jr_mt_substr( $url_path, jr_mt_strlen( $site_url_path ) ), '/\\' );
 }
 
 ?>

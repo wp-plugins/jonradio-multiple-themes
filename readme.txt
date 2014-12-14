@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 4.0
-Stable tag: 5.0.3
+Tested up to: 4.1
+Stable tag: 6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more WordPress Pages, Posts or other non-Admi
 
 == Description ==
 
-**Version 5 was a major rewrite that now supports nearly all plugins and themes, including BuddyPress.**  In the unlikely situation that such a massive change introduces unforeseen issues for your site, it is possible to downgrade to Version 4.12 until the issue is resolved. [Click here](http://downloads.wordpress.org/plugin/jonradio-multiple-themes.4.12.zip "Downgrade") to download Version 4.12.
+**Version 6 adds Site Aliases, to support URLs that contain something other than the Site Address (URL) defined in WordPress General Settings, or equivalent for a Site in a WordPress Network**
 
 Settings provide many different ways to Select which Theme should appear where on your WordPress web site:
 
@@ -142,6 +142,10 @@ You will need to delete the entry and add it again, with the new Theme specified
 6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
+
+= 6.0 =
+* Add URL Alias settings
+* Move "Settings" link to beginning of links on Installed Plugins Admin page
 
 = 5.0.3 =
 * Remove Cleanup code for Settings for non-existent Themes, as it conflicts with delete/reinstall theme version upgrades, and certain caching plugins
@@ -297,6 +301,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 6.0 =
+Support Domain Mapping, Parked Domains and other Site Alias usages
 
 = 5.0.3 =
 Remove cleanup of non-existent themes specified in Settings
