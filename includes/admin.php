@@ -564,7 +564,9 @@ function jr_mt_settings_page() {
 		. "<li>The Active Theme is $theme Version $theme_version</li>"
 		. '<ul class="jrmtpoints">'
 		. "<li>The Path to the Active Theme's stylesheet directory is <code>" . get_stylesheet_directory() . '</code></li>'
-		. "<li>The Path to the Active Theme's template directory is <code>" . get_template_directory() . '</code></li></ul>';
+		. "<li>The Path to the Active Theme's template directory is <code>" . get_template_directory() . '</code></li></ul>'
+		. '<li>Site Address (URL) is <code>' . JR_MT_HOME_URL . '</code></li>'
+		. '<li>WordPress Address (URL) is <code>' . site_url() . '</code></li>';
 	$permalink = get_option( 'permalink_structure' );
 	if ( empty( $permalink ) ) {
 		$permalink = 'Default (Query <code>/?p=123</code>)';

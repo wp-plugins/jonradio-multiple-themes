@@ -155,7 +155,7 @@ function jr_mt_chosen() {
 		complicated by the fact that Override entries take precedence.
 	*/
 	if ( !empty( $settings['query'] ) ) {
-		if ( '' !== $_SERVER['QUERY_STRING'] ) {
+		if ( !empty( $_SERVER['QUERY_STRING'] ) ) {
 			/*	Check Override entries
 			*/
 			foreach ( $settings['override']['query'] as $override_keyword => $override_value_array ) {
@@ -315,13 +315,16 @@ function jr_mt_chosen() {
 		$prep_url_no_query['query'] = array();
 		if ( jr_mt_same_url( JR_MT_HOME_URL, $prep_url_no_query ) ) {
 			$home = TRUE;
-			foreach ( $prep_url['query'] as $keyword => $value ) {
-				/*	Check for any non-Permalink Query Keyword
-				*/
-				global $wp;
-				if ( in_array( $keyword, $wp->public_query_vars ) ) {
-					$home = FALSE;
-					break;
+			if ( ( FALSE !== ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) )
+				&& ( isset( $internal_settings['query_vars'] ) )
+				&& ( is_array( $internal_settings['query_vars'] ) ) ) {
+				foreach ( $prep_url['query'] as $keyword => $value ) {
+					/*	Check for any non-Permalink Query Keyword
+					*/
+					if ( in_array( $keyword, $internal_settings['query_vars'] ) ) {
+						$home = FALSE;
+						break;
+					}
 				}
 			}
 			if ( $home ) {
