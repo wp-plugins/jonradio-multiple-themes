@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.1
-Stable tag: 6.0.1
+Stable tag: 6.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
+
+= 6.0.2 =
+* Fix bug that stripped off Queries in URL Settings
 
 = 6.0.1 =
 * Store $wp->public_query_vars in Internal Settings for use before 'init' action
@@ -305,6 +308,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 6.0.2 =
+Correct bug that stripped Queries from URLs in Settings
 
 = 6.0.1 =
 Tolerate missing $_SERVER['QUERY_STRING'] and $wp->public_query_vars not set up yet

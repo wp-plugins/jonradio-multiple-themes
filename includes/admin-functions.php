@@ -192,7 +192,11 @@ function jr_mt_sanitize_url( $url ) {
  * 
  */
 function jr_mt_relative_url( $url, $site_url ) {
-	$url_path = parse_url( $url, PHP_URL_PATH );
+	$url_path_array = parse_url( $url );
+	$url_path = $url_path_array['path'];
+	if ( !empty( $url_path_array['query'] ) ) {
+		$url_path .= '?' . $url_path_array['query'];
+	}
 	$site_url_path = parse_url( $site_url, PHP_URL_PATH );
 	return trim( jr_mt_substr( $url_path, jr_mt_strlen( $site_url_path ) ), '/\\' );
 }
