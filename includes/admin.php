@@ -1,29 +1,45 @@
 <?php
-//	Exit if .php file accessed directly
-if ( !defined( 'ABSPATH' ) ) exit;
-
-//	Admin Page
-
-add_action( 'admin_menu', 'jr_mt_admin_hook' );
-//	Runs just before admin_init (below)
-
-/**
- * Add Admin Menu item for plugin
- * 
- * Plugin needs its own Page in the Settings section of the Admin menu.
- *
- */
-function jr_mt_admin_hook() {
-	//  Add Settings Page for this Plugin
-	global $jr_mt_plugin_data;
-	add_theme_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
-	add_options_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
+/*	Exit if .php file accessed directly
+*/
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 global $jr_mt_kwvalsep;
 /*	Everything is converted to lower-case, so upper-case letter makes a good keyword-value separator
 */
 $jr_mt_kwvalsep = 'A';
+
+/*	Go to Settings page to get Settings checked/fixed/initialized.
+
+	But don't display on Settings page itself.
+*/
+if ( ( !isset( $_GET['page'] ) || ( 'jr_mt_settings' !== $_GET['page'] ) ) 
+	&& ( ( FALSE === ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) )
+		|| ( !isset( $internal_settings['v7init'] ) ) )
+	&& ( FALSE !== get_option( 'jr_mt_settings' ) ) ) {
+	/*	If (public) Settings do not exist, this is a new install or
+		re-install after deleting the plugin.
+		No warning is needed because the plugin will not do anything,
+		and the admin will naturally go the Settings to set some Theme Selections.
+	*/
+	add_action( 'all_admin_notices', 'jr_mt_v7init_required' );
+	/**
+	* Warn that Private Site is turned OFF by default
+	* 
+	* Put Warning on top of every Admin page (visible to Admins only)
+	* until Admin visits plugin's Settings page.
+	*
+	*/
+	function jr_mt_v7init_required() {
+		global $jr_mt_plugin_data;
+		if ( current_user_can( 'manage_options' ) ) {
+			echo '<div class="updated"><p><b>' . $jr_mt_plugin_data['Name'] . ' plugin: Version '. $jr_mt_plugin_data['Version'] . ' update requires visit to <a href="'
+				. admin_url( 'options-general.php?page=jr_mt_settings' )
+				. '">Settings page</a> to check and update its Settings.</b></p></div>';
+		}
+	}
+}
 
 add_action( 'admin_enqueue_scripts', 'jr_mt_admin_enqueue_scripts' );
 function jr_mt_admin_enqueue_scripts() {
@@ -76,7 +92,7 @@ function jr_mt_settings_page() {
 	//	Check for incompatible plugins that have been activated:  BuddyPress and Theme Test Drive
 	global $jr_mt_incompat_plugins;
 	foreach ( $jr_mt_plugins_cache as $rel_path => $plugin_data ) {
-		if ( in_array( $plugin_data['Name'], $jr_mt_incompat_plugins ) && is_plugin_active( $rel_path ) ) {
+		if ( in_array( $plugin_data['Name'], $jr_mt_incompat_plugins, TRUE ) && is_plugin_active( $rel_path ) ) {
 			if ( $compatible ) {
 				echo '<h3>Plugin Conflict Error Detected</h3>';
 				$compatible = FALSE;
@@ -90,8 +106,6 @@ function jr_mt_settings_page() {
 	}
 	
 	if ( $compatible ) {
-		$settings = get_option( 'jr_mt_settings' );
-		$internal_settings = get_option( 'jr_mt_internal_settings' );
 		?>
 		<style type="text/css">
 		<!--
@@ -120,7 +134,7 @@ function jr_mt_settings_page() {
 		when first using this plugin,
 		</li>
 		<li>
-		when upgrading to Version 6 of this plugin from a previous version,
+		when upgrading from Version 5 (or earlier) of this plugin,
 		and 
 		</li>
 		<li>
@@ -141,38 +155,371 @@ function jr_mt_settings_page() {
 		in certain WordPress configurations,
 		so should be used with care.
 		</p>
-		<h3>Overview</h3>
-		<p>This Plugin allows you to selectively display Themes on your web site
-		other than the Theme shown as
-		<b>
-		Active
-		</b>
-		on
-		<b>
-		Appearance-Themes
-		</b>
-		in the WordPress Admin panels.
-		</p>
 		<p>
-		Below,
-		Theme Selection entries can be created
-		where each Entry specifies which of the installed themes shown on the Appearance-Themes Admin panel will be applied to:
-		<ul class="jrmtpoints">
-		<li>The Site Home</li>
-		<li>An exact URL of any non-Admin page on this WordPress Site</li>
-		<li>One or more URLs that begin with the partial URL you specify ("URL Prefix")</li>
-		<li>One or more URLs that begin with the wildcard URL you specify ("URL Prefix*")</li>
-		<li>Any URL containing a Specific Query Keyword (<code>?keyword</code> or <code>&keyword</code>)</li>
-		<li>Any URL containing a Specific Query Keyword/Value pair (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
-		<li>For the same site visitor, all non-Admin pages after a <b>Sticky</b> Query Keyword/Value pair is specified in any URL (Advanced Settings tab)</li>
-		<li>All Pages (Advanced Settings tab)</li>
-		<li>All Posts (Advanced Settings tab)</li>
-		<li>Everything else, except what is specified above (Advanced Settings tab)</li>
-		</ul>
+		Checking Settings...
 		</p>
-		<h3>Important Notes</h3>
-		<form action="options.php" method="POST">
+		<ul class="jrmtpoints">
 		<?php
+		
+		unregister_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
+		
+		global $wp;
+		$default_internal_settings = array(
+			'version'    => $jr_mt_plugin_data['Version'],
+			'permalink'  => get_option( 'permalink_structure' ),
+			/*	Store $wp->public_query_vars for when they are needed before 'setup_theme' Action
+			
+				Note:  $wp is not valid until 'setup_theme' Action.
+			*/
+			'query_vars' => $wp->public_query_vars
+			);
+		if ( is_array( $internal_settings_original = get_option( 'jr_mt_internal_settings' ) ) ) {
+			$internal_settings = $internal_settings_original;
+			/*	When plugin is installed (i.e. - no Settings),
+				Previous Version is set to Current Version
+				because no Version Conversion is required.
+			*/
+			if ( ( !isset( $internal_settings['version'] ) ) || ( !is_string( $internal_settings['version'] ) ) ) {
+				$internal_settings['version'] = $default_internal_settings['version'];				
+			}
+			$internal_settings['query_vars'] = $default_internal_settings['query_vars'];	
+		} else {
+			$internal_settings = $default_internal_settings;
+			jr_mt_messages( 'First use (or after plugin deleted): initialize Internal ("invisible") Settings' );
+		}
+		$previous_version = $internal_settings['version'];
+		/*	Update to Current Version (which may be the same as Previous Version)
+		*/
+		$internal_settings['version'] = $default_internal_settings['version'];
+		
+		$internal_settings['v7init'] = TRUE;
+
+		if ( $internal_settings !== $internal_settings_original ) {
+			if ( update_option( 'jr_mt_internal_settings', $internal_settings ) ) {
+				jr_mt_messages( 'Internal ("invisible") Settings have changed and were successfully updated' );
+			} else {
+				jr_mt_messages( 'Internal ("invisible") Settings have changed but could not be updated' );
+			}
+		}		
+
+		/*	Check if any Settings were not properly converted from prior versions,
+			the Site URL has changed, or the settings are otherwise corrupted.
+			Do things in the following order, to avoid issues:
+			- check every setting exists and is of the right type
+			- check for still being in Version 4 settings; use upgradev5, if so
+			- check for still being in Version 5 settings; do my own conversion, if so
+			- check for pre-Version 7 format for ['prep']['query'] elements; convert
+			- check for "=" in ['prep']['query'] keyword or value
+				- remove if first char of value or last char of keyword
+				- delete setting if found anywhere else, and report as corrupt
+			- be sure ['aliases'][]['home'] is TRUE for correct URL (Site URL); if not:
+				- create any missing ['url'*][]['rel_url'] from ['url'*][]['url'] and
+					['aliases'][]['url'] from old ['aliases'][]['home']
+				- change to FALSE
+				- set correct ['aliases'][]['home'] to TRUE, even if it means adding alias entries
+				- rebuild all ['url'*][]['prep']
+				- re-create all ['url'*][]['url'] from ['url'*][]['rel_url'] and new Site URL
+			- ['url'*][]['id'] is integer - convert to string
+			- Missing ['url'*][]['rel_url'] - create it from ['url'*][]['url'] and Site URL
+			- ['url'*][]['prep'] is not array - rebuild all ['url'*][]['prep']
+			- "?" in ['url'*][]['url'] but no query in ['url'*][]['prep'][] - rebuild this ['url'*][]['prep']
+			- Deleted Themes
+		*/
+		if ( is_array( $settings_original = get_option( 'jr_mt_settings' ) ) ) {
+			$settings = $settings_original;
+			global $jr_mt_url_types;
+			$default_settings = jr_mt_default_settings();
+			/*	Check for unconverted Version 4 Settings
+			*/
+			if ( ( !isset( $settings['url'] ) ) 
+				|| version_compare( $previous_version, '5', '<' ) ) {
+				require_once( jr_mt_path() . 'includes/upgradev5.php' );
+				$settings = jr_mt_convert_ids( $settings );
+				jr_mt_messages( 'Conversion completed to Version 5 format from Version ' . $previous_version );
+			}
+			/*	Check for unconverted Version 5 Settings
+			*/
+			if ( ( !isset( $settings['aliases'] ) ) 
+				|| version_compare( $previous_version, '6', '<' ) ) {
+				$settings['aliases'] = $default_settings['aliases'];
+				require_once( jr_mt_path() . 'includes/upgradev6.php' );
+				$settings = jr_mt_convert_url_arrays( $settings );
+				jr_mt_messages( 'Conversion completed to Version 6 format from Version ' . $previous_version );
+			}
+			/*	Check Settings for missing or wrong type entries,
+				including Themes that are not currently installed.
+			*/
+			$jr_mt_all_themes = jr_mt_all_themes();
+			/*	Check: 'all_pages', 'all_posts', 'site_home', 'current'
+			*/
+			foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $key ) {
+				if ( ( !isset( $settings[ $key ] ) ) || ( !is_string( $settings[ $key ] ) ) ) {
+					$settings[ $key ] = $default_settings[ $key ];
+					jr_mt_messages( 'Home, Everything or All Pages/Posts Setting corrupt: reset to default (WordPress Active Theme)' );
+				} else {
+					if ( ( '' !== $settings[ $key ] ) && ( !isset( $jr_mt_all_themes[ $settings[ $key ] ] ) ) ) {
+						$settings[ $key ] = $default_settings[ $key ];
+						jr_mt_messages( 'Home, Everything or All Pages/Posts Setting deleted: specified Theme no longer exists' );
+					}
+				}
+			}
+			/*	Check ['query_present']
+			*/
+			if ( ( !isset( $settings['query_present'] ) ) || ( !is_bool( $settings['query_present'] ) ) ) {
+				$settings['query_present'] = $default_settings['query_present'];
+				jr_mt_messages( '"When to add Sticky Query to a URL" Setting corrupt: reset to default' );
+			}
+			/*	Check ['aliases']
+			*/
+			if ( ( !isset( $settings['aliases'] ) ) || ( !is_array( $settings['aliases'] ) ) ) {
+				$settings['aliases'] = $default_settings['aliases'];
+				jr_mt_messages( 'No Site Aliases defined; set to Default Aliases, if any' );
+				/*	Relies on ['url'*] being valid, so do after it.
+				*/
+				$rebuild_prep = TRUE;
+			} else {
+				foreach ( $settings['aliases'] as $alias ) {
+					if ( ( !is_string( $alias['url'] ) ) 
+						|| ( !is_array( $alias['prep'] ) ) 
+						|| !is_bool( $alias['home'] ) ) {
+						$settings['aliases'] = $default_settings['aliases'];
+						jr_mt_messages( 'Site Aliases settings are corrupt; reset to Default Aliases, if any' );
+						$rebuild_prep = TRUE;
+						break;
+					}
+				}
+			}
+			/*	Check [url*]
+			*/
+			foreach ( $jr_mt_url_types as $url_type ) {
+				if ( !isset( $settings[ $url_type ] ) ) {
+					$settings[ $url_type ] = $default_settings[ $url_type ];
+					jr_mt_messages( 'URL setting(s) re-initialized' );
+				} else {
+					if ( !is_array( $settings[ $url_type ] ) ) {
+						$settings[ $url_type ] = $default_settings[ $url_type ];
+						jr_mt_messages( 'URL setting(s) deleted because they are corrupt' );
+					} else {
+						foreach ( $settings[ $url_type ] as $index => $url_array ) {
+							if ( ( !isset( $url_array['url'] ) ) 
+								|| ( !isset( $url_array['prep'] ) ) 
+								|| ( !isset( $url_array['theme'] ) )
+								|| ( !is_string( $url_array['url'] ) ) 
+								|| ( !is_string( $url_array['theme'] ) )
+								|| ( !isset( $jr_mt_all_themes[ $url_array['theme'] ] ) ) ) {
+								unset( $settings[ $url_type ][ $index ] );
+								jr_mt_messages( 'URL setting deleted: either it was corrupt or specified Theme that no longer exists' );
+							} else {
+								/*	Be sure all ['prep'] are arrays.
+									If any are not, rebuild all ['prep'] entries.
+								*/
+								if ( is_array( $url_array['prep'] ) ) {
+									/*	Be sure that all ['prep'] entries have a ['query'] entry when the 
+										URL has a Query in it, denoted by a "?".
+										If any not found, Rebuild all the ['prep'] entries.
+									*/
+									if ( FALSE !== strpos( $url_array['url'], '?' ) ) {
+										foreach ( $url_array['prep'] as $prep_entry ) {
+											if ( isset( $prep_entry['query'] ) && is_array( $prep_entry['query'] ) ) {
+												/*	Check for unconverted and corrupt Queries in ['prep']['query'] Settings
+							
+													A Keyword ending in "=" or a Value beginning with "=" gets converted.
+													A "=" anywhere else means Corruption.
+												*/											
+												foreach ( $prep_entry['query'] as $keyword => $value_array ) {
+													if ( is_array( $value_array ) ) {
+														foreach ( $value_array as $value => $equalsign ) {
+															/*	There must be an Equals Sign if there is a Value
+															*/
+															if ( is_bool( $equalsign ) && ( $equalsign || ( '' === $value ) ) ) {
+																foreach ( array(
+																	'=', '?', '&',	' ', '#', '/', '\\', '[', ']'
+																	) as $char ) {
+																	if ( FALSE !== strpos( $keyword . $value, $char ) ) {
+																		unset( $settings[ $url_type ][ $index ] );
+																		jr_mt_messages( 'URL setting deleted: illegal character found in Query keyword or value' );
+																		break 4;
+																	}
+																}
+															} else {
+																$rebuild_prep = TRUE;
+																break 3;
+															}
+														}
+													} else {
+														$rebuild_prep = TRUE;
+														break 2;
+													}
+												}
+											} else {
+												$rebuild_prep = TRUE;
+												break;
+											}
+										}
+									}
+								} else {
+									$rebuild_prep = TRUE;
+								}
+								
+								/*	Convert any integer Page/Post/Attachment ID to a string
+									so it will match the type of a Query value in PHP/HTTP
+								*/
+								if ( isset( $url_array['id'] ) && is_int( $url_array['id'] ) ) {
+									$settings[ $url_type ][ $index ]['id'] = ( string ) $url_array['id'];
+									jr_mt_messages( 'Integer type Page/Post/Attachment ID found: converted to String type' );
+								}
+								if ( isset( $url_array['id_kw'] ) 
+									&& ( ( !is_string( $url_array['id_kw'] ) ) 
+										|| ( !in_array( $url_array['id_kw'], array( 'page_id', 'p', 'attachment_id' ), TRUE ) ) ) ) {
+									unset( $settings[ $url_type ][ $index ]['id_kw'] );
+								}
+								if ( isset( $url_array['rel_url'] ) 
+									&& ( !is_string( $url_array['rel_url'] ) ) ) {
+									unset( $settings[ $url_type ][ $index ]['rel_url'] );
+								}
+							}
+						}
+					}
+				}
+			}
+			/*	Check ['query']
+			*/
+			if ( ( !isset( $settings['query'] ) ) || ( !is_array( $settings['query'] ) ) ) {
+				$settings['query'] = $default_settings['query'];
+				jr_mt_messages( 'Query setting(s) deleted because they are corrupt' );
+			} else {
+				foreach ( $settings['query'] as $keyword => $value_array ) {
+					if ( is_array( $value_array ) ) {
+						foreach ( $value_array as $value => $theme ) {
+							if ( ( !is_string( $theme ) )
+								|| ( !isset( $jr_mt_all_themes[ $theme ] ) ) ) {
+								unset( $settings['query'][ $keyword ][ $value ] );
+								jr_mt_messages( 'Query setting deleted: either it was corrupt or specified Theme that no longer exists' );
+								/*	All the checking for Empty parents (e.g. - $settings['query'][ $keyword ])
+									and matching remember/query elements is done later.
+								*/
+							}
+						}
+						if ( empty( $settings['query'][ $keyword ] ) ) {
+							unset( $settings['query'][ $keyword ] );
+						}								
+					} else {
+						unset( $settings['query'][ $keyword ] );
+						jr_mt_messages( 'Query setting deleted because it is corrupt' );
+					}
+				}
+				/*	Check: 'remember', 'override'
+				*/
+				foreach ( array( 'remember', 'override' ) as $key ) {
+					if ( is_array( $settings[ $key ] ) 
+						&& isset( $settings[ $key ]['query'] ) 
+						&& is_array( $settings[ $key ]['query'] ) ) {
+						foreach ( $settings[ $key ] as $query_constant => $query_array ) {
+							if ( 'query' !== $query_constant ) {
+								unset( $settings[ $key ][ $query_constant ] );
+								jr_mt_messages( 'Sticky/Override setting(s) deleted because they are corrupt' );
+							}
+						}
+						foreach ( $settings[ $key ]['query'] as $keyword => $value_array ) {
+							if ( is_array( $value_array ) ) {
+								foreach ( $value_array as $value => $bool ) {
+									if ( ( !is_bool( $bool ) ) 
+										|| ( !isset( $settings['query'][ $keyword ][ $value ] ) ) ) {
+										unset( $settings[ $key ]['query'][ $keyword ][ $value ] );
+										jr_mt_messages( 'Sticky/Override setting(s) deleted because they are corrupt' );
+									}
+								}
+								if ( empty( $settings[ $key ]['query'][ $keyword ] ) ) {
+									unset( $settings[ $key ]['query'][ $keyword ] );
+								}
+							} else {
+								unset( $settings[ $key ]['query'][ $keyword ] );
+								jr_mt_messages( 'Sticky/Override setting(s) deleted because they are corrupt' );
+							}
+						}
+					} else {
+						$settings[ $key ] = $default_settings[ $key ];
+						jr_mt_messages( 'Sticky/Override setting(s) deleted because they are corrupt' );
+					}
+				}
+			}
+			
+			/*	Check for missing ['rel_url'] and build it
+			*/
+			$settings = jr_mt_missing_rel_url( $settings, JR_MT_HOME_URL );
+			
+			/*	Check if Site URL has changed by comparing corresponding ['url'] of ['home']
+				setting in Aliases array with current Site URL.
+			*/
+			$site_url_changed = FALSE;
+			if ( is_array( $settings['aliases'] ) ) {
+				foreach ( $settings['aliases'] as $index => $alias ) {
+					if ( $alias['home'] ) {
+						if ( !jr_mt_same_url( $alias['prep'], JR_MT_HOME_URL ) ) {
+							/*	Site URL has changed.
+							*/
+							$site_url_changed = TRUE;
+							$old_site_url = $alias['url'];
+							break;
+						}
+					}
+				}
+				if ( $site_url_changed ) {
+					$settings = jr_mt_rebuild_display_url( $settings, $old_site_url );
+					
+					/*	See if there is an Alias entry for the new Site URL.
+						If not, add one, and perhaps another with/without www.
+					*/
+					$settings = jr_mt_rebuild_alias_home( $settings );
+					
+					jr_mt_messages( 'Site Address (URL) has changed:  any URLs and Aliases in settings have been updated' );
+					
+					/*	Rebuild ['prep']
+					*/
+					$rebuild_prep = TRUE;
+				}
+			} else {
+				$settings['aliases'] = jr_mt_init_aliases();
+				jr_mt_messages( 'No Site Aliases defined; set to Default Aliases, if any' );
+			}
+
+			/*	Rebuild all ['prep'] entries, if required.
+			*/
+			if ( isset( $rebuild_prep ) ) {
+				$settings = jr_mt_rebuild_prep( $settings );
+				jr_mt_messages( 'URL settings, if any, have had their URL matching structures rebuilt' );
+			}				
+		} else {
+			$settings = jr_mt_default_settings();
+			jr_mt_messages( 'First use (or after plugin deleted): initialize Plugin Settings', 'immediate' );
+		}
+		if ( $settings !== $settings_original ) {
+			if ( update_option( 'jr_mt_settings', $settings ) ) {
+				jr_mt_messages( 'Plugin Settings have changed and were successfully updated', 'immediate' );
+			} else {
+				jr_mt_messages( 'Plugin Settings have changed but could not be updated', 'immediate' );
+			}
+		}
+		jr_mt_messages( NULL, 'display' );
+		jr_mt_messages( 'Check complete', 'immediate' );
+		?>
+		</ul>
+		<p>
+		While every attempt has been made,
+		in the Settings Check above,
+		to ensure that the plugin's
+		Setting are valid,
+		if you experience any unexpected behaviour,
+		you should try to re-create the Settings from scratch.
+		First, re-initialize all Settings to their defaults,
+		by deactivating, deleting, installing and reactivating this plugin;
+		then visit this Settings page again,
+		as this is where the Settings are initialized.
+		</p>
+		<?php
+		jr_mt_admin_init();
+		
+		echo '<form action="options.php" method="POST">';
 		$permalink = get_option( 'permalink_structure' );
 		if ( isset( $internal_settings['permalink'] ) ) {
 			if ( $internal_settings['permalink'] !== $permalink ) {
@@ -216,6 +563,38 @@ function jr_mt_settings_page() {
 			$internal_settings['permalink'] = $permalink;
 			update_option( 'jr_mt_internal_settings', $internal_settings );
 		}
+		?>
+		<h3>Overview</h3>
+		<p>This Plugin allows you to selectively display Themes on your web site
+		other than the Theme shown as
+		<b>
+		Active
+		</b>
+		on
+		<b>
+		Appearance-Themes
+		</b>
+		in the WordPress Admin panels.
+		</p>
+		<p>
+		Below,
+		Theme Selection entries can be created
+		where each Entry specifies which of the installed themes shown on the Appearance-Themes Admin panel will be applied to:
+		<ul class="jrmtpoints">
+		<li>The Site Home</li>
+		<li>An exact URL of any non-Admin page on this WordPress Site</li>
+		<li>One or more URLs that begin with the partial URL you specify ("URL Prefix")</li>
+		<li>One or more URLs that begin with the wildcard URL you specify ("URL Prefix*")</li>
+		<li>Any URL containing a Specific Query Keyword (<code>?keyword</code> or <code>&keyword</code>)</li>
+		<li>Any URL containing a Specific Query Keyword/Value pair (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
+		<li>For the same site visitor, all non-Admin pages after a <b>Sticky</b> Query Keyword/Value pair is specified in any URL (Advanced Settings tab)</li>
+		<li>All Pages (Advanced Settings tab)</li>
+		<li>All Posts (Advanced Settings tab)</li>
+		<li>Everything else, except what is specified above (Advanced Settings tab)</li>
+		</ul>
+		</p>
+		<h3>Important Notes</h3>
+		<?php
 		if ( function_exists('is_multisite') && is_multisite() ) {
 			echo "In a WordPress Network (AKA Multisite), Themes must be <b>Network Enabled</b> before they will appear as Available Themes on individual sites' Appearance-Themes panel.";
 		}
@@ -763,1269 +1142,7 @@ function jr_mt_settings_page() {
 	*/
 }
 
-add_action( 'admin_init', 'jr_mt_admin_init' );
-
-/**
- * Register and define the settings
- * 
- * Everything to be stored and/or can be set by the user
- *
- */
-function jr_mt_admin_init() {
-	register_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
-	$settings = get_option( 'jr_mt_settings' );
-	foreach ( array( 'query', 'url', 'url_prefix', 'url_asterisk' ) as $key ) {
-		if ( !empty( $settings[ $key ] ) ) {
-			$found = TRUE;
-		}
-	}
-	if ( isset( $found ) ) {
-		add_settings_section(
-			'jr_mt_delete_settings_section', 
-			'Current Theme Selection Entries', 
-			'jr_mt_delete_settings_expl', 
-			'jr_mt_settings_page' 
-		);
-		add_settings_field(
-			'del_entry', 
-			'Theme Selection Entries:', 
-			'jr_mt_echo_delete_entry', 
-			'jr_mt_settings_page', 
-			'jr_mt_delete_settings_section'
-		);
-	}
-	add_settings_section( 
-		'jr_mt_site_home_section',
-		'Site Home',
-		'jr_mt_site_home_expl',
-		'jr_mt_settings_page' 
-	);
-	add_settings_field( 
-		'site_home', 
-		'Select Theme for Site Home<br /><code>' . JR_MT_HOME_URL . '</code>', 
-		'jr_mt_echo_site_home', 
-		'jr_mt_settings_page', 
-		'jr_mt_site_home_section' 
-	);
-	add_settings_section(
-		'jr_mt_single_settings_section', 
-		'<input name="jr_mt_settings[tab1]" type="submit" value="Save All Changes" class="button-primary" /></h3><h3>For An Individual Page, Post or other non-Admin page;<br />or a group of pages, specified by URL Prefix, optionally with Asterisk(s)', 
-		'jr_mt_single_settings_expl', 
-		'jr_mt_settings_page'
-	);
-	add_settings_field( 'add_is_prefix', 'Select here if URL is a Prefix', 'jr_mt_echo_add_is_prefix', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_field( 'add_theme', 'Theme', 'jr_mt_echo_add_theme', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_field( 'add_path_id', 'URL of Page, Post, Prefix or other', 'jr_mt_echo_add_path_id', 'jr_mt_settings_page', 'jr_mt_single_settings_section' );
-	add_settings_section( 'jr_mt_querykw_section', 
-		'For A Query Keyword on any Page, Post or other non-Admin page', 
-		'jr_mt_querykw_expl', 
-		'jr_mt_settings_page' 
-	);
-	add_settings_field( 'add_querykw_theme', 'Theme', 'jr_mt_echo_add_querykw_theme', 'jr_mt_settings_page', 'jr_mt_querykw_section' );
-	add_settings_field( 'add_querykw_keyword', 'Query Keyword', 'jr_mt_echo_add_querykw_keyword', 'jr_mt_settings_page', 'jr_mt_querykw_section' );
-	add_settings_section( 'jr_mt_query_section', 
-		'For A Query Keyword=Value on any Page, Post or other non-Admin page', 
-		'jr_mt_query_expl', 
-		'jr_mt_settings_page'
-	);
-	add_settings_field( 'add_query_theme', 'Theme', 'jr_mt_echo_add_query_theme', 'jr_mt_settings_page', 'jr_mt_query_section' );
-	add_settings_field( 'add_query_keyword', 'Query Keyword', 'jr_mt_echo_add_query_keyword', 'jr_mt_settings_page', 'jr_mt_query_section' );
-	add_settings_field( 'add_query_value', 'Query Value', 'jr_mt_echo_add_query_value', 'jr_mt_settings_page', 'jr_mt_query_section' );
-	add_settings_section( 'jr_mt_aliases_section', 
-		'<input name="jr_mt_settings[tab1]" type="submit" value="Save All Changes" class="button-primary" /></h3></div><div id="jr-mt-settings2" style="display: none;"><h3>Site Aliases used in URLs to Access This WordPress Site', 
-		'jr_mt_aliases_expl', 
-		'jr_mt_settings_page' 
-	);
-	/*	There is always an entry for the Site URL ("Home").
-	*/
-	if ( count( $settings['aliases'] ) > 1 ) {
-		add_settings_section(
-			'jr_mt_delete_aliases_section', 
-			'Current Site Alias Entries', 
-			'jr_mt_delete_aliases_expl', 
-			'jr_mt_settings_page' 
-		);
-		add_settings_field(
-			'del_alias_entry', 
-			'Site Alias Entries:', 
-			'jr_mt_echo_delete_alias_entry', 
-			'jr_mt_settings_page', 
-			'jr_mt_delete_aliases_section'
-		);
-	}
-	add_settings_section(
-		'jr_mt_create_alias_section', 
-		'Create New Site Alias Entry', 
-		'jr_mt_create_alias_expl', 
-		'jr_mt_settings_page' 
-	);
-	add_settings_field( 
-		'add_alias', 
-		'Site Alias', 
-		'jr_mt_echo_add_alias', 
-		'jr_mt_settings_page', 
-		'jr_mt_create_alias_section' 
-	);
-	add_settings_section( 'jr_mt_sticky_section', 
-		'<input name="jr_mt_settings[tab2]" type="submit" value="Save All Changes" class="button-primary" /></h3></div><div id="jr-mt-settings3" style="display: none;"><h3>Advanced Settings</h3><p><b>Warning:</b> As the name of this section implies, Advanced Settings should be fully understood or they may surprise you with unintended consequences, so please be careful.</p><h3>Sticky and Override', 
-		'jr_mt_sticky_expl', 
-		'jr_mt_settings_page' 
-	);
-	add_settings_field( 'query_present', 'When to add Sticky Query to a URL', 'jr_mt_echo_query_present', 'jr_mt_settings_page', 'jr_mt_sticky_section' );
-	add_settings_field( 'sticky_query', 'Keyword=Value Entries:', 'jr_mt_echo_sticky_query_entry', 'jr_mt_settings_page', 'jr_mt_sticky_section' );
-	add_settings_section( 'jr_mt_everything_section',
-		'Theme for Everything',
-		'jr_mt_everything_expl', 
-		'jr_mt_settings_page'
-	);
-	add_settings_field( 'current', 
-		'Select Theme for Everything, to Override WordPress Current Theme (<b>' . wp_get_theme()->Name . '</b>)', 
-		'jr_mt_echo_current', 
-		'jr_mt_settings_page', 
-		'jr_mt_everything_section' 
-	);
-	add_settings_section( 'jr_mt_all_settings_section', 
-		'For All Pages and/or All Posts', 
-		'jr_mt_all_settings_expl', 
-		'jr_mt_settings_page' 
-	);
-	$suffix = array(
-		'Pages' => '<br />(Pages created with Add Page)',
-		'Posts' => ''
-	);
-	foreach ( array( 'Pages', 'Posts' ) as $thing ) {
-		add_settings_field( 'all_' . jr_mt_strtolower( $thing ), "Select Theme for All $thing" . $suffix[$thing], 'jr_mt_echo_all_things', 'jr_mt_settings_page', 'jr_mt_all_settings_section', 
-			array( 'thing' => $thing ) );
-	}
-}
-
-/**
- * Section text for Section1
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_delete_settings_expl() {
-	?>
-	<p>
-	All Theme Selection entries are displayed below,
-	in the exact order in which they will be processed.
-	For example,
-	if a match is made with the first Entry,
-	the first Entry's Theme will be used,
-	no matter what Theme the Second and subsequent Entries specify.
-	</p>
-	<p>
-	You can delete any of these entries by filling in the check box beside the entry
-	and clicking any of the <b>Save All Changes</b> buttons.
-	To change the Theme for an entry,
-	you will need to delete the entry
-	and add the same entry with a different Theme in the relevant section
-	on this or the Advanced Settings tab.
-	</p>
-	<p>
-	To add or remove (or to learn about) the Sticky or Override setting for a Query,
-	see the Advanced Settings tab.
-	</p>
-	<?php
-}
-
-function jr_mt_echo_delete_entry() {
-	echo 'In order of Selection:<ol>';
-	$settings = get_option( 'jr_mt_settings' );
-	/*	Display any Override entries first,
-		because they have the highest priority.
-	*/
-	foreach ( $settings['override']['query'] as $override_keyword => $override_value_array ) {
-		foreach ( $override_value_array as $override_value => $bool ) {
-			jr_mt_theme_entry( 
-				'Query',
-				wp_get_theme( $settings['query'][ $override_keyword ][ $override_value ] )->Name,
-				$override_keyword,
-				$override_value
-			);
-		}
-	}
-	/*	Display Non-Overrides:
-		first, keyword=value query in URL with matching setting entry.
-	*/
-	foreach ( $settings['query'] as $keyword => $value_array ) {
-		foreach ( $value_array as $value => $theme ) {
-			/*	Wildcard Keyword=* entries come later
-			*/
-			if ( '*' !== $value ) {
-				if ( !isset( $settings['override']['query'][ $keyword ][ $value ] ) ) {
-					jr_mt_theme_entry(
-						'Query',
-						wp_get_theme( $theme )->Name,
-						$keyword,
-						$value
-					);
-				}
-			}
-		}
-	}
-	/*	Display Non-Overrides:
-		second, wildcard keyword=* query in URL with matching setting entry.
-	*/
-	foreach ( $settings['query'] as $keyword => $value_array ) {
-		foreach ( $value_array as $value => $theme ) {
-			/*	Wildcard Keyword=* entries
-				Overrides are not allowed, so no need to check.
-			*/
-			if ( '*' === $value ) {
-				jr_mt_theme_entry(
-					'Query',
-					wp_get_theme( $theme )->Name,
-					$keyword,
-					'*'
-				);
-			}
-		}
-	}
-	/*	Display URL entries:
-		first, exact match URL entries;
-		second, prefix URL entries;
-		then, prefix URL entries with asterisk wildcards.
-	*/
-	foreach ( array(
-		'url' => 'URL',
-		'url_prefix' => 'URL Prefix',
-		'url_asterisk' => 'URL Prefix*'
-		) as $key => $description ) {
-		foreach ( $settings[ $key ] as $settings_array ) {
-			jr_mt_theme_entry(
-				$key,
-				wp_get_theme( $settings_array['theme'] )->Name,
-				$settings_array['url'],
-				$description
-			);
-		}
-	}
-	/*	Home Entry, then All Posts and Pages, and Everything Else
-	*/
-	foreach ( array(
-		'site_home' => 'Home',
-		'all_posts' => 'All Posts',
-		'all_pages' => 'All Pages',
-		'current'   => 'Everything Else'
-		) as $key => $description ) {
-		if ( '' !== $settings[ $key ] ) {
-			jr_mt_theme_entry(
-				$key,
-				wp_get_theme( $settings[ $key ] )->Name,
-				$description
-			);
-		}
-	}
-	if ( '' === $settings['current'] ) {
-		jr_mt_theme_entry(
-			'wordpress'
-		);
-	}
-	echo '</ol>';
-}
-
-/**
- * Section text for Section2
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_site_home_expl() {
-	?>
-	<p>
-	In this section, you can select a different Theme for Site Home.
-	To remove a previously selected Theme, select the blank entry from the drop-down list.
-	</p>
-	<p>
-	In the <i>next</i> section, you will be able to select a Theme, including the Current Theme, for individual Pages, Posts or
-	any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
-	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
-	</p>
-	<p>	
-	There is also a Query Keyword section 
-	farther down this Settings page
-	that allows
-	you to select a Theme to use whenever a specified 
-	Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code>)
-	appears in the URL of any Page, Post or other non-Admin page.
-	Query entries will even override the Site Home entry,
-	if the Query Keyword follows the Site Home URL.
-	</p>
-	<?php	
-}
-
-function jr_mt_echo_site_home() {
-	$settings = get_option( 'jr_mt_settings' );
-	jr_mt_themes_field( 'site_home', $settings['site_home'], 'jr_mt_settings', FALSE );
-}
-
-/**
- * Section text for Section3
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_single_settings_expl() {
-	?>
-	<p>
-	Select a Theme for an individual Page, Post	or
-	any other non-Admin page that has its own Permalink; for example, a specific Archive or Category page.
-	Or for a group of pages which have URLs that all begin with the same characters ("Prefix"),
-	optionally specifying an Asterisk ("*") to match all subdirectories at specific levels.
-	</p>
-	<p>
-	Then cut and paste the URL of the desired Page, Post, Prefix or other non-Admin page.
-	And click any of the <b>Save All Changes</b> buttons to add the entry.
-	</p>
-	There are three types of Entries that you can specify here:
-	<ol>
-	<li>
-	<b>URL</b> - if Visitor URL matches this URL, use this Theme
-	</li>
-	<li>
-	<b>URL Prefix</b> - any Visitor URL that begins with this URL Prefix will use this Theme
-	</li>
-	<li>
-	<b>URL Prefix with Asterisk(s)</b> - URL Prefix that matches any subdirectory where Asterisk ("*") is specified
-	</li>
-	</ol>
-	For the third type, an Asterisk can only be specified to match the entire subdirectory name, not parts of the name:
-	<blockquote>
-	For example, using a Permalink structure that uses dates,
-	where a typical Post might be at URL
-	<code>http://example.com/wp/2014/04/13/daily-thoughts/</code>,
-	a URL Prefix with Asterisk entry of
-	<code>http://example.com/wp/*/04/*/d</code>
-	would match all April Posts with Titles that begin with the letter "d", no matter what year they were posted.
-	</blockquote>
-	</p>
-	</p>
-	Beginning with Version 5.0, <code>keyword=value</code> Queries are now supported in all URLs
-	(on this Settings tab;
-	Site Aliases may not include Queries).
-	</p>
-	<?php	
-}
-
-function jr_mt_echo_add_is_prefix() {
-	echo '<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="false" checked="checked" /> URL';
-	?>
-	<br/>
-	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="prefix" /> URL Prefix<br/>
-	<input type="radio" id="add_is_prefix" name="jr_mt_settings[add_is_prefix]" value="*" /> URL Prefix with Asterisk ("*")
-	<?php
-}
-
-function jr_mt_echo_add_theme() {
-	jr_mt_themes_field( 'add_theme', '', 'jr_mt_settings', FALSE );
-}
-
-function jr_mt_echo_add_path_id() {
-	?>
-	<input id="add_path_id" name="jr_mt_settings[add_path_id]" type="text" size="75" maxlength="256" value="" />
-	<br />
-	&nbsp;
-	(cut and paste URL here of Page, Post, Prefix or other)
-	<br />
-	&nbsp;
-	URL must begin with
-	the current
-	<a href="options-general.php">Site Address (URL)</a>:
-	<?php
-	echo '<code>' . JR_MT_HOME_URL . '/</code>.';
-}
-
-/**
- * Section text for Section4
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_querykw_expl() {
-	?>
-	<p>
-	Select a Theme to use 
-	whenever the specified Query Keyword (<code>?keyword=</code> or <code>&keyword=</code>)
-	is found in the URL of
-	any Page, Post or
-	any other non-Admin page.
-	And click any of the <b>Save All Changes</b> buttons to add the entry.
-	</p>
-	<p>
-	<b>
-	Note
-	</b>
-	that Query Keyword takes precedence over all other types of Theme selection entries.
-	For example, 
-	<?php
-	echo '<code>' . JR_MT_HOME_URL . '?firstname=dorothy</code>'
-		. ' would use the Theme specified for the <code>firstname</code> keyword, not the Theme specified for Site Home.'
-		. ' Query matching is case-insensitive, so all Keywords entered are stored in lower-case.</p>';
-}
-function jr_mt_echo_add_querykw_theme() {
-	jr_mt_themes_field( 'add_querykw_theme', '', 'jr_mt_settings', FALSE );
-}
-function jr_mt_echo_add_querykw_keyword() {
-	$three_dots = '&#133;';
-	echo '<code>'
-		. JR_MT_HOME_URL 
-		. "/</code>$three_dots<code>/?"
-		. '<input id="add_querykw_keyword" name="jr_mt_settings[add_querykw_keyword]" type="text" size="20" maxlength="64" value="" />=</code>'
-		. $three_dots;
-}
-
-/**
- * Section text for Section5
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_query_expl() {
-	?>
-	<p>
-	Select a Theme to use 
-	whenever the specified Query Keyword <b>and</b> Value (<code>?keyword=value</code> or <code>&keyword=value</code>)
-	are found in the URL of
-	any Page, Post or
-	any other non-Admin page.
-	And click any of the <b>Save All Changes</b> buttons to add the entry.
-	</p>
-	<p>
-	<b>
-	Note
-	</b>
-	that Query Keyword=Value takes precedence over all other Theme selection entries,
-	including a Query Keyword entry for the same Keyword.
-	For example, 
-	<?php
-	echo '<code>' . JR_MT_HOME_URL . '?firstname=dorothy</code>'
-		. ' would use the Theme specified for the <code>firstname=dorothy</code> keyword=value pair,'
-		. ' not the Theme specified for Site Home nor even the Theme specified for the Keyword <code>firstname</code>.'
-		. ' Query matching is case-insensitive, so all Keywords and Values entered are stored in lower-case.</p>';
-}
-function jr_mt_echo_add_query_theme() {
-	jr_mt_themes_field( 'add_query_theme', '', 'jr_mt_settings', FALSE );
-}
-function jr_mt_echo_add_query_keyword() {
-	$three_dots = '&#133;';
-	echo '<code>'
-		. JR_MT_HOME_URL 
-		. "/</code>$three_dots<code>/?"
-		. '<input id="add_query_keyword" name="jr_mt_settings[add_query_keyword]" type="text" size="20" maxlength="64" value="" /></code>';
-}
-function jr_mt_echo_add_query_value() {
-	echo '<code>'
-		. '='
-		. '<input id="add_query_value" name="jr_mt_settings[add_query_value]" type="text" size="20" maxlength="64" value="" /></code>';
-}
-
-function jr_mt_aliases_expl() {
-	?>
-	<p>
-	Define any
-	<b>
-	Site Aliases
-	</b>
-	that may be used to access your WordPress website.
-	</p>
-	<p>
-	This plugin uses the value of
-	<b>
-	Site Address (URL)
-	</b>
-	defined on the
-	<a href="options-general.php">
-	General Settings</a>
-	Admin panel
-	to match URLs against the Theme Selection settings.
-	By default, when the plugin is first installed,
-	or the value of Site Address changed,
-	a 
-	<i>
-	www Alias Entry
-	</i>
-	is automatically defined
-	to handle the most common Alias used on WordPress sites:
-	by adding or removing the "www." prefix of the Domain Name.
-	</p>
-	<p>
-	If your WordPress website is accessed by
-	anything other than the Site Address or Site Aliases defined below,
-	this Plugin will always use the WordPress Active Theme defined on the
-	<a href="themes.php">
-	Appearance-Themes</a>
-	Admin panel.
-	</p>
-	<p>
-	Although by no means exhaustive,
-	this list can help you remember where you might have defined Aliases that need to be defined below.
-	</p>
-	<ul class="jrmtpoints">
-	<?php
-	if ( is_multisite() ) {
-		echo '<li><b>Mapped Domain</b>. Plugins such as <a href="https://wordpress.org/plugins/wordpress-mu-domain-mapping/">WordPress MU Domain Mapping</a> allow each Site in a WordPress Network to have its own Domain Name.</li>';
-	}
-	?>
-	<li>
-	<b>IP Address</b>.
-	Most sites can be accessed by an IP address,
-	either the IPv4 format of four numbers separated by dots (168.1.0.1)
-	or the newer IPv6 format of several hexadecimal numbers separated by colons (2001:0DB8:AC10:FE01::).
-	</li>
-	<li>
-	<b>Parked Domain</b>.
-	example.com might have example.club as a Alias defined as a Parked Domain to your web host.
-	</li>
-	<li>
-	<b>ServerAlias</b> or equivalent.
-	Apache allows one or more Domain or Subdomain aliases to be defined with the SeverAlias directive;
-	non-Apache equivalents offer similar capabilities.
-	</li>
-	<li>
-	<b>Redirection</b>.
-	Most domain name registration and web hosting providers also offer a Redirection service.
-	Optionally, Redirection can be Masked (or not) to keep the redirected URL in the browser's address bar.
-	</li>
-	<li>
-	<b>.htaccess RewriteRule</b> or equivalent.
-	Each directory can contain a hidden file named
-	<code>.htaccess</code>.
-	These files may include RewriteRule statements that modify the URL
-	to change the URL of a site
-	as it appears in the Site Visitor's web browser address bar
-	from,
-	for example, 
-	<code>http://example.com/wordpress</code>
-	to
-	<code>http://example.com</code>.
-	</li>
-	</ul>
-	<?php
-}
-
-function jr_mt_delete_aliases_expl() {
-	?>
-	<p>
-	Here you can see, 
-	and are able to delete, 
-	any Site Aliases that have been created in the 
-	Create New Sites Alias Entry section below, 
-	or were created by default by this Plugin
-	for the current Site Address (URL) defined on the 
-	<a href="options-general.php">General Settings</a>
-	Admin panel:
-	<?php
-	echo '<code>' . JR_MT_HOME_URL. '</code></p>';
-}
-
-function jr_mt_echo_delete_alias_entry() {
-	$settings = get_option( 'jr_mt_settings' );
-	echo '<p>In addition to the <a href="options-general.php">Site Address (URL)</a> <code>'
-		. JR_MT_HOME_URL
-		. '</code>, this Plugin will also control Themes for the following Site Aliases:</p><ol>';
-	foreach ( $settings['aliases'] as $array_index => $alias ) {
-		/*	Do not allow the Site URL ("Home") alias to be deleted.
-			In fact, do not even display it.
-		*/
-		if ( !$alias['home'] ) {
-			echo '<li>Delete <input type="checkbox" id="del_alias_entry" name="jr_mt_settings[del_alias_entry][]" value="'
-				. $array_index
-				. '"> <code>'
-				. $alias['url']
-				. '</code></li>';
-		}
-	}
-	echo '</ol>';
-}
-
-function jr_mt_create_alias_expl() {
-	echo '<p>To add another Site Alias, cut and paste its URL below.</p>';
-}
-
-function jr_mt_echo_add_alias() {
-	?>
-	<input id="add_alias" name="jr_mt_settings[add_alias]" type="text" size="75" maxlength="256" value="" />
-	<br />
-	&nbsp;
-	(cut and paste URL of a new Site Alias here)
-	<br />
-	&nbsp;
-	URL must begin with
-	<code>http://</code>
-	or
-	<code>https://</code>
-	<?php
-}
-
-/**
- * Section text for Section6
- * 
- * Display an explanation of this Section
- *
- */
-function jr_mt_sticky_expl() {
-	/* "Membership System V2" is a paid plugin that blocks (our sticky) Cookies
-	*/
-	global $jr_mt_plugins_cache;
-	foreach ( $jr_mt_plugins_cache as $rel_path => $plugin_data ) {
-		if ( 0 === strncasecmp( 'memberium', $rel_path, 9 ) ) {
-			echo '<b><u>IMPORTANT</u></b>: The Sticky feature of this plugin does not work with the <b>Membership System V2</b> plugin, which blocks the required Cookies.  At least one plugin from memberium.com appears to have been installed: '
-				. $plugin_data['Name'];
-			break;
-		}
-	}
-	?>
-	<p>
-	If one of the
-	<b>
-	Keyword=Value Entries
-	</b>
-	shown below
-	(if any)
-	is present in the URL of a WordPress non-Admin webpage on the current WordPress Site
-	and that Entry is:
-	<ol>
-	<li>
-	<b>Sticky</b>,
-	then the specified Theme will continue to be displayed for subsequent
-	WordPress non-Admin webpages
-	viewed by the same Visitor
-	until an Override entry is encountered by the same Visitor.
-	</li>
-	<li>
-	<b>Override</b>,
-	then the specified Theme will be displayed,
-	effectively ending any previous Sticky Theme that was being displayed
-	for the same Visitor.
-	</li>
-	</ol>
-	<b>
-	Note
-	</b>
-	that,
-	as explained in the
-	Query Keyword=Value
-	section on the Settings tab,
-	Query Keyword=Value already takes precedence over all other Theme selection entries,
-	even without the Override checkbox selected.
-	Override is only intended to cancel a Sticky entry
-	and display the specified Theme on the current WordPress non-Admin webpage.
-	</p>
-	<p>
-	Implementation Notes:
-	<ol>
-	<li>
-	The term "Same Visitor",
-	used above,
-	refers to a single combination of
-	computer, browser and possibly computer user name,
-	if the visitor's computer has multiple accounts or user names.
-	A computer could be a smartphone, tablet, laptop, desktop or other Internet access device used by the Visitor.
-	</li>
-	<li>
-	When Sticky is active for a given Visitor,
-	the associated Query Keyword=Value is added to the
-	URL of links displayed on the current WordPress non-Admin webpage.
-	With the following exceptions:
-	<ul>
-	<li>
-	a)
-	Only links pointing to non-Admin webpages of the current WordPress Site are altered.
-	</li>
-	<li>
-	b)
-	The 
-	"When to add Sticky Query to a URL"
-	setting below also controls when a Sticky Keyword=Value is added to a URL.
-	</li>
-	</ul>
-	<li>
-	Cookies are used for Sticky entries. If the visitor's browser refuses Cookies,
-	or another Plugin blocks cookies,
-	this setting will not work and no error messages will be displayed.
-	</li>
-	</ol>
-	</p>
-	<p>
-	<b>
-	Important:
-	</b>
-	the Sticky feature cannot be made to work in all WordPress environments.
-	Timing, Cookie and other issues may be caused by other plugins, themes and visitor browser settings,
-	so please test carefully and realize that the solution to some problems will involve a choice between not using the Sticky feature and not using a particular plugin or theme.
-	</p>
-	<?php
-}
-
-function jr_mt_echo_query_present() {
-	$settings = get_option( 'jr_mt_settings' );
-	/*
-		FALSE if Setting "Append if no question mark ("?") found in URL", or
-		TRUE if Setting "Append if no Override keyword=value found in URL"
-	*/
-	echo '<input type="radio" id="query_present" name="jr_mt_settings[query_present]" value="false" ';
-	checked( $settings['query_present'], FALSE );
-	echo ' /> Append if no question mark ("?") found in URL<br/><input type="radio" id="query_present" name="jr_mt_settings[query_present]" value="true" ';
-	checked( $settings['query_present'] );
-	echo ' /> Append if no Override <code>keyword=value</code> found in URL';
-}
-
-function jr_mt_echo_sticky_query_entry() {
-	global $jr_mt_kwvalsep;
-	$settings = get_option( 'jr_mt_settings' );
-	$three_dots = '&#133;';
-	$first = TRUE;
-	if ( !empty( $settings['query'] ) ) {
-		foreach ( $settings['query'] as $keyword => $value_array ) {
-			foreach ( $value_array as $value => $theme ) {
-				if ( '*' !== $value ) {
-					if ( $first ) {
-						$first = FALSE;
-					} else {
-						echo '<br />';
-					}
-					echo 'Sticky <input type="checkbox" id="sticky_query_entry" name="jr_mt_settings[sticky_query_entry][]" value="'
-						. "$keyword$jr_mt_kwvalsep$value"
-						. '" ';
-					checked( isset( $settings['remember']['query'][$keyword][$value] ) );
-					echo ' /> &nbsp; Override <input type="checkbox" id="override_query_entry" name="jr_mt_settings[override_query_entry][]" value="'
-						. "$keyword$jr_mt_kwvalsep$value"
-						. '" ';
-					checked( isset( $settings['override']['query'][$keyword][$value] ) );
-					echo ' /> &nbsp; Theme='
-						. wp_get_theme( $theme )->Name . '; '
-						. 'Query='
-						. '<code>'
-						. JR_MT_HOME_URL 
-						. "/</code>$three_dots<code>/?"
-						. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_stkw' value='$keyword' size='"
-						. jr_mt_strlen( $keyword )
-						. "' /></b>"
-						. '='
-						. "<b><input type='text' readonly='readonly' disable='disabled' name='jr_mt_stkwval' value='$value' size='"
-						. jr_mt_strlen( $value )
-						. "' /></b></code>";
-				}
-			}
-		}
-	}
-	if ( $first ) {
-		echo 'None';
-	}
-}
-
-function jr_mt_everything_expl() {
-	?>
-	<p>
-	<b>Theme for Everything</b>
-	simplifies the use of a Theme with Theme Settings that you need to change frequently,
-	when the Theme is only going to be used on one or more Pages or Posts.
-	The Theme can be set as the WordPress Active Theme through the Appearance-Themes admin panel,
-	and set for specific Pages or Posts using this plugin's settings (on Settings tab),
-	with another Theme specified below as the plugin's default theme ("Theme for Everything").
-	</p>
-	<?php
-}
-
-function jr_mt_echo_current() {
-	$settings = get_option( 'jr_mt_settings' );
-	jr_mt_themes_field( 'current', $settings['current'], 'jr_mt_settings', TRUE );
-	echo '<br /> &nbsp; (select blank entry for default: WordPress Active Theme defined in Appearance-Themes, currently <b>' . wp_get_theme()->Name . '</b>)';
-}
-
-function jr_mt_all_settings_expl() {
-	?>
-	<p>
-	These are
-	<b>
-	Advanced Setting
-	</b>
-	because they may not work with every other plugin, theme or permalinks setting.
-	This plugin is only able to determine whether what is about to be displayed at the current URL
-	is a Page or Post
-	after all other Plugins have been loaded;
-	the one exception to this is the Default setting for Permalinks,
-	when <code>?p=</code> and <code>?page_id=</code> are used.
-	</p>
-	<p>
-	Some other plugins and themes request the name of the current Theme
-	<i>
-	too early,
-	</i>
-	while they are being loaded,
-	which is before this plugin is able to determine if it is on a Page or Post.
-	For this reason,
-	using either of these settings may not work properly for all other plugins and themes.
-	As a result,
-	if you choose to use either or both of these two settings,
-	careful testing is advised immediately
-	<u>and</u>
-	whenever you change the Permalink setting, activate a plugin or start using a different theme.
-	</p>
-	<p>
-	In this section, you can select a different Theme for All Pages and/or All Posts.
-	To remove a previously selected Theme, select the blank entry from the drop-down list.
-	</p>
-	<p>
-	On the Settings tab, you were able to select a Theme, including WordPress' Active Theme, to override any choice you make here, for individual Pages, Posts or
-	any other non-Admin pages that have their own Permalink; for example, specific Archive or Category pages.
-	Or groups of Pages, Posts or any other non-Admin pages that share the same URL Prefix.
-	</p>
-	<p>	
-	The Settings tab also has a Query Keyword section 
-	that allows
-	you to select a Theme to use whenever a specified 
-	Query Keyword (<code>?keyword=value</code> or <code>&keyword=value</code>)
-	appears in the URL of any Page, Post or other non-Admin page.
-	</p>
-	<?php
-}
-
-function jr_mt_echo_all_things( $thing ) {
-	$settings = get_option( 'jr_mt_settings' );
-	$field = 'all_' . jr_mt_strtolower( $thing['thing'] );
-	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings', TRUE );
-}
-
-function jr_mt_validate_settings( $input ) {
-	global $jr_mt_kwvalsep;
-	$valid = array();
-	
-	$prefix_types = array(
-		'false'  => 'url',
-		'prefix' => 'url_prefix',
-		'*'      => 'url_asterisk'
-	);
-	
-	$settings = get_option( 'jr_mt_settings' );
-	$query = $settings['query'];
-	$aliases = $settings['aliases'];
-	
-	/*	Begin by deciding which Tab to display on the plugin's Settings page
-	
-		Default value should never be used if plugin is written correctly.
-	*/
-	$tab = 1;
-	for ( $i = 1; $i <= 6; $i++ ) {
-		if ( isset( $input[ "tab$i" ] ) ) {
-			$tab = $i;
-			break;
-		}
-	}
-	set_transient( 'jr_mt_' . get_current_user_id() . '_tab', $tab, 5 );
-	
-	if ( isset( $input['permalink'] ) ) {
-		$internal_settings = get_option( 'jr_mt_internal_settings' );
-		$internal_settings['permalink'] = get_option( 'permalink_structure' );
-		update_option( 'jr_mt_internal_settings', $internal_setting );
-	}
-	
-	foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $thing ) {
-		$valid[$thing] = $input[$thing];
-	}
-	
-	foreach ( $prefix_types as $key => $thing ) {
-		$valid[$thing] = $settings[$thing];
-	}
-	$remember = array( 'query' => array() );
-	if ( isset( $input['sticky_query_entry'] ) ) {
-		foreach	( $input['sticky_query_entry'] as $query_entry ) {
-			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
-			/*	Data Sanitization not required as
-				Keyword and Value are not entered by a human,
-				but extracted from previously-generated HTML.
-			*/
-			$remember['query'][$keyword][$value] = TRUE;
-		}
-	}
-
-	$override = array( 'query' => array() );
-	if ( isset( $input['override_query_entry'] ) ) {
-		foreach	( $input['override_query_entry'] as $query_entry ) {
-			list( $keyword, $value ) = explode( $jr_mt_kwvalsep, $query_entry );
-			/*	Data Sanitization not required as
-				Keyword and Value are not entered by a human,
-				but extracted from previously-generated HTML.
-			*/
-			$override['query'][$keyword][$value] = TRUE;
-		}
-	}
-	
-	if ( isset ( $input['del_entry'] ) ) {
-		foreach ( $input['del_entry'] as $del_entry ) {
-			$del_array = explode( '=', $del_entry, 3 );
-			if ( 'query' === $del_array[0] ) {
-				unset( $query[ $del_array[1] ][ $del_array[2] ] );
-				if ( empty( $query[ $del_array[1] ] ) ) {
-					unset( $query[ $del_array[1] ] );
-				}
-				/*	unset() does nothing if a variable or array element does not exist.
-				*/
-				unset( $remember['query'][ $del_array[1] ][ $del_array[2] ] );
-				if ( empty( $remember['query'][ $del_array[1] ] ) ) {
-					unset( $remember['query'][ $del_array[1] ] );
-				}
-				unset( $override['query'][ $del_array[1] ][ $del_array[2] ] );
-				if ( empty( $override['query'][ $del_array[1] ] ) ) {
-					unset( $override['query'][ $del_array[1] ] );
-				}
-			} else {
-				/*	Check for a URL entry
-				*/
-				if ( 'url' === jr_mt_substr( $del_array[0], 0, 3 ) ) {
-					foreach ( $valid[ $del_array[0] ] as $i => $entry_array ) {
-						if ( $entry_array['url'] === $del_array[2] ) {
-							/*	Cannot unset $entry_array, even if prefixed by & in foreach
-							*/
-							unset( $valid[ $del_array[0] ][ $i ] );
-							break;
-						}
-					}
-				} else {
-					/*	Must be Home, All Pages or Posts, or Everything
-					*/
-					$valid[ $del_array[0] ] = '';
-				}
-			}
-		}
-	}
-	
-	/*	Handle troublesome %E2%80%8E UTF Left-to-right Mark (LRM) suffix first.
-	*/
-	$url = jr_mt_sanitize_url( $input['add_path_id'] );
-	
-	if ( ( empty( $input['add_theme'] ) && !empty( $url ) ) || ( !empty( $input['add_theme'] ) && empty( $url ) ) ) {
-		add_settings_error(
-			'jr_mt_settings',
-			'jr_mt_emptyerror',
-			'Both URL and Theme must be specified to add an Individual entry',
-			'error'
-		);		
-	} else {
-		if ( !empty( $url ) ) {
-			if ( jr_mt_same_prefix_url( JR_MT_HOME_URL, $url ) ) {
-				if ( ( '*' !== $input['add_is_prefix'] ) && ( FALSE !== strpos( $url, '*' ) ) ) {
-					add_settings_error(
-						'jr_mt_settings',
-						'jr_mt_queryerror',
-						'Asterisk ("*") only allowed when "URL Prefix with Asterisk" selected: <code>' . $url . '</code>',
-						'error'
-					);
-				} else {									
-					$prep_url = jr_mt_prep_url( $url );
-					if ( 'false' === $input['add_is_prefix'] ) {
-						if ( jr_mt_same_url( $prep_url, JR_MT_HOME_URL ) ) {
-							add_settings_error(
-								'jr_mt_settings',
-								'jr_mt_homeerror',
-								'Please use "Select Theme for Site Home" field instead of specifying Site Home URL as an individual entry.',
-								'error'
-							);
-						} else {
-							if ( jr_mt_same_prefix_url( $prep_url, admin_url() ) ) {
-								add_settings_error(
-									'jr_mt_settings',
-									'jr_mt_adminerror',
-									'Admin Page URLs are not allowed because no known Themes alter the appearance of Admin pages: <code>' . $url . '</code>',
-									'error'
-								);
-							}
-						}
-					} else {
-						if ( '*' === $input['add_is_prefix'] ) {
-							$url_dirs = explode( '/', str_replace( '\\', '/', $url ) );
-							foreach ( $url_dirs as $dir ) {
-								if ( FALSE !== strpos( $dir, '*' ) ) {
-									$asterisk_found = TRUE;
-									if ( '*' !== $dir ) {
-										$asterisk_not_alone = TRUE;
-									}
-									break;
-								}
-							}
-							if ( isset( $asterisk_found ) ) {
-								if ( isset( $asterisk_not_alone ) ) {
-									add_settings_error(
-										'jr_mt_settings',
-										'jr_mt_queryerror',
-										'An Asterisk ("*") may only replace a full subdirectory name, not just a portion of it: <code>' . $url . '</code>',
-										'error'
-									);	
-								}
-							} else {
-								add_settings_error(
-									'jr_mt_settings',
-									'jr_mt_queryerror',
-									'No Asterisk ("*") specified but "URL Prefix with Asterisk" selected: <code>' . $url . '</code>',
-									'error'
-								);	
-							}
-						}
-					}
-
-					function jr_mt_settings_errors() {
-						$errors = get_settings_errors();
-						if ( !empty( $errors ) ) {
-							foreach ( $errors as $error_array ) {
-								if ( 'error' === $error_array['type'] ) {
-									return TRUE;
-								}
-							}
-						}
-						return FALSE;
-					}
-
-					/*	If there have been no errors detected,
-						create the new URL setting entry.
-					*/
-					if ( !jr_mt_settings_errors() ) {
-						/*	['url'], ['url_prefix'] or ['url_asterisk']
-						*/
-						$key = $prefix_types[ $input['add_is_prefix'] ];
-						$rel_url = jr_mt_relative_url( $url, JR_MT_HOME_URL );
-						$valid[ $key ][] = array(
-							'url'   => $url,
-							'rel_url' => $rel_url,
-							'theme' => $input['add_theme']
-						);
-						/*	Get index of element just added to array $valid[ $key ]
-						*/
-						end( $valid[ $key ] );
-						$valid_key = key( $valid[ $key ] );
-						/*	Create the URL Prep array for each of the current Site Aliases,
-							including the Current Site URL
-						*/
-						foreach ( $aliases as $index => $alias ) {
-							$valid[ $key ][ $valid_key ]['prep'][] = jr_mt_prep_url( $alias['url'] . '/' . $rel_url );
-						}
-						/*	Only for URL type Setting, not Prefix types.
-						*/
-						if ( 'url' === $key ) {
-							/*	Try and figure out ID and WordPress Query Keyword for Type, if possible and relevant
-							*/
-							if ( ( 0 === ( $id = url_to_postid( $url ) ) ) &&
-								( version_compare( get_bloginfo( 'version' ), '4', '>=' ) ) ) {
-								$id = attachment_url_to_postid( $url );
-							}
-							if ( !empty( $id ) ) {
-								$valid[ $key ][ $valid_key ]['id'] = $id;
-								if ( NULL !== ( $post = get_post( $id ) ) ) {
-									switch ( $post->post_type ) {
-										case 'post':
-											$valid[ $key ][ $valid_key ]['id_kw'] = 'p';
-											break;
-										case 'page':
-											$valid[ $key ][ $valid_key ]['id_kw'] = 'page_id';
-											break;
-										case 'attachment':
-											$valid[ $key ][ $valid_key ]['id_kw'] = 'attachment_id';
-											break;
-									}
-								}
-							}
-						}
-					}
-				}
-			} else {
-				add_settings_error(
-					'jr_mt_settings',
-					'jr_mt_urlerror',
-					' URL specified is not part of current WordPress web site: <code>'
-						. $url
-						. '</code>.  URL must begin with <code>'
-						. JR_MT_HOME_URL
-						. '</code>.',
-					'updated'
-				);			
-			}
-		}
-	}
-	
-	/*	Make sure reserved characters are not used
-		in URL Query keyword or value fields on Settings page.
-	*/
-	function jr_mt_query_chars( $element, $where ) {
-		foreach (
-			array(
-				'='	 => 'Equals Sign'   ,
-				'?'	 => 'Question Mark' ,
-				'&'	 => 'Ampersand'     ,
-				' '	 => 'Blank'         ,
-				'#'	 => 'Number Sign'   ,
-				'/'	 => 'Slash'         ,
-				'\\' => 'Backslash'     ,
-				'['	 => 'Square Bracket',
-				']'	 => 'Square Bracket',
-			) as $char => $name ) {
-			if ( FALSE !== strpos( $element, $char ) ) {
-				add_settings_error(
-					'jr_mt_settings',
-					'jr_mt_queryerror',
-					'Illegal character used in '
-					. $where
-					. ': '
-					. $name
-					. ' ("' . $char . '") in "'
-					. $element
-					. '"',
-					'error'
-				);
-				return FALSE;
-			}
-		}
-		return TRUE;
-	}
-	/*	Data Sanitization needed here
-	*/
-	$keyword = jr_mt_prep_query_keyword( $input['add_querykw_keyword'] );
-	if ( !empty( $input['add_querykw_theme'] ) && !empty( $keyword ) ) {
-		if ( jr_mt_query_chars( $keyword, 'Query Keyword' ) ) {
-			/*	If there is an existing entry for the Keyword,
-				then replace it.
-				Otherwise, create a new entry.
-			*/
-			$query[$keyword]['*'] = $input['add_querykw_theme'];
-		}
-	} else {
-		if ( !( empty( $input['add_querykw_theme'] ) && empty( $keyword ) ) ) {
-			add_settings_error(
-				'jr_mt_settings',
-				'jr_mt_emptyerror',
-				'Both Query Keyword and Theme must be specified to add an Individual Query Keyword entry',
-				'error'
-			);
-		}
-	}
-	
-	/*	Data Sanitization needed here
-	*/
-	$keyword = jr_mt_prep_query_keyword( $input['add_query_keyword'] );
-	$value = jr_mt_prep_query_value( $input['add_query_value'] );
-	if ( !empty( $input['add_query_theme'] ) && !empty( $keyword ) && !empty( $value ) ) {
-		if ( jr_mt_query_chars( $keyword, 'Query Keyword' ) && jr_mt_query_chars( $value, 'Query Value' ) ) {
-			/*	If there is an existing entry for the Keyword and Value pair,
-				then replace it.
-				Otherwise, create a new entry.
-			*/
-			$query[$keyword][$value] = $input['add_query_theme'];
-		}
-	} else {
-		if ( !( empty( $input['add_query_theme'] ) && empty( $keyword ) && empty( $value ) ) ) {
-			add_settings_error(
-				'jr_mt_settings',
-				'jr_mt_emptyerror',
-				'Query Keyword, Value and Theme must all be specified to add an Individual Query entry',
-				'error'
-			);
-		}
-	}
-	
-	if ( 'true' === $input['query_present'] ) {
-		$valid['query_present'] = TRUE;
-	} else {
-		if ( 'false' === $input['query_present'] ) {
-			$valid['query_present'] = FALSE;
-		}
-	}
-	
-	/*	Handle Alias tab
-	
-		Always handle Delete first, to allow Replacement (Delete then Add)
-	*/
-	if ( isset ( $input['del_alias_entry'] ) ) {
-		foreach ( $input['del_alias_entry'] as $del_alias_entry ) {
-			$int_key = (int) $del_alias_entry;
-			unset( $aliases[ $int_key ] );
-			/*	Now go through all the URL-based Settings,
-				and delete the Prep for the deleted Alias.
-					
-				$int_key is the array integer key of the just-deleted
-				Alias, as that will also be the array key for each of the
-				Settings ['prep'] arrays.
-			*/
-			foreach ( $prefix_types as $form_prefix => $settings_prefix ) {
-				foreach ( $valid[ $settings_prefix ] as $key => $url_entry ) {
-					unset( $valid[ $settings_prefix ][ $key ]['prep'][ $int_key ] );
-				}
-			}
-		}
-	}
-	$alias_url = jr_mt_sanitize_url( $input['add_alias'] );
-	if ( !empty( $alias_url ) ) {
-		/*	URL has been trimmed but Case has not been altered
-		*/
-		if ( ( ( 0 !== substr_compare( $alias_url, 'http://', 0, 7, TRUE ) )
-				&& ( 0 !== substr_compare( $alias_url, 'https://', 0, 8, TRUE ) )
-				)
-			|| ( FALSE === ( $parse_url = parse_url( $alias_url ) ) ) ) {
-			add_settings_error(
-				'jr_mt_settings',
-				'jr_mt_badurlerror',
-				"Alias URL specified is invalid: <code>$url</code>",
-				'error'
-			);			
-		} else {
-			$url_ok = TRUE;
-			foreach ( array( 'user', 'pass', 'query', 'fragment' ) as $component ) {
-				if ( isset( $parse_url[ $component ] ) ) {
-					$url_ok = FALSE;
-					break;
-				}
-			}
-			if ( $url_ok ) {
-				/*	Be sure there is NOT a trailing slash
-				*/
-				$alias_url = rtrim( $alias_url, '/\\' );
-				$aliases[] = array(
-					'url'  => $alias_url,
-					'prep' => jr_mt_prep_url( $alias_url ),
-					'home' => FALSE
-					);
-				/*	Now go through all the URL-based Settings,
-					and add a Prep for the new Alias.
-					
-					First, determine the array integer key of the newly-added
-					Alias, as that will also be the array key for each of the
-					Settings ['prep'] arrays.
-				*/
-				end( $aliases );
-				$prep_key = key( $aliases );
-				
-				foreach ( $prefix_types as $form_prefix => $settings_prefix ) {
-					foreach ( $valid[ $settings_prefix ] as $key => $url_entry ) {
-						$valid[ $settings_prefix ][ $key ]['prep'][ $prep_key ] = jr_mt_prep_url( 
-							$alias_url . '/' . $valid[ $settings_prefix ][ $key ]['rel_url']
-						);
-					}
-				}
-			} else {
-				add_settings_error(
-					'jr_mt_settings',
-					'jr_mt_badurlerror',
-					'Alias URL cannot contain user, password, query ("?") or fragment ("#"): <code>'
-						. "$url</code>",
-					'error'
-				);		
-			}
-		}
-	}
-	
-	$errors = get_settings_errors();
-	if ( empty( $errors ) ) {
-		add_settings_error(
-			'jr_mt_settings',
-			'jr_mt_saved',
-			'Settings Saved',
-			'updated'
-		);	
-	}
-	$valid['query'] = $query;
-	$valid['remember'] = $remember;
-	$valid['override'] = $override;
-	$valid['aliases'] = $aliases;
-	return $valid;
-}
+require_once( jr_mt_path() . 'includes/admin-sections.php' );
+require_once( jr_mt_path() . 'includes/admin-validate.php' );
 
 ?>

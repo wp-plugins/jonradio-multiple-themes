@@ -262,12 +262,22 @@ function jr_mt_same_prefix_url( $prefix, $url ) {
 				} else {
 					/*	Now the hard part:  determining a legitimate prefix match for Query
 					*/
-					foreach ( $prefix['query'] as $prefix_keyword => $prefix_value ) {
-						$one_match = FALSE;
-						foreach ( $url['query'] as $url_keyword => $url_value ) {
-							if ( $prefix_keyword === jr_mt_substr( $url_keyword, 0, jr_mt_strlen( $prefix_keyword ) ) ) {
-								if ( $prefix_value === jr_mt_substr( $url_value, 0, jr_mt_strlen( $prefix_value ) ) ) {
-									$one_match = TRUE;
+					foreach ( $prefix['query'] as $prefix_keyword => $prefix_value_array ) {
+						foreach ( $prefix_value_array as $prefix_value => $prefix_equalsign ) {
+							$one_match = FALSE;
+							foreach ( $url['query'] as $url_keyword => $url_value_array ) {
+								foreach( $url_value_array as $url_value => $url_equalsign ) {
+									if ( jr_mt_substr( $url_keyword, 0, jr_mt_strlen( $prefix_keyword ) ) === ( string ) $prefix_keyword ) {
+										if ( $prefix_equalsign ) {
+											if ( $url_equalsign ) {
+												if ( jr_mt_substr( $url_value, 0, jr_mt_strlen( $prefix_value ) ) === ( string ) $prefix_value ) {
+													$one_match = TRUE;
+												}
+											}
+										} else {
+											$one_match = TRUE;
+										}
+									}
 								}
 							}
 						}
@@ -340,7 +350,11 @@ function jr_mt_same_prefix_url_asterisk( $prefix, $url ) {
  *	[host] - domain.com - all subdomains, including www., are included
  *	[path] - dir/file.ext
  *	[query] - any Queries (e.g. - "?kw=val&kw2=val2") broken up as follows:
- *		[$keyword] => $value with preceding equals sign, only if equals sign was present
+ *		[$keyword] => [$value] => $equalsign
+ *			$value - blank if not present
+ *			$equalsign - bool indicating if = was present in URL
+ *		Format prior to Version 7.0:
+ *			[$keyword] => $value with preceding equals sign, only if equals sign was present
  * To simplify processing of this Array, zero length strings and empty arrays are used,
  * rather than NULL entries or missing array elements.
  *
@@ -395,22 +409,23 @@ function jr_mt_prep_url( $url ) {
 		$parse_array['path'] = '';
 	}
 	/*	Take /?keyword=value&keyword=value URL query parameters
-		and break them up into array( keyword => value, keyword => value )
+		and break them up into array( keyword => value => equals?, keyword => value => equals? )
 	*/
 	if ( isset( $parse_array['query'] ) ) {
 		$parms = explode( '&', $parse_array['query'] );
 		$parse_array['query'] = array();
 		foreach( $parms as $parm ) {
-			if ( FALSE === ( $cursor = strpos( $parm, '=' ) ) ) {
-				$parse_array['query'][$parm] = '';
+			if ( FALSE === strpos( $parm, '=' ) ) {
+				$parse_array['query'][ $parm ][''] = FALSE;
 			} else {
-				/*	Include the Equals Sign ("=") as the first character of the Query Value
-					to differentiate between a URL Prefix with a Query Keyword followed by 
-					an Equals Sign, and one without.  For example, "address" would match
-					address2=abc, while "address=" would not.
-				*/
-				$parse_array['query'][jr_mt_substr( $parm, 0, $cursor + 1 )] = jr_mt_substr( $parm, $cursor + 1 );
+				$kwv = explode( '=', $parm );
+				$parse_array['query'][ $kwv[0] ][ $kwv[1] ] = TRUE;
 			}
+			/*	Remember the presence of the Equals Sign ("=") in each Query
+				to differentiate between a URL Prefix with a Query Keyword followed by 
+				an Equals Sign, and one without.  For example, "address" would match
+				address2=abc, while "address=" would not.
+			*/
 		}
 	} else {
 		$parse_array['query'] = array();

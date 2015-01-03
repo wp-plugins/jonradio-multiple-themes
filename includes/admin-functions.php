@@ -6,6 +6,39 @@ if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+function jr_mt_messages( $message, $action = 'count' ) {
+	global $jr_mt_messages;
+	switch ( $action ) {
+		case 'display':
+			if ( isset( $jr_mt_messages ) ) {
+				foreach ( $jr_mt_messages as $echo => $count ) {
+					echo '<li>' . $echo;
+					if ( $count > 1 ) {
+						echo ' ('. $count . ' times)';
+					}
+					echo '</li>';
+				}
+				unset( $jr_mt_messages );
+			}
+			if ( empty( $message ) ) {
+				break;
+			}
+			/*	Purposely let it fall through to output message,
+				after stored messages are output.
+			*/
+		case 'immediate':
+			echo '<li>' . $message . '</li>';
+			break;
+		case 'count':
+			if ( isset( $jr_mt_messages[ $message ] ) ) {
+				++$jr_mt_messages[ $message ];
+			} else {
+				$jr_mt_messages[ $message ] = 1;
+			}
+			break;
+	}
+}
+
 function jr_mt_theme_entry( $type, $theme = '', $display1 = NULL, $display2 = NULL ) {
 	$three_dots = '&#133;';
 	$before = '<li>Delete <input type="checkbox" id="del_entry" name="jr_mt_settings[del_entry][]" value="';
@@ -199,6 +232,72 @@ function jr_mt_relative_url( $url, $site_url ) {
 	}
 	$site_url_path = parse_url( $site_url, PHP_URL_PATH );
 	return trim( jr_mt_substr( $url_path, jr_mt_strlen( $site_url_path ) ), '/\\' );
+}
+
+function jr_mt_missing_rel_url( $settings, $relative_to_url ) {
+	global $jr_mt_url_types;
+	foreach ( $jr_mt_url_types as $url_type ) {
+		if ( isset( $settings[ $url_type ] ) && is_array( $settings[ $url_type ] ) ) {
+			foreach ( $settings[ $url_type ] as $index => $url_array ) {
+				if ( !isset( $url_array['rel_url'] ) ) {
+					$settings[ $url_type ][ $index ]['rel_url'] = jr_mt_relative_url( $url_array['url'], $relative_to_url );
+					jr_mt_messages( 'Missing Relative URL added to URL setting' );
+				}
+			}
+		}
+	}
+	return $settings;
+}
+
+function jr_mt_rebuild_display_url( $settings, $old_site_url ) {
+	global $jr_mt_url_types;
+	foreach ( $jr_mt_url_types as $url_type ) {
+		if ( isset( $settings[ $url_type ] ) && is_array( $settings[ $url_type ] ) ) {
+			foreach ( $settings[ $url_type ] as $index => $url_array ) {
+				if ( !isset( $url_array['rel_url'] ) ) {
+					$settings[ $url_type ][ $index ]['rel_url'] = jr_mt_relative_url( $url_array['url'], $old_site_url );
+				}
+				$settings[ $url_type ][ $index ]['url'] = JR_MT_HOME_URL . '/' . $settings[ $url_type ][ $index ]['rel_url'];
+			}	
+		} else {
+			$settings[ $url_type ] = array();
+		}
+	}
+	return $settings;
+}
+
+function jr_mt_rebuild_alias_home( $settings ) {
+	/*	See if there is an Alias entry for the new Site URL.
+		If not, add one, and perhaps another with/without www.
+	*/
+	$no_home = TRUE;
+	foreach ( $settings['aliases'] as $index => $alias ) {
+		if ( $settings['aliases'][ $index ]['home'] = jr_mt_same_url( $alias['prep'], JR_MT_HOME_URL ) ) {
+			$no_home = FALSE;
+		}
+	}
+	if ( $no_home ) {
+		$settings['aliases'] = array_merge( $settings['aliases'], jr_mt_init_aliases() );
+	}
+	return $settings;
+}
+
+function jr_mt_rebuild_prep( $settings ) {
+	/*	Assumes that ['url'*] and ['aliases'] Settings have been checked,
+		so doesn't check if they exist and are array.
+		Be sure to do that if wrappering this function with get_ and update_option().
+	*/
+	global $jr_mt_url_types;
+	foreach ( $jr_mt_url_types as $url_type ) {
+		foreach ( $settings[ $url_type ] as $url_key => $url_array ) {
+			$settings[ $url_type ][ $url_key ]['prep'] = array();
+			$rel_url = $url_array['rel_url'];
+			foreach ( $settings['aliases'] as $index => $alias ) {
+				$settings[ $url_type ][ $url_key ]['prep'][ $index ] = jr_mt_prep_url( $alias['url'] . '/' . $rel_url );
+			}
+		}
+	}
+	return $settings;
 }
 
 ?>

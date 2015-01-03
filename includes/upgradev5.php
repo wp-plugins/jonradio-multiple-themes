@@ -6,21 +6,16 @@ if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/*	setup_theme is the earliest Action where
-	all functions in jr_mt_convert_ids() work properly.
-*/
-add_action( 'setup_theme', 'jr_mt_convert_ids', JR_MT_RUN_FIRST );
-
 /**
  * Convert pre-Version 5 ['ids'] Settings to new Version 5 format.
  * 
  * Mainly, it involves converting Post ID to URL.
+ * 'setup_theme' is the earliest Action where
+ * all functions in jr_mt_convert_ids() work properly.
  *
  */
-function jr_mt_convert_ids() {
-	$internal_settings = get_option( 'jr_mt_internal_settings' );
-	if ( isset( $internal_settings['ids'] ) ) {
-		$settings = get_option( 'jr_mt_settings' );
+function jr_mt_convert_ids( $settings ) {
+	if ( is_array( $settings['ids'] ) ) {
 		foreach ( $settings['ids'] as $key => $ids_array ) {
 			/*	Be sure that Theme has not been deleted.
 			*/
@@ -61,7 +56,12 @@ function jr_mt_convert_ids() {
 								);
 								break;
 							case 'cat':
-								if ( !is_wp_error( get_the_category_by_ID( $key ) ) ) {
+								if ( is_wp_error( get_the_category_by_ID( $key ) ) ) {
+									/*	Ignore non-existent Categories.
+										They were likely deleted.
+									*/
+									jr_mt_messages( 'Setting deleted for non-existent Category with ID=' . $key );
+								} else {
 									$url = get_category_link( $key );
 									$settings['url'][] = array(
 										'url'   => $url,
@@ -69,9 +69,6 @@ function jr_mt_convert_ids() {
 										'theme' => $ids_array['theme']
 									);
 								}
-								/*	Ignore non-existent Categories.
-									They were likely deleted.
-								*/
 								break;
 							case 'archive':
 								/*	From ?m=yyyymm query originally
@@ -102,26 +99,28 @@ function jr_mt_convert_ids() {
 										get_permalink() can be used as early as Action Hook 'setup_theme',
 										but not in 'plugins_loaded' (Fatal Error).
 									*/
-									if ( FALSE !== ( $url = get_permalink( $key ) ) ) {
+									if ( FALSE === ( $url = get_permalink( $key ) ) ) {
+										/*	Ignore any non-existent IDs, typically deleted.
+										*/
+										jr_mt_messages( 'Setting deleted for non-existent Post/Page/Attachment with ID=' . $key );
+									} else {
 										$settings['url'][] = array(
 											'url'   => $url,
 											'prep'  => jr_mt_prep_url( $url ),
 											'theme' => $ids_array['theme']
 										);
 									}
-									/*	Ignore any non-existent IDs, typically deleted.
-									*/
 								}
 						}
 					}
 				}
 			}
 		}
-		update_option( 'jr_mt_settings', $settings );
-		
-		unset( $internal_settings['ids'] );
-		update_option( 'jr_mt_internal_settings', $internal_settings );
 	}
+	/*	Maybe later:
+		unset( $settings['ids'] );
+	*/
+	return $settings;
 }
 
 ?>

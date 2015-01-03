@@ -1,6 +1,10 @@
 <?php
-//	Exit if .php file accessed directly
-if ( !defined( 'ABSPATH' ) ) exit;
+
+/*	Exit if .php file accessed directly
+*/
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /*	A Version of WordPress older than the first one supported by the Plugin
 	is being run.

@@ -5,6 +5,36 @@ if ( !defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/*	Disable until old Version Settings conversion done properly,
+	typically by displaying the plugin's Settings page in Admin panels.
+*/
+if ( ( FALSE === ( $settings = get_option( 'jr_mt_settings' ) ) ) || ( !is_array( $settings ) ) ) {
+	return;
+}
+foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current',
+		'url', 'url_prefix', 'url_asterisk', 
+		'query', 'remember', 'override', 
+		'query_present', 'aliases' ) as $key ) {
+	if ( !isset( $settings[ $key ] ) ) {
+		return;
+	}
+}
+foreach ( array( 'url', 'url_prefix', 'url_asterisk', 'query', 'remember', 'override', 'aliases' ) as $key ) {
+	if ( !is_array( $settings[ $key ] ) ) {
+		return;
+	}
+}
+foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $key ) {
+	if ( !is_string( $settings[ $key ] ) ) {
+		return;
+	}
+}
+if ( ( FALSE === ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) ) 
+	|| ( !is_array( $internal_settings ) ) ) {
+	return;
+}
+	
+
 /*	Select the relevant Theme
 	These hooks must be available immediately
 	as some Themes check them very early.
@@ -14,6 +44,14 @@ add_filter( 'pre_option_stylesheet', 'jr_mt_stylesheet' );
 add_filter( 'pre_option_template', 'jr_mt_template' );
 
 if ( !is_admin() ) {	
+	/*	Be sure Plugins (non-internal) Settings are present in some shape or form
+		for public web site.
+		Admin is handled on plugin's Settings page.
+	*/
+	if ( !is_array( get_option( 'jr_mt_settings' ) ) ) {
+		update_option( 'jr_mt_settings', jr_mt_default_settings() );
+	}
+	
 	/*	Hooks below shown in order of execution */
 	
 	/*	Only do this if All Posts or All Pages setting is present.
@@ -145,7 +183,7 @@ function jr_mt_chosen() {
 		if s= is present, and 'knowhow' is either the active WordPress Theme
 		or is specified in any Settings, then automatically select the KnowHow theme.
 	*/
-	if ( isset( $queries['s'] ) && in_array( 'knowhow', jr_mt_themes_defined() ) ) {
+	if ( isset( $queries['s'] ) && in_array( 'knowhow', jr_mt_themes_defined(), TRUE ) ) {
 		return 'knowhow';
 	}
 
@@ -161,7 +199,7 @@ function jr_mt_chosen() {
 			foreach ( $settings['override']['query'] as $override_keyword => $override_value_array ) {
 				if ( isset( $queries[ $override_keyword ] ) ) {
 					foreach ( $override_value_array as $override_value => $bool ) {
-						if ( in_array( $override_value, $queries[ $override_keyword ] ) ) {
+						if ( in_array( $override_value, $queries[ $override_keyword ], TRUE ) ) {
 							$override_found[] = array( $override_keyword, $override_value );
 						}
 					}
@@ -174,7 +212,7 @@ function jr_mt_chosen() {
 				foreach ( $settings['query'] as $query_settings_keyword => $value_array ) {
 					if ( isset( $queries[ $query_settings_keyword ] ) ) {
 						foreach ( $value_array as $query_settings_value => $theme ) {
-							if ( in_array( $query_settings_value, $queries[ $query_settings_keyword ] ) ) {
+							if ( in_array( $query_settings_value, $queries[ $query_settings_keyword ], TRUE ) ) {
 								$query_found[] = array( $query_settings_keyword, $query_settings_value );
 							}
 						}
@@ -315,13 +353,13 @@ function jr_mt_chosen() {
 		$prep_url_no_query['query'] = array();
 		if ( jr_mt_same_url( JR_MT_HOME_URL, $prep_url_no_query ) ) {
 			$home = TRUE;
-			if ( ( FALSE !== ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) )
-				&& ( isset( $internal_settings['query_vars'] ) )
+			$internal_settings = get_option( 'jr_mt_internal_settings' );
+			if ( ( isset( $internal_settings['query_vars'] ) )
 				&& ( is_array( $internal_settings['query_vars'] ) ) ) {
 				foreach ( $prep_url['query'] as $keyword => $value ) {
 					/*	Check for any non-Permalink Query Keyword
 					*/
-					if ( in_array( $keyword, $internal_settings['query_vars'] ) ) {
+					if ( in_array( $keyword, $internal_settings['query_vars'], TRUE ) ) {
 						$home = FALSE;
 						break;
 					}

@@ -3,13 +3,13 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 6.0.2
+Version: 7.0
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
 */
 
-/*  Copyright 2014  jonradio  (email : info@jonradio.com)
+/*  Copyright 2015  jonradio  (email : info@jonradio.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,72 @@ DEFINE( 'JR_MT_RUN_SECOND', JR_MT_RUN_FIRST + 1 );
 DEFINE( 'JR_MT_RUN_LAST', 999 );
 
 DEFINE( 'JR_MT_WP_GET_THEMES_ACTION', 'plugins_loaded' );
+
+global $jr_mt_url_types;
+$jr_mt_url_types = array( 'url', 'url_prefix', 'url_asterisk' );
+
+function jr_mt_default_settings() {
+	return array(
+		/*	Settings structure:
+			code - get_option( 'jr_mt_settings' )
+			['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
+			['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
+			['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
+			['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
+			['query']
+				[keyword]
+					[value] or ['*'] => folder in Themes directory containing theme to use
+			['remember']
+				['query']
+					[keyword]
+						[value] => TRUE
+			['override']
+				['query']
+					[keyword]
+						[value] => TRUE
+			['query_present'] => TRUE or FALSE
+			
+			Added in Version 5.0:
+			['url'], ['url_prefix'] and ['url_asterisk'] - array with each entry:
+				['url'] => URL
+				['prep'][] => array of URL arrays created by jr_mt_prep_url(), with array index matching the array index of ['aliases']
+				['rel_url'] => Relative URL based on Site Address (URL) that admin entered the URL
+				['id'] => Post ID (Page, Post or Attachment), if known and if relevant
+				['id_kw'] => 'page_id', 'p' or 'attachment_id'
+				['theme'] => folder in Themes directory containing theme to use
+			
+			Added in Version 6.0:
+			['aliases'][] - array of Alias URLs that could replace 'home' in URL of this site,
+					with each entry:
+				['url'] => URL
+				['prep'] => URL array created by jr_mt_prep_url()
+				['home'] => TRUE if this is Site Address (URL) field value from WordPress General Settings,
+					which is stored here to determine when the WordPress General Setting is changed				
+			
+			Prior to Version 5.0:
+			['ids']
+				[id] - zero length string or WordPress ID of Page, Post, etc.
+					['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
+					['theme'] => folder in Themes directory containing theme to use
+					['id'] => FALSE or WordPress ID of Page, Post, etc.
+					['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
+					['rel_url'] => URL relative to WordPress home
+					['url'] => original full URL, from Settings page entry by user	
+		*/
+		'aliases'       => jr_mt_init_aliases(),
+		'all_pages'     => '',
+		'all_posts'     => '',
+		'site_home'     => '',
+		'current'       => '',
+		'query'         => array(),
+		'remember'      => array( 'query' => array() ),
+		'override'      => array( 'query' => array() ),
+		'query_present' => FALSE,
+		'url'           => array(),
+		'url_prefix'    => array(),
+		'url_asterisk'  => array()
+		);
+}
 
 /*	Catch old unsupported version of WordPress before any damage can be done.
 */
@@ -80,197 +146,42 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 			return $links;
 		}
 		
-		/*	Store $wp->public_query_vars for when they are needed before 'setup_theme' Action
-		*/
-		add_action( 'setup_theme', 'jr_mt_wp_query_vars', JR_MT_RUN_FIRST );
-		function jr_mt_wp_query_vars() {
-			if ( FALSE !== ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) ) {
-				global $wp;
-				if ( ( !isset( $internal_settings['query_vars'] ) )
-					|| ( $internal_settings['query_vars'] !== $wp->public_query_vars ) ) {
-					/*	Only do an expensive Database Write when you have to,
-						i.e. - when value has changed.
-					*/
-					$internal_settings['query_vars'] = $wp->public_query_vars;
-					update_option( 'jr_mt_internal_settings', $internal_settings );
-				}
-			}
-		}
-	}
+		//	Admin Page
 
-	
-	/*	Check for missing Settings and set them to defaults.
-		On first use, this means initializing all Settings to their defaults.
-	*/
-	jr_mt_missing_settings( 'jr_mt_settings',
-		array(
-			/*	Settings structure:
-				code - get_option( 'jr_mt_settings' )
-				['all_pages'] => zero length string or folder in Themes directory containing theme to use for All Pages
-				['all_posts'] => zero length string or folder in Themes directory containing theme to use for All Posts
-				['site_home'] => zero length string or folder in Themes directory containing theme to use for Home Page
-				['current'] => zero length string or folder in Themes directory containing theme to override WordPress Current Theme
-				['query']
-					[keyword]
-						[value] or ['*'] => folder in Themes directory containing theme to use
-				['remember']
-					['query']
-						[keyword]
-							[value] => TRUE
-				['override']
-					['query']
-						[keyword]
-							[value] => TRUE
-				['query_present'] => TRUE or FALSE
-				['url'], ['url_prefix'] and ['url_asterisk'] - array with each entry:
-					['url'] => URL
-					['prep'][] => array of URL arrays created by jr_mt_prep_url(), with array index matching the array index of ['aliases']
-					['rel_url'] => Relative URL based on Site Address (URL) that admin entered the URL
-					['id'] => Post ID (Page, Post or Attachment), if known and if relevant
-					['id_kw'] => 'page_id', 'p' or 'attachment_id'
-					['theme'] => folder in Themes directory containing theme to use
-				
-				Added in Version 6.0:
-				['aliases'][] - array of Alias URLs that could replace 'home' in URL of this site,
-						with each entry:
-					['url'] => URL
-					['prep'] => URL array created by jr_mt_prep_url()
-					['home'] => TRUE if this is Site Address (URL) field value from WordPress General Settings,
-						which is stored here to determine when the WordPress General Setting is changed				
-				
-				Prior to Version 5.0:
-				['ids']
-					[id] - zero length string or WordPress ID of Page, Post, etc.
-						['type'] => 'page' or 'post' or 'admin' or 'cat' or 'archive' or 'prefix' or other
-						['theme'] => folder in Themes directory containing theme to use
-						['id'] => FALSE or WordPress ID of Page, Post, etc.
-						['page_url'] => relative URL WordPress page, post, admin, etc. or FALSE
-						['rel_url'] => URL relative to WordPress home
-						['url'] => original full URL, from Settings page entry by user	
-			*/
-			'aliases'       => jr_mt_init_aliases(),
-			'all_pages'     => '',
-			'all_posts'     => '',
-			'site_home'     => '',
-			'current'       => '',
-			'query'         => array(),
-			'remember'      => array( 'query' => array() ),
-			'override'      => array( 'query' => array() ),
-			'query_present' => FALSE,
-			'url'           => array(),
-			'url_prefix'    => array(),
-			'url_asterisk'  => array()
-		)
-	);
-	
-	/*	Detect initial activation or a change in plugin's Version number
-
-		Sometimes special processing is required when the plugin is updated to a new version of the plugin.
-		Also used in place of standard activation and new site creation exits provided by WordPress.
-		Once that is complete, update the Version number in the plugin's Network-wide settings.
-	*/
-	if ( FALSE === ( $internal_settings = get_option( 'jr_mt_internal_settings' ) ) ) {
-		/*	New install or Plugin was deleted previously, erasing all its Settings
-		*/
-		$old_version = $jr_mt_plugin_data['Version'];
-		$version_change = TRUE;
-		$update_version_setting = FALSE;
-	} else {
-		if ( empty( $internal_settings['version'] ) ) {
-			/*	Internal Settings are corrupt, or extremely old.
-			*/
-			$old_version = '0';
-			$version_change = TRUE;
-			$update_version_setting = TRUE;
-		} else {
-			$old_version = $internal_settings['version'];
-			$version_change = version_compare( $old_version, $jr_mt_plugin_data['Version'], '!=' );
-			$update_version_setting = $version_change;
-		}
-	}
-	/*	Create and initialize any or all internal settings that do not exist.
-	*/
-	jr_mt_missing_settings( 'jr_mt_internal_settings',
-		array(
-			'version'   => $jr_mt_plugin_data['Version'],
-			'permalink' => get_option( 'permalink_structure' )
-		)
-	);
-	
-	if ( $version_change ) {		
-		/*	Handle all Settings changes made in old plugin versions
-		*/
-		if ( version_compare( $old_version, '5.0', '<' ) ) {
-			$settings = get_option( 'jr_mt_settings' );
-			if ( !empty( $settings['ids'] ) ) {
-				/*	Convert 'ids' array to 'urls' array in Settings jr_mt_settings
-				
-					Signal that a conversion is required.
-				*/
-				$internal_settings = get_option( 'jr_mt_internal_settings' );
-				$internal_settings['ids'] = TRUE;
-				update_option( 'jr_mt_internal_settings', $internal_settings );				
-			}
-		}
-		if ( version_compare( $old_version, '6.0', '<' ) ) {
-			/*	Check if conversion is needed:
-				- see if [url*] are all empty arrays - no conversion required
-				- look for any [url*]['rel_url'] - already converted from pre-V6
-			*/
-			$settings = get_option( 'jr_mt_settings' );
-			if ( is_array( $settings ) ) {
-				foreach ( $settings as $key => $array ) {
-					if ( 'url' === substr( $key, 0, 3 ) ) {
-						if ( !empty( $array ) ) {
-							/*	Convert 'url'* settings to arrays, one for each Site Alias,
-								in Settings jr_mt_settings.
-							
-								Signal that a conversion is required.
-							*/
-							$internal_settings = get_option( 'jr_mt_internal_settings' );
-							$internal_settings['v6conv'] = TRUE;
-							update_option( 'jr_mt_internal_settings', $internal_settings );
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/*	Only Update if I have to.
-	*/
-	if ( $update_version_setting ) {
-		$internal_settings = get_option( 'jr_mt_internal_settings' );
-		$internal_settings['version'] = $jr_mt_plugin_data['Version'];
-		update_option( 'jr_mt_internal_settings', $internal_settings );
-	}
-
-	/*	Do the Version 5.0 Upgrade, if required.
-	*/
-	$internal_settings = get_option( 'jr_mt_internal_settings' );
-	if ( isset( $internal_settings['ids'] ) ) {
-		require_once( jr_mt_path() . 'includes/upgradev5.php' );
-	}
-
-	/*	Do the Version 6.0 Upgrade, if required.
-	*/
-	if ( isset( $internal_settings['v6conv'] ) ) {
-		require_once( jr_mt_path() . 'includes/upgradev6.php' );
-	/*	Upgrade doesn't occur until late in the WordPress "cycle",
-		so best not to risk failure on old settings.
-	*/
-	} else {
-	
-		/*	p2 runs in Admin, so must also execute this code in Admin, too.
-		*/
-		require_once( jr_mt_path() . 'includes/select-theme.php' );
+		add_action( 'admin_menu', 'jr_mt_admin_hook' );
+		//	Runs just before admin_init (in admin.php file)
 		
-		if ( is_admin() ) {
-			require_once( jr_mt_path() . 'includes/admin-functions.php' );
-			//	Admin panel
-			require_once( jr_mt_path() . 'includes/admin.php' );
+		/**
+		* Add Admin Menu item for plugin
+		* 
+		* Plugin needs its own Page in the Settings section of the Admin menu.
+		*
+		*/
+		function jr_mt_admin_hook() {
+			//  Add Settings Page for this Plugin
+			global $jr_mt_plugin_data;
+			add_theme_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
+			add_options_page( $jr_mt_plugin_data['Name'], 'Multiple Themes plugin', 'switch_themes', 'jr_mt_settings', 'jr_mt_settings_page' );
 		}
+		
+		add_action( 'admin_init', 'jr_mt_register_settings' );
+		function jr_mt_register_settings() {
+			register_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
+		}
+	}
+
+	/*	p2 runs in Admin, so must also execute this code in Admin, too.
+	*/
+	require_once( jr_mt_path() . 'includes/select-theme.php' );
+	
+	if ( is_admin() ) {
+		/*	&& isset( $_GET['page'] ) && ( 'jr_mt_settings' === $_GET['page'] )
+			should work, but redirects Save Changes to options.php
+		*/
+		require_once( jr_mt_path() . 'includes/admin-functions.php' );
+		/*	Admin panel
+		*/
+		require_once( jr_mt_path() . 'includes/admin.php' );
 	}
 }					
 									
@@ -280,6 +191,7 @@ Research Notes:
 	- is_admin()
 	- is_user_logged_in()
 	- get_option("page_on_front") - ID of home page; zero if Reading Settings NOT set to a Static Page of a WordPress Page
+	
 */
 
 ?>

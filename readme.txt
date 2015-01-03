@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.1
-Stable tag: 6.0.2
+Stable tag: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Select different Themes for one or more WordPress Pages, Posts or other non-Admi
 
 == Description ==
 
-**Version 6 adds Site Aliases, to support URLs that contain something other than the Site Address (URL) defined in WordPress General Settings, or equivalent for a Site in a WordPress Network**
+**Version 7 adds exhaustive checking and correction of the plugin's Settings that may have become corrupted**
 
 Settings provide many different ways to Select which Theme should appear where on your WordPress web site:
 
@@ -142,6 +142,12 @@ You will need to delete the entry and add it again, with the new Theme specified
 6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
+
+= 7.0 =
+* Check and cleanup Settings on every viewing of the Settings page, to maximize compatibility with previous versions
+* Store PostID as String instead of Integer in URL Settings so it will match incoming URL with p=id, etc.
+* Make sure that both Query Keyword and Value are never any Numeric type, but always String
+* Correct numerous small bugs
 
 = 6.0.2 =
 * Fix bug that stripped off Queries in URL Settings
@@ -308,6 +314,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 7.0 =
+Checks all Settings whenever Settings page displayed
 
 = 6.0.2 =
 Correct bug that stripped Queries from URLs in Settings
