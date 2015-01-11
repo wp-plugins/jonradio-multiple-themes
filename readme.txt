@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.1
-Stable tag: 7.0
+Stable tag: 7.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
+
+= 7.0.1 =
+* Fix Query Matching when Value is an Integer in Query Settings
 
 = 7.0 =
 * Check and cleanup Settings on every viewing of the Settings page, to maximize compatibility with previous versions
@@ -314,6 +317,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 7.0.1 =
+Correctly handle p= and page_id= in Query Settings
 
 = 7.0 =
 Checks all Settings whenever Settings page displayed

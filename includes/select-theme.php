@@ -198,7 +198,8 @@ function jr_mt_chosen() {
 			*/
 			foreach ( $settings['override']['query'] as $override_keyword => $override_value_array ) {
 				if ( isset( $queries[ $override_keyword ] ) ) {
-					foreach ( $override_value_array as $override_value => $bool ) {
+					foreach ( $override_value_array as $override_value_untyped => $bool ) {
+						$override_value = ( string ) $override_value_untyped;
 						if ( in_array( $override_value, $queries[ $override_keyword ], TRUE ) ) {
 							$override_found[] = array( $override_keyword, $override_value );
 						}
@@ -211,7 +212,8 @@ function jr_mt_chosen() {
 				*/
 				foreach ( $settings['query'] as $query_settings_keyword => $value_array ) {
 					if ( isset( $queries[ $query_settings_keyword ] ) ) {
-						foreach ( $value_array as $query_settings_value => $theme ) {
+						foreach ( $value_array as $query_settings_value_untyped => $theme ) {
+							$query_settings_value = ( string ) $query_settings_value_untyped;
 							if ( in_array( $query_settings_value, $queries[ $query_settings_keyword ], TRUE ) ) {
 								$query_found[] = array( $query_settings_keyword, $query_settings_value );
 							}
