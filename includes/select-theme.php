@@ -308,7 +308,16 @@ function jr_mt_chosen() {
 			Check for match in "URL Prefix with Asterisk" plugin entries that have been pre-prepped with this Site Alias
 	*/
 	
-	$prep_url = jr_mt_prep_url( $current_url = parse_url( JR_MT_HOME_URL, PHP_URL_SCHEME ) . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
+	if ( empty( $_SERVER['SERVER_PORT'] ) ) {
+		$url_port = '';
+	} else {
+		$url_port = ':' . $_SERVER['SERVER_PORT'];
+	}
+	$prep_url = jr_mt_prep_url( $current_url = parse_url( JR_MT_HOME_URL, PHP_URL_SCHEME ) 
+		. '://' 
+		. $_SERVER['SERVER_NAME'] 
+		. $url_port
+		. $_SERVER['REQUEST_URI'] );
 	$match = array();
 	foreach ( $settings['aliases'] as $key => $alias_array ) {
 		if ( jr_mt_same_prefix_url( $alias_array['prep'], $prep_url ) ) {
