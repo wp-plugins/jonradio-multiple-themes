@@ -308,10 +308,10 @@ function jr_mt_chosen() {
 			Check for match in "URL Prefix with Asterisk" plugin entries that have been pre-prepped with this Site Alias
 	*/
 	
-	if ( empty( $_SERVER['SERVER_PORT'] ) ) {
+	if ( 0 === ( $port = jr_mt_non_default_port( $_SERVER, 'SERVER_PORT' ) ) ) {
 		$url_port = '';
 	} else {
-		$url_port = ':' . $_SERVER['SERVER_PORT'];
+		$url_port = ':' . $port;
 	}
 	$prep_url = jr_mt_prep_url( $current_url = parse_url( JR_MT_HOME_URL, PHP_URL_SCHEME ) 
 		. '://' 

@@ -394,9 +394,7 @@ function jr_mt_prep_url( $url ) {
 	}
 	/*	Remove standard HTTP Port 80 and HTTPS Port 443, if present.
 	*/
-	if ( ( !isset( $parse_array['port'] ) ) || ( 80 === $parse_array['port'] ) || ( 443 === $parse_array['port'] ) ) {
-		$parse_array['port'] = 0;
-	}
+	$parse_array['port'] = jr_mt_non_default_port( $parse_array, 'port' );
 	if ( isset( $parse_array['path'] ) ) {
 		/*	Remove any index.php occurences in path, since these can be spurious in IIS
 			and perhaps other environments.
@@ -431,6 +429,20 @@ function jr_mt_prep_url( $url ) {
 		$parse_array['query'] = array();
 	}
 	return $parse_array;
+}
+
+global $jr_mt_default_ports;
+$jr_mt_default_ports = array( 80, 443 );
+function jr_mt_non_default_port( $array, $key ) {
+	/*	Remove standard HTTP Port 80 and HTTPS Port 443, if present.
+	*/
+	global $jr_mt_default_ports;
+	if ( empty( $array[ $key ] ) || in_array( $array[ $key ], $jr_mt_default_ports ) ) {
+		$port = 0;
+	} else {
+		$port = $array[ $key ];
+	}
+	return $port;
 }
 
 /**	Build Query Array

@@ -4,7 +4,7 @@ Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.1
-Stable tag: 7.0.2
+Stable tag: 7.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
+
+= 7.0.3 =
+* Fix All Posts and All Pages setting's url_to_postid() function issues introduced in 7.0.2
 
 = 7.0.2 =
 * Fix Port URL matching issue
@@ -320,6 +323,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 7.0.3 =
+Make All Posts and All Pages settings work on sites without a Port Number specified
 
 = 7.0.2 =
 Correct URL Matching for Sites with a Port Number in their URL
