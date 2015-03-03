@@ -250,16 +250,16 @@ function jr_mt_settings_page() {
 				including Themes that are not currently installed.
 			*/
 			$jr_mt_all_themes = jr_mt_all_themes();
-			/*	Check: 'all_pages', 'all_posts', 'site_home', 'current'
+			/*	Check: 'all_pages', 'all_posts', 'site_home', 'current', 'ajax_all'
 			*/
-			foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $key ) {
+			foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current', 'ajax_all' ) as $key ) {
 				if ( ( !isset( $settings[ $key ] ) ) || ( !is_string( $settings[ $key ] ) ) ) {
 					$settings[ $key ] = $default_settings[ $key ];
-					jr_mt_messages( 'Home, Everything or All Pages/Posts Setting corrupt: reset to default (WordPress Active Theme)' );
+					jr_mt_messages( 'Home, Everything or All Pages/Posts/AJAX Setting corrupt: reset to default (WordPress Active Theme)' );
 				} else {
 					if ( ( '' !== $settings[ $key ] ) && ( !isset( $jr_mt_all_themes[ $settings[ $key ] ] ) ) ) {
 						$settings[ $key ] = $default_settings[ $key ];
-						jr_mt_messages( 'Home, Everything or All Pages/Posts Setting deleted: specified Theme no longer exists' );
+						jr_mt_messages( 'Home, Everything or All Pages/Posts/AJAX Setting deleted: specified Theme no longer exists' );
 					}
 				}
 			}
@@ -588,6 +588,7 @@ function jr_mt_settings_page() {
 		<li>Any URL containing a Specific Query Keyword (<code>?keyword</code> or <code>&keyword</code>)</li>
 		<li>Any URL containing a Specific Query Keyword/Value pair (<code>?keyword=value</code> or <code>&keyword=value</code>)</li>
 		<li>For the same site visitor, all non-Admin pages after a <b>Sticky</b> Query Keyword/Value pair is specified in any URL (Advanced Settings tab)</li>
+		<li>AJAX URLs containing <code>admin-ajax.php</code> (Advanced Settings tab)</li>
 		<li>All Pages (Advanced Settings tab)</li>
 		<li>All Posts (Advanced Settings tab)</li>
 		<li>Everything else, except what is specified above (Advanced Settings tab)</li>
@@ -638,7 +639,18 @@ function jr_mt_settings_page() {
 		//	Plugin Settings are displayed and entered here:
 		settings_fields( 'jr_mt_settings' );
 		do_settings_sections( 'jr_mt_settings_page' );
-		echo '<p><input name="jr_mt_settings[tab3]" type="submit" value="Save All Changes" class="button-primary" /></p></form>';
+		?>
+		<p>
+		More comprehensive AJAX support is planned for future Versions of this plugin.
+		</p>
+		<p>
+		&nbsp;
+		</p>
+		<p>
+		<input name="jr_mt_settings[tab3]" type="submit" value="Save All Changes" class="button-primary" />
+		</p>
+		</form>
+		<?php
 	}
 
 	?>
@@ -675,7 +687,7 @@ function jr_mt_settings_page() {
 	Maybe</i>.
 	</p>
 	<p>	
-	For now, there are three approaches that can be used to change Options for an installed Theme that is not the Active Theme.
+	For now, there are four approaches that can be used to change Options for an installed Theme that is not the Active Theme.
 	The first works best if only one Theme has a lot of Options that need to be changed frequently:
 	</p>
 	<ol>
@@ -723,6 +735,12 @@ function jr_mt_settings_page() {
 	would be required to avoid such a loss.
 	</li>
 	</ol>
+	<p>
+	Finally, there is the Method of Last Resort.
+	Although it is the most obvious way to change Theme Options,
+	it is also the most risky,
+	in terms of loss of Options set for other Themes.
+	</p>
 	<h4>
 	<u>
 	Method #1</u>:
@@ -828,6 +846,38 @@ function jr_mt_settings_page() {
 	</li>
 	<li>
     Both the alternate and Active Themes should now display all Theme options properly when selected through the jonradio Multiple Themes plugin.
+	</li>
+	</ol>
+	<h4>
+	<u>
+	Method of Last Resort</u>:
+	Activate a Theme to change its Options.
+	</h4>
+	<p>
+	Note:
+	this approach is the most likely to cause the loss of Theme Options set in other Themes,
+	though the risk does depend on the Theme and the Options that are set.
+	</p>	
+	<ol>
+	<li>
+    Go to Appearance-Themes in the WordPress Admin panels.
+	</li>
+	<li>
+	Mouse over the Theme that you wish to change
+	and click the Activate button that appears.
+	</li>
+	<li>
+    Make the appropriate changes to Theme Options,
+	clicking a Save button, if present
+	(some Options are automatically saved; some are not).
+	</li>
+	<li>
+    Go immediately to Appearance-Themes in the WordPress Admin panels.
+	</li>
+	<li>
+	Mouse over the Theme that had previously been the Active Theme
+	and click the Activate button that appears
+	to reactivate the Active Theme.
 	</li>
 	</ol>
 	<h3>
@@ -1036,6 +1086,39 @@ function jr_mt_settings_page() {
 	?>
 	</div>
 	<div id="jr-mt-settings6" style="display: none;">
+	<h3>
+	If Any Theme Uses AJAX
+	</h3>
+	<p>
+	More and more Themes,
+	especially Paid Themes,
+	use AJAX,
+	which adds impressive-looking dynamic features to a web site.
+	</p>
+	<p>
+	AJAX also adds complexity.
+	Instead of a single web page having a single URL,
+	AJAX uses additional URLs to dynamically insert content into a web page after it is initially displayed.
+	</p>
+	<p>
+	Each of those URLs must be considered when creating
+	Theme Selection settings for this plugin.
+	Otherwise,
+	this plugin will return the incorrect Theme for some portions of
+	a web page,
+	which may cause the
+	display of incorrect content,
+	or no content at all.
+	</p>
+	<p>
+	Version 7.1 of this plugin introduced an AJAX Advanced Setting
+	for URLs that include
+	<code>admin-ajax.php</code>,
+	a common AJAX technique in WordPress.
+	Additional AJAX support is planned for future versions of this plugin,
+	as well as a Diagnostic Tool for determining URLs being used by AJAX,
+	most likely as a separate plugin.
+	</p>
 	<h3>
 	An Alternative to This Plugin
 	</h3>

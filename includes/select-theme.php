@@ -164,20 +164,6 @@ function jr_mt_chosen() {
 			in the current URL.
 	*/
 	$queries = jr_mt_query_array(); 
-
-	/*	P2 free Theme special processing:
-		for both Admin and Public site,
-		check for P2 keyword p2ajax=,
-		and select P2 theme, if present.
-	*/
-	if ( isset( $queries['p2ajax'] ) && array_key_exists( 'p2', jr_mt_all_themes() ) ) {
-		return 'p2';
-	}
-	/*	Otherwise, Admin gets current ("Active") WordPress Theme
-	*/
-	if ( is_admin() ) {
-		return FALSE;
-	}
 	
 	/*	KnowHow ThemeForest Paid Theme special processing:
 		if s= is present, and 'knowhow' is either the active WordPress Theme
@@ -346,6 +332,14 @@ function jr_mt_chosen() {
 		if ( jr_mt_same_prefix_url_asterisk( $settings_array['prep'][ $site_alias_key ], $prep_url ) ) {
 			return $settings_array['theme'];
 		}
+	}
+
+	/*	Theme to use for All /wp-admin/admin-ajax.php usage.
+		Selected near the end to allow Queries to take precedence.
+	*/
+	if ( !empty( $settings['ajax_all'] )
+		&& ( FALSE !== strpos( $_SERVER['REQUEST_URI'], 'admin-ajax.php' ) ) ) {
+		return $settings['ajax_all'];
 	}
 
 	/*	Must check for Home near the end as queries override

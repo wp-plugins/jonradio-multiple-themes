@@ -3,7 +3,7 @@
 Plugin Name: jonradio Multiple Themes
 Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
 Description: Select different Themes for one or more WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
-Version: 7.0.3
+Version: 7.1
 Author: jonradio
 Author URI: http://jonradio.com/plugins
 License: GPLv2
@@ -84,6 +84,9 @@ function jr_mt_default_settings() {
 				['home'] => TRUE if this is Site Address (URL) field value from WordPress General Settings,
 					which is stored here to determine when the WordPress General Setting is changed				
 			
+			Added in Version 7.1:
+			['ajax_all'] => zero length string or folder in Themes directory containing theme to use for /wp-admin/admin-ajax.php
+			
 			Prior to Version 5.0:
 			['ids']
 				[id] - zero length string or WordPress ID of Page, Post, etc.
@@ -99,6 +102,7 @@ function jr_mt_default_settings() {
 		'all_posts'     => '',
 		'site_home'     => '',
 		'current'       => '',
+		'ajax_all'      => '',
 		'query'         => array(),
 		'remember'      => array( 'query' => array() ),
 		'override'      => array( 'query' => array() ),
@@ -169,10 +173,6 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 			register_setting( 'jr_mt_settings', 'jr_mt_settings', 'jr_mt_validate_settings' );
 		}
 	}
-
-	/*	p2 runs in Admin, so must also execute this code in Admin, too.
-	*/
-	require_once( jr_mt_path() . 'includes/select-theme.php' );
 	
 	if ( is_admin() ) {
 		/*	&& isset( $_GET['page'] ) && ( 'jr_mt_settings' === $_GET['page'] )
@@ -182,16 +182,9 @@ if ( version_compare( get_bloginfo( 'version' ), '3.4', '<' ) ) {
 		/*	Admin panel
 		*/
 		require_once( jr_mt_path() . 'includes/admin.php' );
+	} else {
+		require_once( jr_mt_path() . 'includes/select-theme.php' );
 	}
-}					
-									
-/*
-Research Notes:
-	The first time one of these Filter Hooks fires, pre_option_stylesheet and pre_option_template, only the following functions can be used to help determine "where" you are in the site:
-	- is_admin()
-	- is_user_logged_in()
-	- get_option("page_on_front") - ID of home page; zero if Reading Settings NOT set to a Static Page of a WordPress Page
-	
-*/
+}
 
 ?>

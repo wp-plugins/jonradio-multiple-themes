@@ -138,6 +138,17 @@ function jr_mt_admin_init() {
 		add_settings_field( 'all_' . jr_mt_strtolower( $thing ), "Select Theme for All $thing" . $suffix[$thing], 'jr_mt_echo_all_things', 'jr_mt_settings_page', 'jr_mt_all_settings_section', 
 			array( 'thing' => $thing ) );
 	}
+	add_settings_section( 'jr_mt_ajax_section', 
+		'AJAX', 
+		'jr_mt_ajax_expl', 
+		'jr_mt_settings_page' 
+	);
+	add_settings_field( 'ajax_all', 
+		'Theme for <code>admin-ajax.php</code>', 
+		'jr_mt_echo_ajax_all', 
+		'jr_mt_settings_page', 
+		'jr_mt_ajax_section' 
+	);
 }
 
 /**
@@ -248,6 +259,7 @@ function jr_mt_echo_delete_entry() {
 	/*	Home Entry, then All Posts and Pages, and Everything Else
 	*/
 	foreach ( array(
+		'ajax_all'  => 'AJAX',
 		'site_home' => 'Home',
 		'all_posts' => 'All Posts',
 		'all_pages' => 'All Pages',
@@ -830,6 +842,29 @@ function jr_mt_echo_all_things( $thing ) {
 	$settings = get_option( 'jr_mt_settings' );
 	$field = 'all_' . jr_mt_strtolower( $thing['thing'] );
 	jr_mt_themes_field( $field, $settings[$field], 'jr_mt_settings', TRUE );
+}
+
+function jr_mt_ajax_expl() {
+	?>
+	<p>
+	This setting selects a Theme for URLs 
+	that include
+	<code>admin-ajax.php</code>,
+	a common WordPress technique for using AJAX.
+	If more than one Theme or Plugin uses AJAX in this manner,
+	then this Advanced Setting probably will not work correctly.
+	</p>
+	<p>
+	If the URL also contains a Query
+	(<code>?keyword=value</code>),
+	a Query Setting is almost always a better choice than this Advanced Setting.
+	</p>
+	<?php
+}
+
+function jr_mt_echo_ajax_all() {
+	$settings = get_option( 'jr_mt_settings' );
+	jr_mt_themes_field( 'ajax_all', $settings['ajax_all'], 'jr_mt_settings', TRUE );
 }
 
 ?>

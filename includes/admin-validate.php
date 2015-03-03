@@ -39,7 +39,7 @@ function jr_mt_validate_settings( $input ) {
 		update_option( 'jr_mt_internal_settings', $internal_setting );
 	}
 	
-	foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current' ) as $thing ) {
+	foreach ( array( 'all_pages', 'all_posts', 'site_home', 'current', 'ajax_all' ) as $thing ) {
 		$valid[$thing] = $input[$thing];
 	}
 	

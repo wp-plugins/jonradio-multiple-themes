@@ -3,8 +3,8 @@ Contributors: jonradio
 Donate link: http://jonradio.com/plugins
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 4.1
-Stable tag: 7.0.3
+Tested up to: 4.1.1
+Stable tag: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,10 @@ You will need to delete the entry and add it again, with the new Theme specified
 6. New in V5 tab on Plugin's Settings page
 
 == Changelog ==
+
+= 7.1 =
+* Very Simple AJAX Support: select a theme whenever /wp-admin/admin-ajax.php is accessed by URL
+* Remove P2 Theme automatic handling as it no longer works with current version of P2 Theme
 
 = 7.0.3 =
 * Fix All Posts and All Pages setting's url_to_postid() function issues introduced in 7.0.2
@@ -323,6 +327,9 @@ You will need to delete the entry and add it again, with the new Theme specified
 * Beta testing completed.
 
 == Upgrade Notice ==
+
+= 7.1 =
+AJAX Support
 
 = 7.0.3 =
 Make All Posts and All Pages settings work on sites without a Port Number specified
