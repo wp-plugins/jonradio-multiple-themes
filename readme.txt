@@ -1,5 +1,5 @@
 === jonradio Multiple Themes ===
-Contributors: jonradio
+Contributors: jonradio, dgewirtz
 Donate link: http://jonradio.com/plugins
 Tags: adopt-me, themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
