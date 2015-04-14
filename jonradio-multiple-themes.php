@@ -1,15 +1,15 @@
 <?php
 /*
 Plugin Name: jonradio Multiple Themes
-Plugin URI: http://jonradio.com/plugins/jonradio-multiple-themes
+Plugin URI: http://zatzlabs.com/plugins/
 Description: Select different Themes for one or more, or all WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
 Version: 4.7.1
-Author: jonradio
-Author URI: http://jonradio.com/plugins
+Author: David Gewirtz
+Author URI: http://zatzlabs.com/plugins/
 License: GPLv2
 */
 
-/*  Copyright 2013  jonradio  (email : info@jonradio.com)
+/*  Copyright 2013  jonradio  (email : info@zatz.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
