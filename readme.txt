@@ -1,6 +1,6 @@
 === jonradio Multiple Themes ===
 Contributors: jonradio
-Donate link: http://jonradio.com/plugins
+Donate link: http://zatzlabs.com/plugins/
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.0
@@ -56,7 +56,7 @@ This section describes how to install the *jonradio Multiple Themes* plugin and 
 
 = What if my Themes or other plugins don't seem to be working with the jonradio Multiple Themes plugin? =
 
-Please ask before giving up.  Either by [posting a Support question](http://wordpress.org/support/plugin/jonradio-multiple-themes "Support Forum") or contacting us directly by filling out this [Contact Form (click here)](http://jonradio.com/contact-us/ "Contact Form").
+Please ask before giving up.  Either by [posting a Support question](http://wordpress.org/support/plugin/jonradio-multiple-themes "Support Forum") or contacting us directly by filling out this [Contact Form (click here)](http://zatzlabs.com/contact-us/ "Contact Form").
 
 If we cannot solve the problem, please consider using a WordPress Network.  One install of WordPress allows you to have multiple separate Sites ("MultiSite"), each with a different Theme, without using the jonradio Multiple Themes plugin.  The sites can look to the outside world as if they are just one web site by using the Sub-directories option.  For example, Site 1 would be at example.com, and Site 2 could be at example.com/forum.
 
