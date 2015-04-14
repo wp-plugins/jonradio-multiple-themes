@@ -400,13 +400,13 @@ function jr_mt_settings_page() {
 	<p>
 	For information on other jonradio plugins,
 	including Contact and Donation information,
-	<a href="http://jonradio.com/plugins/">click here</a>.
+	<a href="http://zatzlabs.com/plugins/">click here</a>.
 	</p>
 	<h3>
 	Want to Help?
 	</h3>
 	<p>
-	As well as <a href="http://jonradio.com/plugins/">Donations</a>,
+	As well as <a href="http://zatzlabs.com/plugins/">Donations</a>,
 	you can also help by 
 	<a href="http://wordpress.org/support/view/plugin-reviews/jonradio-multiple-themes">Reviewing this plugin</a> 
 	for the WordPress Plugin Directory,
