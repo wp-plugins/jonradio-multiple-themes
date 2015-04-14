@@ -9,7 +9,7 @@ Author URI: http://zatzlabs.com/lab-notes/
 License: GPLv2
 */
 
-/*  Copyright 2015  jonradio  (email : info@jonradio.com)
+/*  Copyright 2015  jonradio  (email : info@zatz.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

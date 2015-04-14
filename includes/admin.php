@@ -1198,18 +1198,18 @@ function jr_mt_settings_page() {
 	simply post your question in the
 	<a target="_blank" href="http://wordpress.org/support/plugin/jonradio-multiple-themes">Support Forum</a>
 	or
-	<a target="_blank" href="http://jonradio.com/contact-us/">contact jonradio directly</a>.
+	<a target="_blank" href="http://zatzlabs.com/contact-us/">contact jonradio directly</a>.
 	</p>
 	<p>
 	For information on other jonradio plugins,
 	including Contact and Donation information,
-	<a target="_blank" href="http://jonradio.com/plugins/">click here</a>.
+	<a target="_blank" href="http://zatzlabs.com/plugins/">click here</a>.
 	</p>
 	<h3>
 	Want to Help?
 	</h3>
 	<p>
-	As well as <a target="_blank" href="http://jonradio.com/plugins/">Donations</a>,
+	As well as <a target="_blank" href="http://zatzlabs.com/plugins/">Donations</a>,
 	you can also help by 
 	<a target="_blank" href="http://wordpress.org/support/view/plugin-reviews/jonradio-multiple-themes">Reviewing this plugin</a> 
 	for the WordPress Plugin Directory,
