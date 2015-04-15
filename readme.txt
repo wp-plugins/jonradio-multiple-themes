@@ -1,5 +1,5 @@
 === jonradio Multiple Themes ===
-Contributors: dgewirtz, dgewirtz
+Contributors: dgewirtz
 Donate link: http://zatzlabs.com/plugins/
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
