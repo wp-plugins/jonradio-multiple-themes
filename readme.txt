@@ -1,6 +1,6 @@
-=== jonradio Multiple Themes ===
+=== Multiple Themes ===
 Contributors: dgewirtz
-Donate link: http://zatzlabs.com/plugins/
+Donate link: http://zatzlabs.com/lab-notes/
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
 Tested up to: 4.2
@@ -13,6 +13,8 @@ Select different Themes for one or more WordPress Pages, Posts or other non-Admi
 == Description ==
 
 **Version 7 adds exhaustive checking and correction of the plugin's Settings that may have become corrupted**
+
+*Formerly: "jonradio Multiple Themes"*
 
 Settings provide many different ways to Select which Theme should appear where on your WordPress web site:
 
@@ -38,6 +40,11 @@ A similar situation exists with Paid Plugins.
 **Changing Theme Options (Widgets, Sidebars, Menus, Templates, Background, Header, etc.)?**:  After installing and activating the plugin, see the plugin's Settings page and click on the **Theme Options** tab for important information on changing Options for Themes other than the Active Theme.
 
 **How it Works**:  The plugin does not change the Active Theme defined to WordPress in the Appearances-Themes Admin panel.  Instead, it dynamically (and selectively) overrides that setting.  Which means that simply deactivating (or deleting) this plugin will restore the way that Themes were displayed prior to installing this plugin.  However, in some situations, it is possible to inadvertently alter Theme Options for the Active Theme when using either of the Methods described on the plugin's Setting page Theme Options tab.
+
+> <strong>Adoption Notice</strong><br>
+> This plugin was recently adopted by David Gewirtz and ongoing support and updates will continue. Feel free to visit [David's Lab Notes](http://zatzlabs.com/lab-notes/) for additional details and to sign up for emailed news updates.
+
+Special thanks to Jon 'jonradio' Pearkins for creating the plugin and making adoption possible.
 
 == Installation ==
 
@@ -459,3 +466,4 @@ Eliminate possibility of foreach error message if PHP warning level is set at a 
 
 = 1.0 =
 Beta version 0.9 had not been tested when installed from the WordPress Plugin Repository
+
