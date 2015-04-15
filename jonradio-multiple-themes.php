@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: jonradio Multiple Themes
+Plugin Name: Multiple Themes
 Plugin URI: http://zatzlabs.com/lab-notes/
 Description: Select different Themes for one or more WordPress Pages, Posts or other non-Admin pages.  Or Site Home.
 Version: 7.1
