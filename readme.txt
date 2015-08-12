@@ -3,7 +3,7 @@ Contributors: dgewirtz
 Donate link: http://zatzlabs.com/lab-notes/
 Tags: themes, theme, sections, style, template, stylesheet, accessibility
 Requires at least: 3.4
-Tested up to: 4.2
+Tested up to: 4.3
 Stable tag: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
